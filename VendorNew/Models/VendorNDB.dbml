@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="Vendor_new" Class="VendorNDBDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="WebSettings" ConnectionString="Data Source=192.168.100.205;Initial Catalog=Vendor_new;Persist Security Info=True;User ID=lyh" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="Vendor_newConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Authorities" Member="Authorities">
+    <Type Name="Authorities">
+      <Column Name="auth_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="en_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Association Name="Authorities_GroupAuthorities" Member="GroupAuthorities" ThisKey="auth_id" OtherKey="auth_id" Type="GroupAuthorities" />
+    </Type>
+  </Table>
+  <Table Name="dbo.EventLog" Member="EventLog">
+    <Type Name="EventLog">
+      <Column Name="log_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="module" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="sys_num" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="do_what" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="is_normal" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="op_time" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="ip" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.GroupAuthorities" Member="GroupAuthorities">
+    <Type Name="GroupAuthorities">
+      <Column Name="group_auth_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="group_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="auth_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Authorities_GroupAuthorities" Member="Authorities" ThisKey="auth_id" OtherKey="auth_id" Type="Authorities" IsForeignKey="true" />
+      <Association Name="Groups_GroupAuthorities" Member="Groups" ThisKey="group_id" OtherKey="group_id" Type="Groups" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Groups" Member="Groups">
+    <Type Name="Groups">
+      <Column Name="group_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="name" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Association Name="Groups_GroupAuthorities" Member="GroupAuthorities" ThisKey="group_id" OtherKey="group_id" Type="GroupAuthorities" />
+      <Association Name="Groups_GroupUsers" Member="GroupUsers" ThisKey="group_id" OtherKey="group_id" Type="GroupUsers" />
+    </Type>
+  </Table>
+  <Table Name="dbo.GroupUsers" Member="GroupUsers">
+    <Type Name="GroupUsers">
+      <Column Name="group_user_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="group_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="user_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="Groups_GroupUsers" Member="Groups" ThisKey="group_id" OtherKey="group_id" Type="Groups" IsForeignKey="true" />
+      <Association Name="Users_GroupUsers" Member="Users" ThisKey="user_id" OtherKey="user_id" Type="Users" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SystemNos" Member="SystemNos">
+    <Type Name="SystemNos">
+      <Column Name="num_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="prefix1" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="prefix2" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="current_num" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Users" Member="Users">
+    <Type Name="Users">
+      <Column Name="user_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="real_name" Type="System.String" DbType="VarChar(200) NOT NULL" CanBeNull="false" />
+      <Column Name="password" Type="System.String" DbType="Char(32) NOT NULL" CanBeNull="false" />
+      <Column Name="user_role" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="email" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="is_forbit" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="in_date" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="forbit_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="forbit_reason" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="last_login_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="continual_error_times" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Association Name="Users_GroupUsers" Member="GroupUsers" ThisKey="user_id" OtherKey="user_id" Type="GroupUsers" />
+    </Type>
+  </Table>
+</Database>
