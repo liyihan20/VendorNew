@@ -1,33 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="Vendor_new" Class="VendorNDBDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
   <Connection Mode="WebSettings" ConnectionString="Data Source=192.168.100.205;Initial Catalog=Vendor_new;Persist Security Info=True;User ID=lyh" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="Vendor_newConnectionString" Provider="System.Data.SqlClient" />
-  <Table Name="dbo.Authorities" Member="Authorities">
-    <Type Name="Authorities">
-      <Column Name="auth_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
-      <Column Name="en_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
-      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
-      <Association Name="Authorities_GroupAuthorities" Member="GroupAuthorities" ThisKey="auth_id" OtherKey="auth_id" Type="GroupAuthorities" />
-    </Type>
-  </Table>
-  <Table Name="dbo.EventLog" Member="EventLog">
-    <Type Name="EventLog">
-      <Column Name="log_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="module" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="sys_num" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="do_what" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
-      <Column Name="is_normal" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="op_time" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="ip" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.GroupAuthorities" Member="GroupAuthorities">
     <Type Name="GroupAuthorities">
       <Column Name="group_auth_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="group_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="auth_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Association Name="Authorities_GroupAuthorities" Member="Authorities" ThisKey="auth_id" OtherKey="auth_id" Type="Authorities" IsForeignKey="true" />
       <Association Name="Groups_GroupAuthorities" Member="Groups" ThisKey="group_id" OtherKey="group_id" Type="Groups" IsForeignKey="true" />
+      <Association Name="Authorities_GroupAuthorities" Member="Authorities" ThisKey="auth_id" OtherKey="auth_id" Type="Authorities" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Groups" Member="Groups">
@@ -35,6 +14,7 @@
       <Column Name="group_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="name" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
       <Column Name="comment" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="group_type" Type="System.String" DbType="Varchar(20)" CanBeNull="true" />
       <Association Name="Groups_GroupAuthorities" Member="GroupAuthorities" ThisKey="group_id" OtherKey="group_id" Type="GroupAuthorities" />
       <Association Name="Groups_GroupUsers" Member="GroupUsers" ThisKey="group_id" OtherKey="group_id" Type="GroupUsers" />
     </Type>
@@ -74,4 +54,183 @@
       <Association Name="Users_GroupUsers" Member="GroupUsers" ThisKey="user_id" OtherKey="user_id" Type="GroupUsers" />
     </Type>
   </Table>
+  <Table Name="dbo.EventLog" Member="EventLog">
+    <Type Name="EventLog">
+      <Column Name="log_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="module" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="sys_num" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="do_what" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="is_normal" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="op_time" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="ip" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(1)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Authorities" Member="Authorities">
+    <Type Name="Authorities">
+      <Column Name="auth_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="en_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="controller_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="action_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="fa_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="btn_color" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="number" Type="System.Decimal" DbType="Decimal(5,2)" CanBeNull="true" />
+      <Association Name="Authorities_GroupAuthorities" Member="GroupAuthorities" ThisKey="auth_id" OtherKey="auth_id" Type="GroupAuthorities" />
+    </Type>
+  </Table>
+  <Table Name="dbo.TempDic" Member="TempDic">
+    <Type Name="TempDic">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="t_key" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="t_value" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DRBills" Member="DRBills">
+    <Type Name="DRBills">
+      <Column Name="bill_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="user_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="bill_no" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="bill_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="send_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="bill_type" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="supplier_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="supplier_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="currency_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="currency_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="buy_type" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="trade_type_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="trade_type_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="department_name" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="mat_order_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="mat_order_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="p_status" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="in_stock_bill_number" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="in_stock_bill_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="supplier_invoice_number" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="supplier_dr_number" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.InneBoxes" Member="InneBoxes">
+    <Type Name="InneBoxes">
+      <Column Name="inner_box_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="outer_box_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="box_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="box_number_long" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="every_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="pack_num" Type="System.Int32" DbType="Int" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.OuterBoxes" Member="OuterBoxes">
+    <Type Name="OuterBoxes">
+      <Column Name="outer_box_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="bill_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="box_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="box_number_long" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="every_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="pack_num" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="every_net_weight" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="every_gross_weight" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="size" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="made_in" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="brand" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="batch" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="rohs" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="produce_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="safe_period" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="backup_number" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="made_by" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="package_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="keep_condition" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="produce_circle" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="unit_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="trade_type_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="item_model" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="create_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.OuterBoxPOs" Member="OuterBoxPOs">
+    <Type Name="OuterBoxPOs">
+      <Column Name="out_box_po_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="out_box_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="po_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="po_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="po_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="send_num" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="can_send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DRBillDetails" Member="DRBillDetails">
+    <Type Name="DRBillDetails">
+      <Column Name="bill_detail_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="bill_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="item_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="item_model" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="unit_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="unit_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="po_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="po_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="po_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="po_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="po_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="pr_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="buyer_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="buyer_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="contract_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="can_send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.BackupData" Member="BackupData">
+    <Type Name="BackupData">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="user_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="op_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="bill_no" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="head" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="details" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.OpRecord" Member="OpRecord">
+    <Type Name="OpRecord">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="bill_no" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="op_date" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="op_user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="do_what" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Vw_SupplierInfo" Member="Vw_SupplierInfo">
+    <Type Name="Vw_SupplierInfo">
+      <Column Name="account" Type="System.String" DbType="VarChar(1) NOT NULL" CanBeNull="false" />
+      <Column Name="suppier_number" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="supplier_name" Type="System.String" DbType="VarChar(80)" CanBeNull="true" />
+      <Column Name="supplier_phone" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
+      <Column Name="supplier_attn" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="supplier_addr" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Function Name="dbo.GetSupplierNameByNumber" Method="GetSupplierNameByNumber">
+    <Parameter Name="supplierNumber" Type="System.String" DbType="VarChar(50)" />
+    <ElementType Name="GetSupplierNameByNumberResult">
+      <Column Name="FName" Type="System.String" DbType="VarChar(80)" CanBeNull="true" />
+    </ElementType>
+  </Function>
 </Database>

@@ -1,0 +1,174 @@
+﻿
+<script>
+
+    $(function () {
+        $("#dg").datagrid({
+            fit: true,
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            url: "GetUsers",
+            columns: [[
+                { field: 'user_name', title: '登录名', width: 100, align: 'center' },
+                { field: 'real_name', title: '用户名', width: 140, align: 'center' },
+                { field: 'user_role', title: '角色', width: 80, align: 'center' },
+                { field: 'email', title: '邮箱', width: 240, align: 'center' },
+                {
+                    field: 'in_date', title: '注册日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                {
+                    field: 'is_forbit', title: '已禁用', width: 80, align: 'center',
+                    formatter: function (value, row, index) {
+                        return value ? "Y" : "N";
+                    },
+                    styler: function (value, row, index) {
+                        return value ? "color:red;" : "";
+                    }
+                },
+                {
+                    field: 'forbit_date', title: '禁用日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value, true);
+                    }
+                },
+                { field: 'forbit_reason', title: '禁用原因', width: 100, align: 'center' },
+                {
+                    field: 'last_login_date', title: '最后登录日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value, true);
+                    }
+                },
+                { field: 'comment', title: '备注', width: 120, align: 'center' }
+            ]],
+            toolbar: "#tb",
+            onDblClickRow: editUser
+        });
+
+        //输入供应商编码，自动取得供应商名称
+        $("#user_name").textbox('textbox').on("blur", function () {
+            var role = $("#user_role").combobox("getValue");
+            if (role == "供应商") {
+                var number = $("#user_name").textbox("getValue");
+                if (number.indexOf("11.") == 0 || number.indexOf("15.") == 0) {
+                    $.post("GetSupplierNameByNumber", { number: number }, function (data) {
+                        if (data.suc) {
+                            $("#real_name").textbox("setValue", data.extra);
+                        }
+                    })
+                    
+                }
+            }
+        });
+
+    });
+
+    function doSearch(value) {
+        $('#dg').datagrid('load', {
+            searchValue: value
+        });
+    }
+
+    function addUser() {
+        $("#dlg").dialog("open").dialog("setTitle", "新增用户");
+        $("#fm").form("reset");
+        $("input[name='user_id']").val("0");
+    }
+    function editUser() {        
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $('#dlg').dialog('open').dialog('setTitle', '编辑用户');
+            $('#fm').form('load', row);
+        }
+    }
+    function saveUser() {
+        $.ajax({
+            type: 'post',
+            url: 'SaveUser',
+            data: $("#fm").serialize(),
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data.suc) {
+                    tip("保存成功");
+                    $('#dlg').dialog('close');
+                    $('#dg').datagrid('reload');
+                } else {
+                    tip(data.msg);                    
+                }
+            }
+        });
+    }
+    function resetPassword() {
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $.post("ResetPassword", { userId: row.user_id }, function (data) {
+                if (data.suc) {
+                    tip("密码已重置为：" + row.user_name);
+                } else {
+                    tip(data.msg);
+                }
+            });
+        }
+    }
+    function toggleUser() {
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $.post("ToggleUser", { userId: row.user_id }, function (data) {
+                if (data.suc) {
+                    tip("已成功处理");
+                    $('#dg').datagrid('reload');
+                } else {
+                    tip(data.msg);
+                }
+            });
+        }
+    }    
+
+</script>
+
+<table id="dg"></table>
+
+<div id="tb">
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="addUser()"><i class="fa fa-plus-circle"></i> 新增用户</a>    
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="editUser()"><i class="fa fa-edit"></i> 编辑用户</a>
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="resetPassword()"><i class="fa fa-refresh"></i> 重置密码</a>
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="toggleUser()"><i class="fa fa-exchange"></i> 禁用/反禁用</a>
+    <input class="easyui-searchbox" data-options="prompt:'输入用户名或登录名后按回车搜索',searcher:doSearch" style="width:240px">
+</div>
+
+<div id="dlg" class="easyui-dialog" style="width:400px;padding:10px 20px" closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">用户信息</div>
+    <form id="fm" method="post">
+        <div class="fitem">
+            <label>角色:</label>
+            <input class="easyui-combobox" name="user_role" id="user_role" data-options="valueField:'v',textField:'v',data:[{v:'供应商'},{v:'订料员'},{v:'采购员'},{v:'管理员'}],panelHeight:'auto'" />
+        </div>
+        <div class="fitem">
+            <label>登录名:</label>
+            <input type="hidden" name="user_id" />
+            <input name="user_name" id="user_name" class="easyui-textbox" />
+            <a href="#" class="easyui-tooltip" title="供应商编码或职员厂牌"> <i class="fa fa-question-circle text-danger"></i> </a>
+        </div>
+        <div class="fitem">
+            <label>用户名:</label>
+            <input name="real_name" id="real_name" class="easyui-textbox" />
+            <a href="#" class="easyui-tooltip" title="供应商名称或职员姓名"> <i class="fa fa-question-circle text-danger"></i> </a>
+        </div>
+        <div class="fitem">
+            <label>邮箱:</label>
+            <input name="email" class="easyui-textbox" />
+            <a href="#" class="easyui-tooltip" title="如有多个邮箱，可以半角逗号隔开"> <i class="fa fa-question-circle text-danger"></i> </a>
+        </div>
+        <div class="fitem">
+            <label>备注:</label>
+            <input name="comment" class="easyui-textbox" />
+        </div>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton c1" onclick="saveUser()"><i class="fa fa-fw fa-check"></i> 保存</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:$('#dlg').dialog('close')"><i class="fa fa-fw fa-close"></i> 取消</a>
+</div>

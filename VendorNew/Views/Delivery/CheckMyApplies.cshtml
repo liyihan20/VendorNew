@@ -1,0 +1,308 @@
+﻿
+<script>
+    $(function () {
+        $("#dg_dr").datagrid({
+            fit: true,
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            columns: [[
+                {
+                    field: 'sendDate', title: '发货日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                { field: 'billNo', title: '送货单号', width: 120, align: 'center' },
+                { field: 'pStatus', title: '申请状态', width: 100, align: 'center' },
+                { field: 'poNo', title: '订单编号', width: 100, align: 'center' },
+                { field: 'poEntryId', title: '分录号', width: 100, align: 'center' },
+                { field: 'itemName', title: '物料名称', width: 140, align: 'center' },
+                { field: 'itemModel', title: '规格型号', width: 200, align: 'center' },
+                {
+                    field: 'poQty', title: '订单数量', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toThousandValue(value);
+                    }
+                },
+                {
+                    field: 'sendQty', title: '申请数量', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toThousandValue(value);
+                    }
+                },
+                { field: 'unitName', title: '单位', width: 60, align: 'center' },
+                { field: 'itemNumber', title: '物料编码', width: 120, align: 'center' },
+                { field: 'billType', title: '订单类型', width: 100, align: 'center' },
+                { field: 'buyType', title: '采购方式', width: 100, align: 'center' },
+                { field: 'matOrderName', title: '订料员', width: 100, align: 'center' },
+                { field: 'buyerName', title: '采购员', width: 100, align: 'center' },
+                { field: 'tradeTypeName', title: '贸易类型', width: 100, align: 'center' },
+                { field: 'prNo', title: 'PR单号', width: 120, align: 'center' },
+                {
+                    field: 'poDate', title: '采购日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                { field: 'inStockBillNo', title: '入库单号', width: 100, align: 'center' },
+                {
+                    field: 'inStockBillDate', title: '入库日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                }
+            ]],
+            toolbar: [{
+                text: '<i class="fa fa-fw fa-search"></i> 查看申请',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+                        parent.addTab("<i class='fa fa-fw fa-search'></i>" + row.billNo, "@Url.Content("~/Delivery/CheckDRApply?id=")" + row.billId);
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'modify_btn',
+                text: '<i class="fa fa-fw fa-edit"></i> 修改申请 <a href="#" class="easyui-tooltip" title="未提交或已拒绝的申请可以修改"><i class="fa fa-info-circle text-danger"></i></a>',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+                        if (row.pStatus == "未提交" || row.pStatus == "已拒绝") {
+                            parent.addTab("<i class='fa fa-fw fa-edit'></i> 修改申请单", "@Url.Content("~/Delivery/ModifyDRApply?id=")" + row.billId);
+                        } else {
+                            tip("只有未提交或已拒绝的申请才能修改");
+                        }
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'undo_btn',
+                text: '<i class="fa fa-fw fa-undo"></i> 撤销申请 <a href="#" class="easyui-tooltip" title="已提交未确认的申请可以撤销"><i class="fa fa-info-circle text-danger"></i></a>',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+                        if (row.pStatus == "已提交") {
+                            $.messager.confirm('操作确认', '确定要撤销选中申请单，使其恢复到未提交状态吗？', function (r) {
+                                $.post("UndoDR", { billId: row.billId, pStatusNow: row.pStatus }, function (data) {
+                                    if (data.suc) {
+                                        tip("操作成功");
+                                        $("#dg_dr").datagrid("reload");
+                                    } else {
+                                        tip(data.msg);
+                                    }
+                                });
+                            });
+                        } else {
+                            tip("只有已提交未确认的申请才能撤销");
+                        }
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'delete_btn',
+                text: '<i class="fa fa-fw fa-close"></i> 删除申请 <a href="#" class="easyui-tooltip" title="未提交或已拒绝的申请可以删除"><i class="fa fa-info-circle text-danger"></i></a>',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+                        if (row.pStatus == "未提交" || row.pStatus == "已拒绝") {
+                            $("#deleteBillId").val(row.billId);
+                            $("#dlg_delete").dialog("open");
+                        } else {
+                            tip("只有未提交或已拒绝的申请才能删除");
+                        }
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'print_apply_btn',
+                text: '<i class="fa fa-fw fa-file-text-o"></i> 打印送货单</a>',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'print_outer_barcode_btn',
+                text: '<i class="fa fa-fw fa-qrcode"></i> 打印外箱标签',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'print_inner_barcode_btn',
+                text: '<i class="fa fa-fw fa-qrcode"></i> 打印内箱标签',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                id: 'export_excel_btn',
+                text: '<i class="fa fa-fw fa-file-excel-o"></i> 导出excel报表',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }, {
+                text: '<i class="fa fa-fw fa-align-left"></i> 操作记录',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+                        $.post("GetDROpRecord", { billNo: row.billNo }, function (data) {
+                            if (data.suc) {
+                                $("#dlg_record").dialog("open");
+                                $("#dg_record").datagrid("loadData", data.result);
+                            } else {
+                                tip(data.msg);
+                            }
+                        })
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
+            }
+            ],
+            onBeforeLoad: function (data) {
+                //权限按钮
+                if ('@ViewData["modifyPower"]' == '0') {
+                    $("#modify_btn").hide();
+                }
+                if ('@ViewData["undoPower"]' == '0') {
+                    $("#undo_btn").hide();
+                }
+                if ('@ViewData["deletePower"]' == '0') {
+                    $("#delete_btn").hide();
+                }
+            }
+        });
+
+        $("#search_btn").on("click", function () {
+            $("#dg_dr").datagrid({
+                url: 'GetMyAppliesData',
+                queryParams: {
+                    beginDate: $("#beginDate").datebox("getValue"),
+                    endDate: $("#endDate").datebox("getValue"),
+                    billType: $("#billType").combobox("getValue"),
+                    billNo: $("#billNo").textbox("getValue"),
+                    poNo: $("#poNo").textbox("getValue"),
+                    itemInfo: $("#itemInfo").textbox("getValue"),
+                    pStatus:$("#pStatus").combobox("getValue")
+                }
+            });
+        });
+
+        $("#dg_record").datagrid({
+            fit: true,
+            fitColumns: true,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[
+                        {
+                            field: 'op_date', title: '操作时间', width: 120, align: 'center',
+                            formatter: function (value, row, index) {
+                                return toDateStr(value,true);
+                            }
+                        },
+    					{ field: 'op_user_name', title: '操作人', width: 160, align: 'center' },
+    					{ field: 'do_what', title: '操作内容', width: 320, align: 'center' }
+            ]]
+        });
+
+    });
+
+    function deleteDR(alsoDeleteBox) {
+        $.post("DeleteDR", { billId: $("#deleteBillId").val(), alsoDeleteBox: alsoDeleteBox }, function (data) {
+            if (data.suc) {
+                tip("删除成功");
+                $('#dlg_delete').dialog('close');
+                $("#dg_dr").datagrid("reload");
+            } else {
+                tip(data.msg);
+            }
+        });
+    }
+</script>
+
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',title:'查询选项'" style="height:120px;padding:8px;">
+        <form id="fm" method="post" style="padding:0;margin:0;">
+            <div style="float:left;width:170px;margin-right:12px;">
+                订单类型：
+                <select class="easyui-combobox" id="billType" name="billType" data-options="panelHeight:'auto',editable:false" style="width:100px;">
+                    <option value="所有">所有</option>
+                    <option value="普通采购">普通采购</option>
+                    <option value="委外PO">委外PO</option>
+                    <option value="VMI采购">VMI订单</option>
+                    <option value="VMI合同">VMI合同</option>
+                </select>
+            </div>
+            <div style="float:left;width:280px;margin-right:12px;">
+                送货日期：
+                <input type="text" class="easyui-datebox" id="beginDate" name="beginDate" data-options="prompt:'开始日期'" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
+                ~
+                <input type="text" class="easyui-datebox" id="endDate" name="endDate" data-options="prompt:'结束日期'" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+            <div style="float:left;width:240px;margin-right:12px;">
+                送货单号：
+                <input type="text" class="easyui-textbox" id="billNo" name="billNo" data-options="prompt:'送货单申请单号'" style="width:160px;" />                
+            </div>
+            <div style="clear:both;margin-top:8px;"></div>
+            <div style="float:left;width:170px;margin-right:12px;">
+                申请状态：
+                <select class="easyui-combobox" id="pStatus" name="pStatus" data-options="panelHeight:'auto',editable:false" style="width:100px;">
+                    <option value="所有">所有</option>
+                    <option value="未提交">未提交</option>
+                    <option value="已提交">已提交</option>
+                    <option value="已确认">已确认</option>
+                    <option value="已入库">已入库</option>
+                    <option value="已拒绝">已拒绝</option>
+                </select>
+            </div>
+            <div style="float:left;width:280px;margin-right:12px;">
+                物料信息：
+                <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:216px;" />                
+            </div>
+            <div style="float:left;width:240px;margin-right:12px;">
+                订单编号：
+                <input type="text" class="easyui-textbox" id="poNo" name="poNo" data-options="prompt:'信利订单编号'" style="width:160px;" />                
+            </div>
+            <div style="float:left;width:96px;">
+                <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>
+            </div>
+        </form>
+    </div>
+    <div data-options="region:'center'">
+        <table id="dg_dr"></table>
+    </div>
+</div>
+
+<div id="dlg_delete" class="easyui-dialog" style="width: 400px;padding:8px 0;" closed="true" modal="true" title="&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;i&gt; 删除确认">
+    <input type="hidden" id="deleteBillId" />
+    <div style="margin:8px 12px;"><a href="#" class="easyui-linkbutton c8" style="width:100%;padding:4px 6px;" onclick="deleteDR(false)"><i class="fa fa-fw fa-window-close-o"></i> 删除申请单（保留关联箱子信息，可用于下一张申请）</a></div>
+    <div style="margin:8px 12px;"><a href="#" class="easyui-linkbutton c5" style="width:100%;padding:4px 6px;" onclick="deleteDR(true)"><i class="fa fa-fw fa-window-close"></i> 删除申请单（将关联箱子信息一并删除）</a></div>
+    <div style="margin:8px 12px;"><a href="#" class="easyui-linkbutton" style="width:100%;padding:4px 6px;" onclick="javascript: $('#dlg_delete').dialog('close')"><i class="fa fa-fw fa-mail-reply"></i> 取消（不删除）</a></div>
+</div>
+
+
+<div id="dlg_record" class="easyui-dialog" style="width: 680px; height:400px;" closed="true" modal="true" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 查看操作记录">
+    <table id="dg_record"></table>
+</div>

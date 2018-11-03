@@ -1,0 +1,139 @@
+﻿@section CSS{
+    <style type="text/css">
+        iframe{
+            width:100%;
+            height:100%;
+            padding:0;
+            margin:-2px 0px;
+        }
+    </style>
+}
+
+<div class="easyui-layout" fit="true" id="layout_page">
+    <div region="north" border="false" style="overflow: hidden; height: 40px;">
+        <div style="float: left; width: 200px; margin: 4px 4px;">
+                <img alt="logo" src="@Url.Content("~/Content/images/truly.png")" style="border:0;"/></div>
+        <div style="float: left; width: 300px; font-size: 28px; font-family: Arial;letter-spacing:12px;">
+            供应商协同平台</div>
+        <div style="float: right; width: 100px; padding-top: 4px;">
+            <a href="@Url.Content("~/Account/LogOut")" class="easyui-linkbutton c6"><i class="fa fa-sign-out"></i> 退出系统</a>
+        </div>
+    </div>
+    <div region="south" border="false" style="height: 24px; padding: 3px; background: #efefef;">
+        <div>
+            <span style="margin: 0 0 0 30px;">登录名: @ViewBag.userName</span> 
+            <span style="margin: 0 0 0 30px;">用户名: @ViewBag.realName</span>
+            <span style="margin: 0 0 0 30px;">公司: @(ViewBag.account=="O"?"信利光电股份有限公司":"信利半导体有限公司")</span>
+            <span style="margin: 0 0 0 30px;">日期: @DateTime.Now.ToShortDateString()</span>            
+        </div>
+    </div>
+    <div region="west" split="true" title="&lt;i class='fa fa-fw fa-list'&gt;&lt;/i&gt; 功能菜单" style="width: 180px; padding: 1px;">
+        <div id="acc">
+            @*在这里填充菜单*@
+        </div>
+    </div>
+    <div id="main_layout" region="center">
+        <div id="tabs" class="easyui-tabs" fit="true" border="false">
+            <div title="&lt;i class='fa fa-fw fa-home'&gt;&lt;/i&gt; 主页">
+                <iframe frameborder="0" src="@Url.Content("~/Home/Main")"></iframe>
+            </div>            
+        </div>
+    </div>    
+</div>
+
+<script type="text/javascript">
+
+    $(function () {
+        //Ajax获取菜单项
+        $.post("@Url.Content("~/Home/GetMyMenuItems")",{},function(data){
+            var htmls = "";
+            for (var i = 0; i < data.length; i++) {
+                if ((data[i].number * 10) % 10 == 0) {
+                    if (htmls != "") {
+                        htmls += "</div>";
+                    }
+                    htmls += "<div title='&lt;i class=&quot;fa fa-fw " + data[i].icon + "&quot;&gt;&lt;/i&gt; " + data[i].name + "' style='overflow: auto; padding: 10px;text-align:center;'>";
+                } else {
+                    htmls += "<a href='#' id='" + data[i].url + "' style='width:100%;margin-bottom:10px;' class='" + data[i].color + "'>" + "<i class='fa fa-fw " + data[i].icon + "'></i> " + data[i].name + "</a>";
+                }
+            }
+            htmls += "</div>";
+            $("#acc").append(htmls);
+            $("#acc").accordion({ fit: true });
+            $(".accordion-body a").linkbutton();
+            $(".accordion-body a").addClass("menu_btn");            
+            
+           
+            $(".menu_btn").bind("click", function () {
+                var text = $(this).find(".l-btn-text").html();
+                var url = $(this).attr("id");
+                addTab(text, url);
+            });
+        });  
+        
+        //$("#layout_page").css("visibility", "visible");
+
+        //如果有从邮件过来的链接，则打开这个链接Tab    
+        if ('@ViewBag.url' != '') {
+            addTab('跳转界面', unescape('@ViewData["url"]'));
+        }
+
+        //如果密码和用户名一致，则提示需要修改密码
+        if ('1' == '@ViewBag.needToChangePassword') {
+            addTab('密码设置', '/VendorNew/Home/PasswordSetting');
+            $.messager.alert('系统提示', '检测到您的密码是初始密码，为了安全性，请立即修改密码！', 'warning');
+        }
+
+    });
+
+    //打开或新增tab
+    function addTab(text, url) {
+        var maxTabNums = 11;//包含主页1个tab，和自己打开的10个tab
+        //如果标签已经存在，则不再新建，而是转到那个标签页
+        var tab = $('#tabs').tabs('getTab', text);
+        if (tab) {
+            $('#tabs').tabs('select', text);
+            if (tab.panel("options").id != url) {
+                $('#tabs').tabs('update', {
+                    tab: tab,
+                    options: {
+                        id: url,
+                        content: '<iframe frameborder="0" src="' + url + '"></iframe>'
+                    }
+                });
+            }
+            return;
+        }
+        if ($('#tabs').tabs('tabs').length >= maxTabNums) {
+            tip("当前打开的标签太多，请关闭一些标签后再操作");
+            return;
+        }
+        $('#tabs').tabs('add', {
+            id: url,
+            title: text,
+            content: '<iframe frameborder="0" src="' + url + '"></iframe>',
+            closable: true
+        });
+    }
+   
+    //在当前tab里面跳转url
+    function updateCurrentTab(text, url) {
+        var tab = $('#tabs').tabs('getSelected');
+        $('#tabs').tabs('update', {
+            tab: tab,
+            options: {
+                title: text,
+                id: url,
+                content: '<iframe frameborder="0" src="' + url + '"></iframe>'
+            }
+        });
+    }
+
+    //关闭当前tab
+    function closeCurrentTab() {
+        var tab = $('#tabs').tabs('getSelected');
+        var index = $('#tabs').tabs('getTabIndex', tab);
+        $('#tabs').tabs('close', index);
+    }
+
+</script>

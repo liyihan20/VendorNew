@@ -1,0 +1,151 @@
+﻿
+<script>
+
+    $(function () {
+        $("#dg").datagrid({
+            fit: true,
+            rownumbers: true,
+            singleSelect: true,
+            url: "GetAuthorities",
+            columns: [[
+                { field: 'number', title: '编号', width: 100, align: 'center' },
+                { field: 'name', title: '权限名', width: 140, align: 'center' },
+                { field: 'en_name', title: '权限EN名', width: 180, align: 'center' },
+                { field: 'controller_name', title: '控制器', width: 100, align: 'center' },
+                { field: 'action_name', title: '方法', width: 160, align: 'center' },
+                {
+                    field: 'fa_name', title: '图标', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        if (_.startsWith(value, "icon")) {
+                            return "<img alt='icon' width='12' height='12' src='" + "/VendorNew/Content/icons/" + value.substr(5, value.length - 5) + ".png' />";
+                        } else if (_.startsWith(value, "fa")) {
+                            return '<i class="fa ' + value + '" title="' + value + '"></i> ';
+                        } else {
+                            return "";
+                        }
+                    }
+                },
+                {
+                    field: 'btn_color', title: '按钮颜色', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        if (value == null || value == "") return "";
+                        return "<span class='" + value + "' style='padding:0 8px;'>" + value + "</span>";
+                    }
+                },
+                { field: 'comment', title: '备注', width: 280, align: 'center' }
+            ]],
+            toolbar: "#tb",
+            onDblClickRow: editAuth
+        });
+
+    });
+
+    function doSearch(value) {
+        $('#dg').datagrid('load', {
+            searchValue: value
+        });
+    }
+
+    function addAuth() {        
+        $("#dlg").dialog("open").dialog("setTitle", "新增权限");
+        $("#fm").form("reset");
+        $("input[name='auth_id']").val("0");
+    }
+    function editAuth() {
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $('#dlg').dialog('open').dialog('setTitle', '编辑权限');
+            $('#fm').form('load', row);
+        }
+    }
+    function saveAuth() {
+        $.ajax({
+            type: 'post',
+            url: 'SaveAuthority',
+            data: $("#fm").serialize(),
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data.suc) {
+                    tip("保存成功");
+                    $('#dlg').dialog('close');
+                    $('#dg').datagrid('reload');
+                } else {
+                    tip(data.msg);                    
+                }
+            }
+        });
+    }
+    function removeAuth() {
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $.messager.confirm('操作确认', '确定要删除此权限吗?', function (r) {
+                if (r) {
+                    $.post("RemoveAuthority", { authId: row.auth_id }, function (data) {
+                        if (data.suc) {
+                            tip("权限已删除");
+                            $('#dg').datagrid('reload');
+                        } else {
+                            tip(data.msg);
+                        }
+                    });
+                }
+            });            
+        }        
+    }
+
+</script>
+
+<table id="dg"></table>
+
+<div id="tb">
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="addAuth()"><i class="fa fa-plus-circle"></i> 新增权限</a>
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="editAuth()"><i class="fa fa-edit"></i> 编辑权限</a>
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="removeAuth()"><i class="fa fa-close"></i> 删除权限</a>
+    <input class="easyui-searchbox" data-options="prompt:'输入权限名称后按回车搜索',searcher:doSearch" style="width:240px">
+</div>
+
+<div id="dlg" class="easyui-dialog" style="width:400px;padding:10px 20px"
+     closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">用户信息</div>
+    <form id="fm" method="post">
+        <div class="fitem">
+            <label>编号:</label>
+            <input type="hidden" name="auth_id" />
+            <input name="number" class="easyui-numberbox" data-options="precision:2,max:999.99,min:1.00" />
+        </div>
+        <div class="fitem">
+            <label>名称:</label>
+            <input name="name" class="easyui-textbox" />
+        </div>
+        <div class="fitem">
+            <label>EN名称:</label>
+            <input name="en_name" class="easyui-textbox" />
+        </div>
+        <div class="fitem">
+            <label>控制器:</label>
+            <input name="controller_name" class="easyui-textbox" />
+        </div>
+        <div class="fitem">
+            <label>方法:</label>
+            <input name="action_name" class="easyui-textbox" />
+        </div>
+        <div class="fitem">
+            <label>图标:</label>
+            <input name="fa_name" class="easyui-textbox" />
+            <a href="http://fontawesome.dashgame.com/" target="_blank" class="easyui-tooltip" title="font-awesome-4.7.0字体图标"> <i class="fa fa-question-circle text-danger"></i> </a>
+        </div>
+        <div class="fitem">
+            <label>按钮颜色:</label>
+            <input class="easyui-combobox" name="btn_color" data-options="valueField:'v',textField:'v',data:[{v:''},{v:'c1'},{v:'c2'},{v:'c3'},{v:'c4'},{v:'c5'},{v:'c6'},{v:'c7'},{v:'c8'}],panelHeight:'auto'" />
+        </div>
+        <div class="fitem">
+            <label>备注:</label>
+            <input name="comment" class="easyui-textbox" />
+        </div>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton c1" onclick="saveAuth()"><i class="fa fa-fw fa-check"></i> 保存</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:$('#dlg').dialog('close')"><i class="fa fa-fw fa-close"></i> 取消</a>
+</div>

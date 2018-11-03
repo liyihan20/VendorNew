@@ -1,0 +1,152 @@
+﻿
+@section CSS{
+    <style type="text/css">        
+        #bgDiv{            
+            width:100%;
+            height:700px;
+        }
+        #loginDiv{
+            width:400px;
+            float:right;
+            margin-right:100px;
+            margin-top:80px;
+        }
+        #panelHeader{
+            font-size:24px;
+            margin:6px;
+        }        
+        #panelHeader img{
+            vertical-align:middle;
+            width:124px;
+            height:24px;
+        }
+        #loginForm{
+            padding:12px 32px;
+        }        
+    </style>
+}
+
+<script>
+
+    if (window.top != window.self) {
+        //top.location.href = "@Url.Content("~/Account/Login")";
+        top.location.href = window.location.href;
+    }
+
+
+    document.onkeydown = function (event) {
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if (e && e.keyCode == 13) { // enter 键
+            if ($("#password").textbox("getValue") == "") {
+                $("#password").textbox("textbox").focus();
+            } else if ($("#validateCode").textbox("getValue") == "") {
+                $("#validateCode").textbox("textbox").focus();
+            } else {
+                $("#loginBt").click();
+            }
+        }
+    };
+
+    $(function () {
+        $("#userName").textbox("textbox").focus();
+        $("#validateImage").on("click", function () {
+            $(this).attr("src", "@Url.Content("~/Account/getValidateCodeImg")" + "?" + Math.random());
+        });
+
+        //开始登录
+        $("#loginBt").on("click", function () {
+            var self = this;
+            var account = $("#account").combobox("getValue");
+            var userName = $("#userName").textbox("getValue");
+            var password = $("#password").textbox("getValue");
+            var validateCode = $("#validateCode").textbox("getValue");
+
+            if (account == "") {
+                tip("请先选择公司");
+                return;
+            }
+            if ($.trim(userName) == "") {
+                tip("请先输入用户名");
+                $("#userName").textbox("textbox").focus();
+                return;
+            }
+            if ($.trim(password) == "") {
+                tip("请先输入密码");
+                $("#password").textbox("textbox").focus();
+                return;
+            }
+            if (validateCode.length != 4) {
+                tip("请输入正确的验证码");
+                $("#validateCode").textbox("textbox").focus();
+                return;
+            }
+
+            $(self).linkbutton("disable");
+            var formParam = $("#loginForm").serialize();
+            $.ajax({
+                type: 'post',
+                url: '@Url.Content("~/Account/StartLogin")',
+                data: formParam,
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.suc) {
+                        var urlParam = window.location.search;
+                        if (urlParam.length > 0) {
+                            var url = unescape(urlParam.substr(urlParam.indexOf("=") + 1));
+                            window.location.href = "@Url.Content("~/Home/index?url=")" + escape("@Url.Content("~/")" + url);
+                        } else {
+                            window.location.href = "@Url.Content("~/Home/index")";
+                        }
+                    } else {
+                        tip(data.msg);
+                        $(self).linkbutton("enable");
+                        $("#validateImage").trigger("click");
+                        $("#validateCode").textbox("setText", "");
+                    }
+                }
+            });
+        });
+    })
+</script>
+
+<div id="bgDiv" style="background:url('@Url.Content("~/Content/images/login_bg.png")') no-repeat 100%;">
+    <div id="loginDiv">
+        <div id="loginPanel" class="easyui-panel" fit="true">
+            <header style="font-size:24px;">
+                <p id="panelHeader"><img src="@Url.Content("~/Content/images/truly.png")" title="truly" style="vertical-align:baseline;" /> 供应商协同平台</p>
+            </header>
+            <form id="loginForm">
+                <div style="margin-bottom:8px;">
+                    <select class="easyui-combobox" name="account" id="account" data-options="prompt:'请选择公司名',label:'公司:',labelPosition:'top',panelHeight:'auto',editable:false,value:'@ViewBag.account'" style="width:100%;height:72px;padding-left:30px;">
+                        <option value=""></option>
+                        <option value="O">信利光电股份有限公司</option>
+                        <option value="S">信利半导体有限公司</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <input type="text" class="easyui-textbox" name="user_name" id="userName" data-options="iconCls:'icon-man',iconAlign:'left',prompt:'请输入用户名',label:'用户名:',labelPosition:'top'" style="width:100%;height:72px;" value="@ViewBag.user_name" />
+                </div>                
+                <div style="margin-bottom:8px;">
+                    <input type="password" class="easyui-textbox" name="password" id="password" data-options="iconCls:'icon-lock',iconAlign:'left',prompt:'请输入登录密码',label:'密码:',labelPosition:'top'" style="width:100%;height:72px;" />
+                </div>
+                <div style="margin-bottom:8px;">
+                    <table cellspacing="0" cellpadding="0" style="width:100%;">
+                        <tr>
+                            <td style="width:60%;">
+                                <input type="text" class="easyui-textbox" name="validate_code" id="validateCode" data-options="iconCls:'icon-question',iconAlign:'left',prompt:'请输入验证码',label:'验证码:',labelPosition:'top'" style="width:100%;height:72px;"/>
+                            </td>
+                            <td style="width:40%;vertical-align:bottom;padding-left:8px;">
+                                <img title="点击刷新图片" alt="click to reflesh picture" id="validateImage" style="cursor:pointer;" src="@Url.Content("~/Account/getValidateCodeImg")" />
+                            </td>
+                        </tr>
+                    </table>                    
+                </div>
+                <div style="margin-bottom:8px;">
+                    <a href="#" class="easyui-linkbutton c5" id="loginBt" style="width:100%;height:36px;"><i class="fa fa-sign-in"></i> 登录系统</a>
+                </div>
+            </form>
+        </div>
+    </div>    
+</div>
+<div style="text-align:center;font-size:small;color:#8a6d3b;" ><i class="fa fa-tasks"></i> ©2018 版权所属：信利集团-信息管理部</div>
