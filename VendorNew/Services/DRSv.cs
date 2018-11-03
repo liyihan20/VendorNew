@@ -17,8 +17,8 @@ namespace VendorNew.Services
         public List<K3POs> GetPOs(GetK3POParams p)
         {
             return db.ExecuteQuery<K3POs>(
-                "exec GetK3POs @account = {0},@billType = {1},@poNumbers = {2},@beginDate = {3},@endDate = {4},@userNumber = {5},@userId = {6},@k3HasAudit = {7},@isFinished = {8}",
-                p.account, p.billType, p.poNumbers, p.beginDate.ToString(), p.endDate.ToString(), p.userNumber, p.userId, p.k3HasAudit, p.isFinished).ToList();
+                "exec GetK3POs @account = {0},@billType = {1},@poNumbers = {2},@itemInfo = {9},@beginDate = {3},@endDate = {4},@userNumber = {5},@userId = {6},@k3HasAudit = {7},@isFinished = {8}",
+                p.account, p.billType, p.poNumbers, p.beginDate.ToString(), p.endDate.ToString(), p.userNumber, p.userId, p.k3HasAudit, p.isFinished,p.itemInfo).ToList();
         }
 
         /// <summary>

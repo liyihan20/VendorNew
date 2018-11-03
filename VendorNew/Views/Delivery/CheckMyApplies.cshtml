@@ -86,14 +86,16 @@
                     if (row) {
                         if (row.pStatus == "已提交") {
                             $.messager.confirm('操作确认', '确定要撤销选中申请单，使其恢复到未提交状态吗？', function (r) {
-                                $.post("UndoDR", { billId: row.billId, pStatusNow: row.pStatus }, function (data) {
-                                    if (data.suc) {
-                                        tip("操作成功");
-                                        $("#dg_dr").datagrid("reload");
-                                    } else {
-                                        tip(data.msg);
-                                    }
-                                });
+                                if (r) {
+                                    $.post("UndoDR", { billId: row.billId, pStatusNow: row.pStatus }, function (data) {
+                                        if (data.suc) {
+                                            tip("操作成功");
+                                            $("#dg_dr").datagrid("reload");
+                                        } else {
+                                            tip(data.msg);
+                                        }
+                                    });
+                                }
                             });
                         } else {
                             tip("只有已提交未确认的申请才能撤销");
@@ -259,7 +261,7 @@
                 送货日期：
                 <input type="text" class="easyui-datebox" id="beginDate" name="beginDate" data-options="prompt:'开始日期'" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
                 ~
-                <input type="text" class="easyui-datebox" id="endDate" name="endDate" data-options="prompt:'结束日期'" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input type="text" class="easyui-datebox" id="endDate" name="endDate" data-options="prompt:'结束日期'" style="width:100px;" value="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd")" />
             </div>
             <div style="float:left;width:240px;margin-right:12px;">
                 送货单号：

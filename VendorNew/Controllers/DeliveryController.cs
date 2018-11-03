@@ -47,6 +47,7 @@ namespace VendorNew.Controllers
             }
 
             p.poNumbers = p.poNumbers == null ? "" : p.poNumbers.Trim();//去掉前后空格
+            p.itemInfo = p.itemInfo == null ? "" : p.itemInfo.Trim();
             p.account = currentAccount;
             p.userId = currentUser.userId;
             p.userNumber = currentUser.userName;

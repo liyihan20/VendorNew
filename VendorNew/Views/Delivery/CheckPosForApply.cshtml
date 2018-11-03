@@ -152,6 +152,7 @@
                     entryIdArr.push(currentPageRows[i].poEntryId);
                     rowIndexArr[i] = $("#dg_po").datagrid("getRowIndex", currentPageRows[i]);
                 }
+                if (interIdArr.length == 0) return;
                 $.post("GetPOTransitQty", { interIds: interIdArr.join(","), entryIds: entryIdArr.join(",") }, function (result) {
                     var transitQtyArr = result.split(",");
                     for (var i = 0; i < currentPageRows.length; i++) {
@@ -242,33 +243,37 @@
 <div class="easyui-layout" data-options="fit:true">
     <div data-options="region:'north',title:'查询选项'" style="height:120px;padding:8px;">
         <form id="fm" method="post" style="padding:0;margin:0;">
-            <div style="float:left;width:240px;margin-right:12px;">
+            <div style="float:left;width:170px;margin-right:12px;">
                 订单类型：
-                <select class="easyui-combobox" name="billType" data-options="panelHeight:'auto',editable:false" style="width:160px;">
+                <select class="easyui-combobox" name="billType" data-options="panelHeight:'auto',editable:false" style="width:100px;">
                     <option value="普通采购">普通采购</option>
                     <option value="委外PO">委外PO</option>
                     <option value="VMI采购">VMI订单</option>
                     <option value="VMI合同">VMI合同</option>
                 </select>
             </div>
-            <div style="float:left;width:480px;margin-right:12px;">
+            <div style="float:left;width:550px;margin-right:12px;">
                 订单编号：
-                <input type="text" class="easyui-textbox" name="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:376px;" />
+                <input type="text" class="easyui-textbox" name="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:452px;" />
                 <a href="#" class="easyui-tooltip" title="例如需要搜索3张PO，可以这样输入：#PO1 #PO2 #PO3"><i class="fa fa-info-circle text-danger"></i> </a>
             </div>
             <div style="clear:both;margin-top:8px;"></div>
-            <div style="float:left;width:240px;margin-right:12px;">
+            <div style="float:left;width:170px;margin-right:12px;">
                 关闭状态：
-                <select class="easyui-combobox" name="isFinished" data-options="panelHeight:'auto',editable:false" style="width:160px;">
+                <select class="easyui-combobox" name="isFinished" data-options="panelHeight:'auto',editable:false" style="width:100px;">
                     <option value="false">未关闭</option>
                     <option value="true">已关闭</option>
                 </select>
             </div>
-            <div style="float:left;width:460px;margin-right:12px;">
+            <div style="float:left;width:280px;margin-right:12px;">
                 订单日期：
-                <input type="text" class="easyui-datebox" name="beginDate" data-options="prompt:'开始日期'" style="width:180px;" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")" />
+                <input type="text" class="easyui-datebox" name="beginDate" data-options="prompt:'开始日期'" style="width:100px;" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")" />
                 ~
-                <input type="text" class="easyui-datebox" name="endDate" data-options="prompt:'结束日期'" style="width:180px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input type="text" class="easyui-datebox" name="endDate" data-options="prompt:'结束日期'" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+            <div style="float:left;width:235px;margin-right:12px;">
+                 物料信息：
+                <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:160px;" />
             </div>
             <div style="float:left;width:96px;">
                 <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>

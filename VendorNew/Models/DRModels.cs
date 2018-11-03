@@ -13,6 +13,7 @@ namespace VendorNew.Models
         public string account { get; set; }
         public string billType { get; set; }
         public string poNumbers { get; set; }
+        public string itemInfo { get; set; }
         public DateTime beginDate { get; set; }
         public DateTime endDate { get; set; }
         public string userNumber { get; set; }
