@@ -152,7 +152,7 @@ namespace VendorNew.Services
             return db.Vw_SupplierInfo.Where(v => v.account == account && v.suppier_number == supplierNumber)
                 .Select(v => new supplierInfo()
                 {
-                    supplierName = v.suppier_number,
+                    supplierName = v.supplier_name,
                     supplierAddr = v.supplier_addr,
                     supplierAttn = v.supplier_attn,
                     supplierPhone = v.supplier_phone

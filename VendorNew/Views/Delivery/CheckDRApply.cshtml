@@ -7,6 +7,7 @@
 }
 
 
+
 <script>
     var detailData = $.parseJSON('@Html.Raw(dsJson)');    
 
@@ -257,10 +258,66 @@
 
     
 </script>
+<script>
+    $(function () {
+        $("#printApply").on("click", function () {
+            window.open("@Url.Content("~/Report/PrintApply?billId=")" + "@h.bill_id");
+        });
+        $("#printOuterBox").on("click", function () {
+            var boxData = $("#dg_box").treegrid("getData");
+            if (boxData.length == 0) {
+                tip("此申请没有做外箱，不能打印");
+                return;
+            }
+            window.open("@Url.Content("~/Report/PrintOuterQrcode?billId=")" + "@h.bill_id");
+        });
+        $("#printInnerBox").on("click", function () {
+            var boxData = $("#dg_box").treegrid("getData");
+            if (boxData.length == 0) {
+                tip("此申请没有做内外箱，不能打印");
+                return;
+            }
+            
+            var hasChirldren = _.filter(boxData, function (v, i) {
+                return v.children.length > 0;
+            });
 
+            if (hasChirldren.length == 0) {
+                tip("此申请没有做内箱，不能打印");
+                return;
+            }
+
+            window.open("@Url.Content("~/Report/PrintInnerQrcode?billId=")" + "@h.bill_id");
+        });
+    });
+</script>
 <div id="applyDiv">
     <div class="easyui-panel" title="&lt;i class=&quot;fa fa-bookmark&quot;&gt;&lt;i&gt; 抬头信息" style="width:100%;padding:12px 0;" data-options="collapsible:true">
         <table style="min-width:800px;">
+            <tr>
+                <td style="text-align:right;">
+                    入库日期：
+                </td>
+                <td>
+                    <input type="text" class="easyui-datebox" value="@(h.in_stock_bill_date == null ? "" : ((DateTime)h.in_stock_bill_date).ToString("yyyy-MM-dd"))" data-options="readonly:true,editable:false" />
+                </td>
+                <td style="text-align:right;">
+                    入库单号：
+                </td>
+                <td>
+                    <input type="text" class="easyui-textbox" value="@h.in_stock_bill_number" data-options="readonly:true" />
+                </td>
+                <td style="text-align:right;">
+                    打印相关：
+                </td>
+                <td colspan="3">
+                    @if (h.p_status == "已确认") {
+                        <a href="#" class="easyui-linkbutton" id="printApply" style="margin-right:8px;"><i class="fa fa-fw fa-file-text-o"></i> 打印送货单</a>
+                    }            
+                    <a href="#" class="easyui-linkbutton" id="printOuterBox" style="margin-right:8px;"><i class="fa fa-fw fa-qrcode"></i> 打印外箱标签</a>
+                    <a href="#" class="easyui-linkbutton" id="printInnerBox"><i class="fa fa-fw fa-qrcode"></i> 打印内箱标签</a>
+                </td>
+            </tr>
             <tr>
                 <td width="10%;" style="text-align:right;">
                     送货日期：

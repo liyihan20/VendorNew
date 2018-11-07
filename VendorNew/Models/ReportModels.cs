@@ -8,7 +8,7 @@ namespace VendorNew.Models
     public class BoxAndPoModels
     {
         public OuterBoxes box { get; set; }
-        public List<OuterBoxPOs> pos { get; set; }
+        public OuterBoxPOs po { get; set; }
     }
 
     public class supplierInfo
@@ -27,4 +27,50 @@ namespace VendorNew.Models
         public supplierInfo supplierInfo { get; set; }
 
     }
+
+    public class PrintOuterBoxModels
+    {
+        public string companyName { get; set; }
+        public string rohs { get; set; }
+        public string qrcodeContent { get; set; }
+        public string poNumber { get; set; }
+        public string itemNumber { get; set; }
+        public string qtyAndUnit { get; set; }
+        public string batchNo { get; set; }
+        public string madeBy { get; set; }
+        public string tradeTypeName { get; set; }
+        public string boxNumber { get; set; }
+        public string itemName { get; set; }
+        public string madeIn { get; set; }
+        public string itemModel { get; set; }
+        public string produceDate { get; set; }
+        public string expireDate { get; set; }
+        public string produceCircle { get; set; }
+        public string brand { get; set; }
+        public string grossWeight { get; set; }
+        public string netWeight { get; set; }
+        public string keepCondition { get; set; }
+        public string supplierName { get; set; }
+    }
+
+    public class PrintInnerBoxModel
+    {
+        public string qrcodeContent { get; set; }
+        public string itemNumber { get; set; }
+        public string qtyAndUnit { get; set; }
+        public string rohs { get; set; }
+        public string batchNo { get; set; }
+        public string madeBy { get; set; }
+        public string tradeTypeName { get; set; }
+        public string boxNumber { get; set; }
+        public string itemName { get; set; }
+        public string brand { get; set; }
+        public string produceDate { get; set; }
+        public string expireDate { get; set; }
+        public string keepCondition { get; set; }
+        public string supplierName { get; set; }
+        public string itemModel { get; set; }
+
+    }
+
 }

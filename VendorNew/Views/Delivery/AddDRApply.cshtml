@@ -144,6 +144,9 @@
         $('.points-4').numberbox({ precision: NUMBER_PRECISION });
 
     });
+    function countCharNum(str) {
+        return str.replace(/[^\u0000-\u00ff]/g, "aa").length;
+    }
 </script>
 
 <script>
@@ -440,6 +443,12 @@
                 }
             }
             
+            var brand = $("#brand").textbox("getValue");
+            if (countCharNum(brand) > 8) {
+                tip("品牌的长度限定为8个字节，即最多可输入4个中文或者8个英文，请精简");
+                return;
+            }
+
             $.ajax({
                 type: 'post',
                 url: 'SaveOuterBoxes',
@@ -683,11 +692,7 @@
 </script>
 <script>
     //保存申请
-    function saveApply() {                
-        if ($("#send_date").datebox("getValue") == "") {
-            tip("请填写送货日期");
-            return;
-        }
+    function saveApply() {
         saveToServer(false);
     }
 
@@ -727,6 +732,11 @@
 
     //实际执行的保存操作,aFlag=true表示保存后提交，=false表示只保存不提交
     function saveToServer(aFlag) {
+        if ($("#send_date").datebox("getValue") == "") {
+            tip("请填写送货日期");
+            return;
+        }
+
         //验证送货数量必须大于0
         var zeroDetails = _.filter(detailData, function (v) { return v.send_qty == 0; });
         if (zeroDetails.length > 0) {
@@ -924,7 +934,7 @@
                         品牌：
                     </td>
                     <td>
-                        <input type="text" class="easyui-textbox" name="brand" data-options="required:true,validType:{length:[1,50]}" />
+                        <input type="text" class="easyui-textbox" name="brand" id="brand" data-options="required:true,validType:{length:[1,8]}" />
                     </td>
                     <td>
                         批次号：

@@ -215,11 +215,13 @@ namespace VendorNew.Services
         public List<BoxAndPoModels> GetBoxAndPo(int billId)
         {            
             var result = (from b in db.OuterBoxes
+                          join p in db.OuterBoxPOs on b.outer_box_id equals p.out_box_id into ptemp
+                          from po in ptemp.DefaultIfEmpty()
                           where b.bill_id == billId
                           select new BoxAndPoModels()
                           {
                               box = b,
-                              pos = db.OuterBoxPOs.Where(o => o.out_box_id == b.outer_box_id).ToList()
+                              po = po
                           }).ToList();
             return result;
         }

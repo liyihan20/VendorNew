@@ -90,8 +90,10 @@ namespace VendorNew.Services
 
                 db.Users.InsertOnSubmit(user);
 
+                db.SubmitChanges();
+
                 //根据角色增加到权限组中
-                int groupId = new UASv().GetAuditGroupIdByName(user.user_role + "组");
+                int groupId = new UASv().GetGroupIdByName("auth",user.user_role + "组");
                 if (groupId > 0) {
                     new UASv().SaveGroupUser(groupId, user.user_id);
                 }

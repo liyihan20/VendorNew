@@ -345,6 +345,8 @@
     <Content Include="Views\Delivery\CheckMyAuditingList.cshtml" />
     <Content Include="Views\Delivery\ConfirmApply.cshtml" />
     <Content Include="Views\Report\PrintApply.cshtml" />
+    <Content Include="Views\Report\PrintOuterQrcode.cshtml" />
+    <Content Include="Views\Report\PrintInnerQrcode.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

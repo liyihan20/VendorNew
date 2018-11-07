@@ -1,5 +1,325 @@
-﻿@{
-    ViewBag.Title = "PrintApply";
-}
+﻿@using VendorNew.Models
+@{
 
-<h2>PrintApply</h2>
+    var m = ViewData["reportData"] as PrintApplyModels;
+    var pageList = ViewData["pageNumArr"] as List<int>;
+    int hasPrinted = 0;
+    var h = m.h;
+    var companyName = h.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司";
+    ViewBag.Title = h.bill_no;
+}
+@section CSS{
+
+    <style type="text/css">
+        body {
+            font-family: '宋体','Microsoft YaHei';
+            font-size: 12px;
+        }
+
+        table {
+            font-size: 12px;
+        }
+
+        .tb_items {
+            border-top: 1px solid #666;
+            border-right: 1px solid #666;
+        }
+
+            .tb_items td, .tb_items th {
+                border-left: 1px solid #666;
+                border-bottom: 1px solid #666;
+                word-break: break-all;
+                overflow: hidden;
+            }
+    </style>
+    <style type="text/css" media="print">
+        .noPrint {
+            display: none;
+        }
+
+        .pageNext {
+            page-break-after: always;
+        }
+    </style>
+}
+<script src="@Url.Content("~/Scripts/JsBarcode.code128.min.js")"></script>
+<script type="text/javascript" src="@Url.Content("~/Scripts/qrcode.js")"></script>
+<script>
+    $(function () {
+        $(".qrcode").each(function (index, ele) {
+            var qrcode = new QRCode(ele, {
+                text: "@h.bill_no",
+                width: 64,
+                height: 64,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        });
+        
+        $(".bar").each(function (index, ele) {
+            JsBarcode(ele, "@h.bill_no", {
+                width: 1,//设置条之间的宽度
+                margin: 4,
+                height: 28,//高度
+                text: "送货单号：@h.bill_no",
+                fontSize: 12
+            });
+        });
+        
+
+        $("#btReflesh").on("click", function () {
+            window.location.href = "@Url.Content("~/Report/PrintApply?billId=")"+"@h.bill_id"+"&pageNumList="+$("#tbPageNum").textbox("getValue");
+        });
+        $("#btPrint").on("click", function () {
+            window.print();
+        });
+    });
+</script>
+
+
+<div style="padding:4px;">
+    <div class="noPrint">
+        <div style="width:40%;float:right;text-align:right">            
+            页码设置：
+            <input type="text" class="easyui-textbox" id="tbPageNum" style="width:120px;" data-options="validType:{length:[0,40]}" value="@ViewData["pageNumList"]" />
+            <a href="#" class="easyui-tooltip" title="默认每页显示14行数据，如果需要可手动修改，如输入12，即每页显示12行；&lt;br /&gt;或输入：10,12,14；即第1页显示10行记录，第2页显示12行记录，第3页有14行记录，之后每页都显示14行记录"><i class="fa fa-info-circle text-danger"></i></a>
+            <a href="#" class="easyui-linkbutton" id="btReflesh"><i class="fa fa-refresh"></i> 重载页面</a>
+        </div>
+        <div style="width:20%;float:right;text-align:center">
+            <a href="#" class="easyui-linkbutton c5" style="padding:0 6px;" id="btPrint"><i class="fa fa-print"></i> 开始打印</a>
+        </div>
+    </div>
+    @{OuterBoxes currentBox = null;}
+    @for (var p = 0; p < pageList.Count(); p++) {
+        <table style="width:100%;">
+            <tr>
+                <td style="width:30%;padding-left:16px;">
+                    <div class="qrcode" title="@h.bill_no"></div>
+                    <div style="font-size:12px;padding-top:4px;">送货日期：@(((DateTime)h.bill_date).ToString("yyyy-MM-dd"))</div>
+                </td>
+                <td style="width:40%;text-align:center;">
+                    <div style="font-size:16px;font-weight:bold;">
+                        @m.supplierInfo.supplierName
+                    </div>
+                    <div style="font-size:14px;">
+                        @m.supplierInfo.supplierAddr <br />
+                        联系人：@m.supplierInfo.supplierAttn ，电话：@m.supplierInfo.supplierPhone
+                    </div>
+                    <div style="font-size:16px;font-weight:bold;">
+                        送货单
+                    </div>
+                </td>
+                <td style="width:30%;padding-right:16px;text-align:right;">
+                    <div style="margin-bottom:4px;">第 @(p + 1) 页/共 @pageList.Count() 页</div>
+                    <img class="bar" />
+                </td>
+            </tr>
+        </table>
+        <table style="width:100%;margin-top:6px;border:1px solid;" cellspacing="0" cellpadding="4">
+            <tr>
+                <td width="50%;" style="border-right:1px solid;">
+                    <div>购货单位</div>
+                    <div>@companyName</div>
+                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
+                    <div>电话：0660-336788-1234</div>
+                    <div>@h.mat_order_name ,供应商发票：@h.supplier_invoice_number</div>
+                </td>
+                <td width="50%;">
+                    <div>收货单位</div>
+                    <div>@companyName</div>
+                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
+                    <div>电话：0660-336788-1234</div>
+                    <div>收货部门：@h.department_name</div>
+                </td>
+            </tr>
+        </table>
+        <table class="tb_items" style="width:100%;margin-top:8px;" cellspacing="0" cellpadding="4">
+            <thead>
+                <tr>
+                    <th style="width:5%;">
+                        序号
+                    </th>
+                    <th style="width:24%;">
+                        物料信息
+                    </th>
+                    <th style="width:6%;">
+                        单位
+                    </th>
+                    <th style="width:12%;">
+                        件数/箱号
+                    </th>
+                    <th style="width:8%;">
+                        送货数量
+                    </th>
+                    <th style="width:6%;">
+                        毛重(KG)
+                    </th>
+                    <th style="width:6%;">
+                        净重(KG)
+                    </th>
+                    <th style="width:10%;">
+                        尺寸(MM)/原产地
+                    </th>
+                    <th style="width:13%;">
+                        信利P/O
+                    </th>
+                    <th style="width:10%;">
+                        备注
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (m.boxAndPos.Count() > 0) {
+                    //currentBox = null; //当前箱子
+                    bool isInSameBox = false; //是否和上一行是合并箱
+                    int currentRowSpan = 1; //合并行数
+
+                    for (int i = hasPrinted; i < hasPrinted + pageList[p] && i < m.boxAndPos.Count(); i++) {
+                        var bp = m.boxAndPos[i];
+                        if (bp.box != null && bp.box == currentBox) {
+                            isInSameBox = true;
+                        }
+                        else {
+                            isInSameBox = false;
+                            if (bp.box == null) {
+                                currentRowSpan = 1;
+                            }
+                            else {
+                                currentRowSpan = m.boxAndPos.Where(b => b.box == bp.box).Count(); //合并多少行
+                            }
+                            currentBox = bp.box;
+                        }
+                        <tr>
+                            <td style="text-align:center;">
+                                @(i + 1)
+                            </td>
+                            @if (!isInSameBox) {
+                                <td rowspan="@currentRowSpan">
+                                    @bp.box.item_number <br />
+                                    @bp.box.item_name <br />
+                                    @bp.box.item_model
+                                </td>
+                            }
+                            <td>
+                                @bp.box.unit_name
+                            </td>
+                            @if (!isInSameBox) {
+                                <td rowspan="@currentRowSpan">
+                                    @bp.box.pack_num <br />
+                                    @bp.box.box_number
+                                </td>
+                            }
+                            <td style="text-align:right;">
+                                @(string.Format("{0:0.####}", bp.po.send_num * bp.box.pack_num))<br />
+                                @@@(string.Format("{0:0.####}", bp.box.every_qty))
+                            </td>
+                            @if (!isInSameBox) {
+                                <td rowspan="@currentRowSpan">
+                                    @(string.Format("{0:0.0###}", bp.box.every_gross_weight))
+                                </td>
+                                <td rowspan="@currentRowSpan">
+                                    @(string.Format("{0:0.0###}", bp.box.every_net_weight))
+                                </td>
+                                <td rowspan="@currentRowSpan">
+                                    @bp.box.size <br />
+                                    @bp.box.made_in
+                                </td>
+                            }
+                            <td>
+                                @string.Concat(bp.po.po_number, "-", bp.po.po_entry_id) <br />
+                                @m.es.Where(e => e.po_number == bp.po.po_number && e.po_entry_id == bp.po.po_entry_id).First().pr_number
+                            </td>
+                            <td>
+                                @m.es.Where(e => e.po_number == bp.po.po_number && e.po_entry_id == bp.po.po_entry_id).First().comment
+                            </td>
+                        </tr>
+                    }
+                    if (p == pageList.Count() - 1) {
+                    <tr>
+                        <td></td>
+                        <td style="text-align:center;">总计：</td>
+                        <td></td>
+                        <td>@m.boxAndPos.Select(b => b.box).Distinct().Sum(b => b.pack_num)</td>
+                        <td style="text-align:right">@(string.Format("{0:0.####}", m.es.Sum(e => e.send_qty)))</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                }
+                }
+                else { @*没有箱子的*@
+                    for (int i = hasPrinted; i < hasPrinted + pageList[p] && i < m.es.Count(); i++) {
+                        var e = m.es[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>
+                                @e.item_number <br />
+                                @e.item_name <br />
+                                @e.item_model
+                            </td>
+                            <td>
+                                @e.unit_name
+                            </td>
+                            <td>
+                                0
+                            </td>
+                            <td style="text-align:right;">
+                                @string.Format("{0:0.####}", e.send_qty)
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                @string.Concat(e.po_number, "-", e.po_entry_id) <br />
+                                @e.pr_number
+                            </td>
+                            <td>
+                                @e.comment
+                            </td>
+                        </tr>
+                    }
+                    if (p == pageList.Count() - 1) {
+                    <tr>
+                        <td></td>
+                        <td style="text-align:center;">总计：</td>
+                        <td></td>
+                        <td>0</td>
+                        <td style="text-align:right">@(string.Format("{0:0.####}", m.es.Sum(e => e.send_qty)))</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                }
+                }
+            </tbody>
+        </table>
+
+        <table style="width:100%;margin:12px 8px 8px 0;font-size:14px;">
+            <tr>
+                <td style="width:60%;">
+                    发货人：
+                    <span style="display:inline-block;width:128px;border-bottom:1px solid;"></span>
+                </td>
+                <td style="width:40%;">
+                    收货人：
+                    <span style="display:inline-block;width:128px;border-bottom:1px solid;"></span>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-top:6px;">
+                    @h.supplier_name (盖章)
+                </td>
+                <td style="padding-top:6px;">
+                    @companyName (盖章)
+                </td>
+            </tr>
+        </table>
+        if (p < pageList.Count() - 1) {
+            <div class="pageNext"></div>
+        }
+        hasPrinted += pageList[p];
+    }
+</div>

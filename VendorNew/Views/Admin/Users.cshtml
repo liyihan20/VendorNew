@@ -14,9 +14,9 @@
                 { field: 'user_role', title: '角色', width: 80, align: 'center' },
                 { field: 'email', title: '邮箱', width: 240, align: 'center' },
                 {
-                    field: 'in_date', title: '注册日期', width: 100, align: 'center',
+                    field: 'in_date', title: '注册日期', width: 120, align: 'center',
                     formatter: function (value, row, index) {
-                        return toDateStr(value);
+                        return toDateStr(value,true);
                     }
                 },
                 {

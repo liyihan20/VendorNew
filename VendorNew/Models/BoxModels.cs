@@ -26,5 +26,6 @@ namespace VendorNew.Models
         /// 内箱信息
         /// </summary>
         public List<InneBoxes> children { get; set; }
-    }
+    } 
+
 }

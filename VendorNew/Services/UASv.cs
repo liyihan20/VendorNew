@@ -237,9 +237,9 @@ namespace VendorNew.Services
             db.SubmitChanges();
         }
 
-        public int GetAuditGroupIdByName(string groupName)
+        public int GetGroupIdByName(string groupType,string groupName)
         {
-            var gr = db.Groups.Where(g => g.group_type == "audit" && g.name == groupName).FirstOrDefault();
+            var gr = db.Groups.Where(g => g.group_type == groupType && g.name == groupName).FirstOrDefault();
             if (gr == null) return 0;
             return gr.group_id;
         }

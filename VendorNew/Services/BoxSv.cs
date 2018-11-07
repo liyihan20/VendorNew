@@ -161,7 +161,7 @@ namespace VendorNew.Services
                     if (exceptIds.Where(e => e.interId == id).Count() > 0) continue;
 
                     //2. 部分关联的（合并箱，但是关联的PO没有都在PoIds里面的），跳过
-                    var boxes1PoId = boxes1.Where(b => b.box.outer_box_id == id).Select(b => new { interid = b.pos.po_id, entryid = b.pos.entry_id }).Distinct().ToList();
+                    var boxes1PoId = boxes1.Where(b => b.box.outer_box_id == id).Select(b => new { interid = b.pos.po_id, entryid = b.pos.po_entry_id }).Distinct().ToList();
                     bool jumpNext = false;
                     foreach (var bp in boxes1PoId) {
                         if (poIds.Where(p => p.interId == bp.interid && p.entryId == bp.entryid).Count() == 0) {
@@ -275,7 +275,7 @@ namespace VendorNew.Services
 
             //更新第二个外箱
             b2.outer_box_id = 0;
-            if (num2.Count() == 0) {
+            if (num2.Count() == 1) {
                 b2.box_number = num2.First();
             }
             else {
@@ -312,7 +312,7 @@ namespace VendorNew.Services
 
                         i1.pack_num = iNum1.Count();
                         i1.box_number = iNum1.First() + "~" + iNum1.Last();
-                        i1.box_number_long = string.Join(",", iNum2);
+                        i1.box_number_long = string.Join(",", iNum1);
 
                         i2.inner_box_id = 0;
                         i2.outer_box_id = b2.outer_box_id;
@@ -335,6 +335,9 @@ namespace VendorNew.Services
                 throw new Exception("保存拆分外箱关联的PO信息或内箱信息失败，原因："+ex.Message);
             }
         }
+
+
+        
 
     }
 }

@@ -105,39 +105,6 @@
                     }
                 }
             }, {
-                id: 'print_apply_btn',
-                text: '<i class="fa fa-fw fa-file-text-o"></i> 打印送货单</a>',
-                handler: function () {
-                    var row = $("#dg_dr").datagrid("getCurrentRow");
-                    if (row) {
-
-                    } else {
-                        tip("请先选择一行申请单再操作");
-                    }
-                }
-            }, {
-                id: 'print_outer_barcode_btn',
-                text: '<i class="fa fa-fw fa-qrcode"></i> 打印外箱标签',
-                handler: function () {
-                    var row = $("#dg_dr").datagrid("getCurrentRow");
-                    if (row) {
-
-                    } else {
-                        tip("请先选择一行申请单再操作");
-                    }
-                }
-            }, {
-                id: 'print_inner_barcode_btn',
-                text: '<i class="fa fa-fw fa-qrcode"></i> 打印内箱标签',
-                handler: function () {
-                    var row = $("#dg_dr").datagrid("getCurrentRow");
-                    if (row) {
-
-                    } else {
-                        tip("请先选择一行申请单再操作");
-                    }
-                }
-            }, {
                 id: 'export_excel_btn',
                 text: '<i class="fa fa-fw fa-file-excel-o"></i> 导出excel报表',
                 handler: function () {

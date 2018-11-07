@@ -214,5 +214,49 @@ namespace VendorNew.Utils
             return weekOfYear.ToString() + dow;
         }
 
+        /// <summary>
+        /// 将页码字符串转换成页码数字数组，例如字符串：“8，8，10”，页数：50，即结果为：8，8，10，10，10，4
+        /// </summary>
+        /// <param name="defaultNumber">不能转换为数字的，就用这个默认页数</param>
+        /// <param name="pageNumStr">页码字符串</param>
+        /// <param name="totalNum">总页数</param>
+        /// <returns></returns>
+        public static List<int> GetPageNumberList(int defaultNumber, string pageNumStr, int totalNum)
+        { 
+            List<int> result = new List<int>();
+            var numArr = pageNumStr.Split(new char[] { ',', '，' }); //页码字符串数组
+            int lastNumber = defaultNumber; //最后一页，页码字符串数字不够用的话，后面的都按照最后一页的页数设定
+            for (var i = 0; i < numArr.Length && totalNum > 0; i++) {
+                int temp;
+                if (!Int32.TryParse(numArr[i], out temp)) {
+                    temp = defaultNumber;
+                }
+                if (totalNum >= temp) {
+                    result.Add(temp);
+                    totalNum -= temp;
+                }
+                else {
+                    result.Add(totalNum);
+                    totalNum = 0;
+                }
+                if (i == numArr.Length - 1) {
+                    lastNumber = temp;
+                }
+            }
+            while (totalNum > 0) {
+                if (totalNum >= lastNumber) {
+                    result.Add(lastNumber);
+                    totalNum -= lastNumber;
+                }
+                else {
+                    result.Add(totalNum);
+                    totalNum = 0;
+                }
+            }
+
+            return result;
+
+        }
+
     }
 }
