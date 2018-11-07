@@ -444,10 +444,7 @@ namespace VendorNew.Controllers
 
             p.account = currentAccount;
             p.userId = currentUser.userId;
-            p.userName = currentUser.userName;
-            p.poNo = p.poNo ?? "";
-            p.billNo = p.billNo ?? "";
-            p.itemInfo = p.itemInfo ?? "";
+            p.userName = currentUser.userName;            
 
             var result = new DRSv().SearchMyApplyList(p, canCheckAll);
 
@@ -476,9 +473,6 @@ namespace VendorNew.Controllers
             p.account = currentAccount;
             p.userId = currentUser.userId;
             p.userName = currentUser.userName;
-            p.poNo = p.poNo ?? "";
-            p.billNo = p.billNo ?? "";
-            p.itemInfo = p.itemInfo ?? "";
 
             var result = new DRSv().SearchMyAuditList(p, canCheckAll);
 

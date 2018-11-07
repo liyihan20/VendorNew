@@ -1,0 +1,167 @@
+﻿@using VendorNew.Models
+@{
+    ViewBag.Title = "打印内箱标签";
+    List<PrintInnerBoxModel> boxes = ViewData["innerData"] as List<PrintInnerBoxModel>;
+    int numPerPage = (int)ViewData["numPerPage"];
+}
+@section CSS{
+    <style type="text/css">
+        
+        table {
+            font-size: 9px;
+            border-top: 1px solid #666;
+            border-right: 1px solid #666;
+        }
+
+        td {
+            padding: 0;
+            border-left: 1px solid #666;
+            border-bottom: 1px solid #666;
+            word-break: break-all;
+            overflow: hidden;
+            font-family: '宋体';
+        }
+        img {
+            margin: 0 auto;
+        }
+
+        .pageNext {
+            clear: both;
+            page-break-after: always;
+        }
+    </style>
+    <style type="text/css" media="print">
+        .noPrint {
+            display: none;
+        }
+    </style>
+}
+<script type="text/javascript" src="@Url.Content("~/Scripts/qrcode.js")"></script>
+<script type="text/javascript">
+    $(function () {
+        $(".qrcode").each(function (index, ele) {
+            var qrcode = new QRCode(ele, {
+                text: $(ele).attr("title"),
+                width: 64,
+                height: 64,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        });
+
+        $("#btReflesh").on("click", function () {
+            window.location.href = "@Url.Content("~/Report/PrintOuterQrcode?billId=")" + "@ViewData["billId"]" + "&numPerPage=" + $("#nbPageNum").numberbox("getValue");
+        });
+        $("#btPrint").on("click", function () {
+            window.print();
+        });
+
+        $(".sub_string").each(function (index, ele) {
+            var bit = $(ele).attr("data-bit");
+            var v = $(ele).html();
+            $(ele).html(mySubStr(v, bit));
+        });
+
+    });
+    function countCharNum(str) {
+        return str.replace(/[^\u0000-\u00ff]/g, "aa").length;
+    }
+
+    //以字节数截取字符串，一个中文等于2个字节
+    function mySubStr(str, len) {
+        if (countCharNum(str) <= len) {
+            return str;
+        }
+
+        var tempLen = 0;
+        var result = "";
+        
+        for (var i = 0; i < str.length && tempLen < len; i++) {
+            result += str[i];
+            tempLen += countCharNum(str[i]);
+        }
+        return result;
+    }
+
+</script>
+
+<div class="noPrint">
+    <div style="width:40%;float:right;text-align:right;font-size:12px;">
+        每页标签数量：
+        <input type="text" class="easyui-numberbox" id="nbPageNum" style="width:120px;" data-options="validType:{min:1,max:40}" value="@numPerPage" />
+        <a href="#" class="easyui-tooltip" title="默认使用标签纸打印，一张标签纸打印一个外箱标签。特殊情况可使用其他纸张打印，根据需要设置每页打印标签数量。"><i class="fa fa-info-circle text-danger"></i></a>
+        <a href="#" class="easyui-linkbutton" id="btReflesh"><i class="fa fa-refresh"></i> 重载页面</a>
+    </div>
+    <div style="width:20%;float:right;text-align:center">
+        <a href="#" class="easyui-linkbutton c5" style="padding:0 6px;" id="btPrint"><i class="fa fa-print"></i> 开始打印</a>
+    </div>
+</div>
+<div style="clear:both;"></div>
+@for (int i = 0; i < boxes.Count(); i++) {
+    var b = boxes[i];
+    <div style="padding:6px;float:left;" class="wrapDiv">
+        <table style="width:5.8cm;height:3.6cm;border-spacing:0;">
+            <tr>
+                <td style="width:2cm;" rowspan="5">
+                    <div class="qrcode" title="@b.qrcodeContent">
+
+                    </div>
+                </td>
+                <td style="width:0.9cm;">编码:</td>
+                <td style="width:2.9cm;font-family:'Arial Narrow'">@b.itemNumber</td>
+            </tr>
+            <tr>
+                <td>名称:</td>
+                <td><span class="sub_string" data-bit="20">@b.itemName</span></td>
+            </tr>
+            <tr>
+                <td>数量:</td>
+                <td>@b.qtyAndUnit <span style="padding:0; display:inline-block;float:right;width:1cm;text-align:right">@b.rohs</span></td>
+            </tr>
+            <tr>
+                <td>批次:</td>
+                <td>@b.batchNo</td>
+            </tr>
+            <tr>
+                <td>材质:</td>
+                <td><span class="sub_string" data-bit="20">@b.madeBy</span></td>
+            </tr>
+            <tr>                
+                <td colspan="2">
+                @b.tradeTypeName
+                <span class="sub_string" data-bit="8" style="display:inline-block;float:right;width:1.6cm;text-align:right;">@b.brand</span> 
+                </td>
+                <td>箱号:@b.boxNumber</td>
+            </tr>            
+            <tr>
+                <td colspan="3">
+                    @b.itemModel
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    生产日期:<span style="font-family:'Arial Narrow'">@b.produceDate</span>
+                </td>
+                <td>有效期:<span style="font-family:'Arial Narrow'">@b.expireDate</span></td>                
+            </tr>
+            @*<tr>
+                <td colspan="3">
+                    存储条件:@b.keepCondition
+                </td>
+            </tr>*@
+            <tr>
+                <td colspan="3" style="text-align:center;">
+                    @b.supplierName
+                </td>
+            </tr>
+        </table>
+    </div>
+    if (numPerPage == 1) {
+        @*标签纸打印，每一个标签后面都插入分页符*@
+        <div class="pageNext"></div>
+    }
+    else if (numPerPage > 1) {
+        if ((i + 1) % numPerPage == 0) {
+            <div class="pageNext"></div>
+        }
+    }
+}

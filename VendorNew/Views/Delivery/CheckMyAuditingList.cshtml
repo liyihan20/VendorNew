@@ -108,12 +108,17 @@
                 id: 'export_excel_btn',
                 text: '<i class="fa fa-fw fa-file-excel-o"></i> 导出excel报表',
                 handler: function () {
-                    var row = $("#dg_dr").datagrid("getCurrentRow");
-                    if (row) {
-
-                    } else {
-                        tip("请先选择一行申请单再操作");
-                    }
+                    tip("数据正在导出，请稍等......");
+                    var queryParams = {
+                        beginDate: $("#beginDate").datebox("getValue"),
+                        endDate: $("#endDate").datebox("getValue"),
+                        billType: $("#billType").combobox("getValue"),
+                        billNo: $("#billNo").textbox("getValue"),
+                        poNo: $("#poNo").textbox("getValue"),
+                        itemInfo: $("#itemInfo").textbox("getValue"),
+                        pStatus: $("#pStatus").combobox("getValue")
+                    };
+                    window.open("@Url.Content("~/Report/ExporDRData?queryJson=")" + JSON.stringify(queryParams) + "&pageType=audit");
                 }
             }, {
                 text: '<i class="fa fa-fw fa-align-left"></i> 操作记录',

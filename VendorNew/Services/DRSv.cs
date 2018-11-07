@@ -253,8 +253,8 @@ namespace VendorNew.Services
             var groupUser = new UASv().GetAuditGroupUsers(p.userId);
             return SearchApplyListBase(p)
                 .Where(s => (canCheckAll
-                    || s.matOrderNumber==p.userName
-                    || s.buyerNumber==p.userName
+                    || s.matOrderNumber == p.userName
+                    || s.buyerNumber == p.userName
                     || groupUser.Contains(s.matOrderNumber)
                     || groupUser.Contains(s.buyerName))
                     )
@@ -268,6 +268,10 @@ namespace VendorNew.Services
         /// <returns></returns>
         private IQueryable<CheckApplyListModel> SearchApplyListBase(SearchMyApplyParams p)
         {
+            p.poNo = p.poNo ?? "";
+            p.billNo = p.billNo ?? "";
+            p.itemInfo = p.itemInfo ?? "";
+
             var result = from d in db.DRBills
                          join e in db.DRBillDetails on d.bill_id equals e.bill_id
                          where d.send_date >= p.beginDate
