@@ -49,4 +49,10 @@ namespace VendorNew.Models
         public int? entryId { get; set; }
     }
 
+    public class IntStringModel
+    {
+        public int id { get; set; }
+        public string text { get; set; }
+    }
+
 }

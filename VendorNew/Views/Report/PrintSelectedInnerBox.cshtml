@@ -6,7 +6,6 @@
 }
 @section CSS{
     <style type="text/css">
-        
         table {
             font-size: 9px;
             border-top: 1px solid #666;
@@ -21,6 +20,7 @@
             overflow: hidden;
             font-family: '宋体';
         }
+
         img {
             margin: 0 auto;
         }
@@ -49,7 +49,7 @@
         });
 
         $("#btReflesh").on("click", function () {
-            window.location.href = "@Url.Content("~/Report/PrintOuterQrcode?billId=")" + "@ViewData["billId"]" + "&numPerPage=" + $("#nbPageNum").numberbox("getValue");
+            window.location.href = "@Url.Content("~/Report/PrintSelectedInnerBox?boxIds=")" + "@ViewData["boxIds"]" + "&numPerPage=" + $("#nbPageNum").numberbox("getValue");
         });
         $("#btPrint").on("click", function () {
             window.print();
@@ -74,7 +74,7 @@
 
         var tempLen = 0;
         var result = "";
-        
+
         for (var i = 0; i < str.length && tempLen < len; i++) {
             result += str[i];
             tempLen += countCharNum(str[i]);
@@ -129,13 +129,13 @@
                 <td>材质:</td>
                 <td><span class="sub_string" data-bit="20">@b.madeBy</span></td>
             </tr>
-            <tr>                
+            <tr>
                 <td colspan="2">
-                @b.tradeTypeName
-                <span class="sub_string" data-bit="8" style="display:inline-block;float:right;width:1.6cm;text-align:right;">@b.brand</span> 
+                    @b.tradeTypeName
+                    <span class="sub_string" data-bit="8" style="display:inline-block;float:right;width:1.6cm;text-align:right;">@b.brand</span>
                 </td>
                 <td>箱号:@b.boxNumber</td>
-            </tr>            
+            </tr>
             <tr>
                 <td colspan="3">
                     @b.itemModel
@@ -145,13 +145,13 @@
                 <td colspan="2">
                     生产日期:<span style="font-family:'Arial Narrow'">@b.produceDate</span>
                 </td>
-                <td>有效期:<span style="font-family:'Arial Narrow'">@b.expireDate</span></td>                
+                <td>有效期:<span style="font-family:'Arial Narrow'">@b.expireDate</span></td>
             </tr>
             @*<tr>
-                <td colspan="3">
-                    存储条件:@b.keepCondition
-                </td>
-            </tr>*@
+                    <td colspan="3">
+                        存储条件:@b.keepCondition
+                    </td>
+                </tr>*@
             <tr>
                 <td colspan="3" style="text-align:center;">
                     @b.supplierName

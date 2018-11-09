@@ -140,6 +140,7 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\BoxController.cs" />
     <Compile Include="Controllers\DeliveryController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
@@ -350,6 +351,10 @@
     <Content Include="Views\Report\PrintApply.cshtml" />
     <Content Include="Views\Report\PrintOuterQrcode.cshtml" />
     <Content Include="Views\Report\PrintInnerQrcode.cshtml" />
+    <Content Include="Views\Home\StoreKeeperSetting.cshtml" />
+    <Content Include="Views\Box\Boxes.cshtml" />
+    <Content Include="Views\Report\PrintSelectedOuterBox.cshtml" />
+    <Content Include="Views\Report\PrintSelectedInnerBox.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

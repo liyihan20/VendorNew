@@ -218,7 +218,7 @@
                     if (!selected || selected.inner_box_id) {
                         tip("请先选择一行外箱再添加内箱");
                         return;
-                    }                    
+                    }
                     $("#dlg_inner_box").dialog("open");
                     $("#fm_inner_box").form("reset");
                     $("#fm_inner_box input[name='outer_box_id']").val(selected.outer_box_id);
@@ -393,6 +393,16 @@
                 $("#fm_outer_box #every_net_weight").numberbox("setValue","");
                 $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
                 $("#fm_outer_box #pack_num").numberbox("setValue", "");
+            } else {
+                //看服务器有没有
+                $.post("@Url.Content("~/Box/GetBoxBySupplierAndItem")", { supplierNumber: "@h.supplier_number", itemNumber: selectedPo.item_number }, function (data) {
+                    if (data.suc) {
+                        $("#fm_outer_box").form("load", data.boxInfo);
+                        $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
+                        $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
+                        $("#fm_outer_box #pack_num").numberbox("setValue", "");
+                    }
+                });
             }
         });
 
@@ -592,11 +602,11 @@
         }, function (data) {
             if (data.suc) {
                 var boxDatas = [];
-                for (var i = 0; i < data.result.length; i++) {                    
+                for (var i = 0; i < data.result.length; i++) {
                     var res = data.result[i];
                     var box = res.oBox;
                     box.po_info = res.poInfos;
-                    box.poList = res.poList;                    
+                    box.poList = res.poList;
                     box.iconCls = "icon-obox"; //外箱图标
                     for (var j = 0; j < res.children.length; j++) {
                         res.children[j].iconCls = "icon-ibox"; //内箱图标

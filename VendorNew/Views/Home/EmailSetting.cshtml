@@ -1,16 +1,17 @@
-﻿<script>
-    $(function () {        
+﻿
+<script>
+    $(function () {
         initEmail();
     });
 
-    var inputEmails=[];
+    var inputEmails = [];
 
     function initEmail() {
         var es = $("#hiddenEmail").val();
         if (es) {
             var arr = es.split(",");
-            for (var i = 0; i < arr.length; i++) {                
-                $("#email" + i).textbox("setValue",arr[i]);
+            for (var i = 0; i < arr.length; i++) {
+                $("#email" + i).textbox("setValue", arr[i]);
             }
         }
     }
@@ -41,10 +42,10 @@
             } else {
                 tip(data.msg);
             }
-        })
+        });
     }
 
-    function save(index){
+    function save(index) {
         if (!inputEmails[index]) {
             tip("请先输入邮箱地址然后验证后再保存");
             return;
@@ -58,8 +59,8 @@
             }
         })
     }
-
 </script>
+
 <input type="hidden" value="@ViewData["email"]" id="hiddenEmail"/>
 @for (var i = 0; i < 3; i++) {
     <div style="float:left;width:300px;margin-right:4px;">

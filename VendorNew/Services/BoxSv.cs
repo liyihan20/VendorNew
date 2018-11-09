@@ -23,7 +23,7 @@ namespace VendorNew.Services
                                      join o in db.OuterBoxes on op.out_box_id equals o.outer_box_id
                                      where op.po_id == po.po_id && op.entry_id == po.entry_id
                                      && (o.bill_id == null || o.bill_id == box.bill_id)
-                                     select op.send_num).Sum();
+                                     select op.send_num * o.pack_num).Sum();
                 var sendNum = po.send_num * box.pack_num; //本次制作数量
                 if (notRelatedQty + sendNum > po.can_send_qty) {
                     throw new Exception(string.Format("订单号[{0}]分录号[{1}]的可制作标签数量不足：已制作标签数量[{2}],本次制作数量[{3}],可申请数量[{4}]",
@@ -64,6 +64,14 @@ namespace VendorNew.Services
             if (outerBox == null) {
                 throw new Exception("外箱不存在，操作失败");
             }
+
+            if (outerBox.bill_id != null) {
+                var dr = new DRSv().GetDRBill((int)outerBox.bill_id);
+                if (dr != null && dr.p_status != "未提交" && dr.p_status != "已拒绝") {
+                    throw new Exception("已使用并提交的箱子不能再添加内箱");
+                }
+            }
+
             //此外箱已有的内箱数量
             var outerNum = outerBox.every_qty * outerBox.pack_num;
             var existedInnerNum = db.InneBoxes.Where(i => i.outer_box_id == outerBox.outer_box_id).Sum(i => i.every_qty * i.pack_num) ?? 0m;
@@ -336,6 +344,94 @@ namespace VendorNew.Services
             }
         }
 
+
+        public IQueryable<OuterBoxes> GetOuterBoxes(SearchBoxParams p,bool canCheckAll)
+        {
+            var result = from b in db.OuterBoxes                         
+                         where b.create_date >= p.beginDate && b.create_date <= p.endDate
+                         && b.account == p.account
+                         && (b.item_name.Contains(p.itemInfo) || b.item_model.Contains(p.itemInfo))
+                         && (p.hasUsed == "所有" || (p.hasUsed == "已使用" && b.bill_id != null) || (p.hasUsed == "未使用" && b.bill_id == null))
+                         && (canCheckAll || (b.user_name + "A").Contains(p.userName))                         
+                         select b;
+
+            if (!string.IsNullOrWhiteSpace(p.boxNumber)) {
+                result = from b in result
+                         join i in db.InneBoxes on b.outer_box_id equals i.outer_box_id into ti
+                         from ib in ti.DefaultIfEmpty()
+                         where (b.box_number_long.Contains(p.boxNumber) || ib.box_number_long.Contains(p.boxNumber))
+                         select b;
+            }
+
+            if (!string.IsNullOrWhiteSpace(p.poNo)) {
+                result = from b in result
+                         join po in db.OuterBoxPOs on b.outer_box_id equals po.out_box_id
+                         where po.po_number.Contains(p.poNo)
+                         select b;
+            }
+            if (!string.IsNullOrWhiteSpace(p.billNo)) {
+                result = from b in result
+                         join bill in db.DRBills on b.bill_id equals bill.bill_id
+                         where bill.bill_no.Contains(p.billNo)
+                         select b;
+            }
+
+            return result.Distinct().OrderBy(r => r.create_date);
+        }
+
+        public List<OuterBoxPOs> GetBoxPos(List<int> boxIds)
+        {
+            return db.OuterBoxPOs.Where(o => boxIds.Contains((int)o.out_box_id)).ToList();
+        }
+
+        public List<InneBoxes> GetInnerBoxes(string outerBoxNumber)
+        {
+            return (from i in db.InneBoxes
+                    join o in db.OuterBoxes on i.outer_box_id equals o.outer_box_id
+                    where o.box_number == outerBoxNumber
+                    orderby i.box_number
+                    select i).ToList();
+        }
+
+        public List<IDModel> HasGotInnerBox(List<int> boxIds)
+        {
+            return (from o in db.OuterBoxes
+                    join i in db.InneBoxes on o.outer_box_id equals i.outer_box_id
+                    where boxIds.Contains(o.outer_box_id)
+                    select new IDModel()
+                    {
+                        interId = o.outer_box_id
+                    }
+                    ).Distinct().ToList();
+        }
+
+        public List<K3POs4BoxModel> GetPos4Box(string billType, string searchValue, int userId, string userName, string account)
+        {
+            return db.ExecuteQuery<K3POs4BoxModel>(
+                "exec GetK3POs4Box @account = {0},@billType = {1},@searchValue = {2},@userId = {3},@userNumber = {4}",
+                account, billType, searchValue, userId, userName).ToList();
+        }
+        
+        public List<NotFinishBoxQty> GetNotFinishedBoxQty(List<IDModel> ids)
+        {
+            return (from op in db.OuterBoxPOs
+                    join o in db.OuterBoxes on op.out_box_id equals o.outer_box_id
+                    join b in db.DRBills on o.bill_id equals b.bill_id into tb
+                    from bill in tb.DefaultIfEmpty()
+                    where (bill == null || bill.p_status != "已入库")
+                    && ids.Contains(new IDModel() { interId = op.po_id, entryId = op.po_entry_id })
+                    select new NotFinishBoxQty()
+                    {
+                        poId = (int)op.po_id,
+                        poEntryId = (int)op.po_entry_id,
+                        qty = op.send_num * o.pack_num
+                    }).ToList();
+        }
+
+        public OuterBoxes GetBoxBySupplierAndItem(string supplierNumber, string itemNumber)
+        {
+            return db.OuterBoxes.Where(o => o.user_name == supplierNumber && o.item_number == itemNumber).OrderByDescending(o=>o.outer_box_id).FirstOrDefault();
+        }
 
         
 

@@ -389,5 +389,10 @@ namespace VendorNew.Services
             return db.OpRecord.Where(o => o.bill_no == billNo).ToList();
         }
 
+        public List<IntStringModel> GetBillIdAndNo(List<int> billIds)
+        {
+            return db.DRBills.Where(d => billIds.Contains(d.bill_id)).Select(d => new IntStringModel() { id = d.bill_id, text = d.bill_no }).ToList();
+        }
+
     }
 }

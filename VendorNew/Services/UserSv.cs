@@ -28,7 +28,6 @@ namespace VendorNew.Services
         {
             int maxErrorTimes = 5;
             Users user = GetUserByUserName(userName);
-            //Users user = db.Users.Where(u => u.user_name == userName).FirstOrDefault();
             if (user == null) {
                 throw new Exception("用户不存在");
             }

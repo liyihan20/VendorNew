@@ -54,6 +54,27 @@ namespace VendorNew.Controllers
             return View();
         }
 
+        [SessionTimeOutFilter]
+        public ActionResult PrintSelectedOuterBox(string boxIds, int numPerPage = 1)
+        {
+            if (numPerPage < 1) numPerPage = 1;
+
+            List<int> boxIdList = boxIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(b => Int32.Parse(b)).ToList();
+
+            try {
+                var result = new ReportSv().GetOuterBoxes4Print(boxIdList);
+                ViewData["outerData"] = result;
+                ViewData["numPerPage"] = numPerPage;
+                ViewData["boxIds"] = boxIds;
+            }
+            catch (Exception ex) {
+                ViewBag.tip = ex.Message;
+                return View("Error");
+            }
+
+            return View();
+        }
+
         [AuthorityFilter]
         public ActionResult PrintInnerQrcode(int billId, int numPerPage = 1)
         {
@@ -64,6 +85,33 @@ namespace VendorNew.Controllers
                 ViewData["innerData"] = result;
                 ViewData["numPerPage"] = numPerPage;
                 ViewData["billId"] = billId;
+            }
+            catch (Exception ex) {
+                ViewBag.tip = ex.Message;
+                return View("Error");
+            }
+
+            return View();
+        }
+
+        /// <summary>
+        /// 打印所有所选外箱里面的所有内箱
+        /// </summary>
+        /// <param name="boxIds"></param>
+        /// <param name="numPerPage"></param>
+        /// <returns></returns>
+        [SessionTimeOutFilter]
+        public ActionResult PrintSelectedInnerBox(string boxIds, int numPerPage = 1)
+        {
+            if (numPerPage < 1) numPerPage = 1;
+
+            List<int> boxIdList = boxIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(b => Int32.Parse(b)).ToList();
+
+            try {
+                var result = new ReportSv().GetInnerBoxes4Print(boxIdList);
+                ViewData["innerData"] = result;
+                ViewData["numPerPage"] = numPerPage;
+                ViewData["boxIds"] = boxIds;
             }
             catch (Exception ex) {
                 ViewBag.tip = ex.Message;

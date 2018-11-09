@@ -1,14 +1,14 @@
 ﻿@using VendorNew.Models
 @{
-    ViewBag.Title = "打印内箱标签";
-    List<PrintInnerBoxModel> boxes = ViewData["innerData"] as List<PrintInnerBoxModel>;
+    ViewBag.Title = "打印外箱标签";
+    List<PrintOuterBoxModels> boxes = ViewData["outerData"] as List<PrintOuterBoxModels>;
     int numPerPage = (int)ViewData["numPerPage"];
 }
 @section CSS{
-    <style type="text/css">
-        
+    <style type="text/css">        
+
         table {
-            font-size: 9px;
+            font-size: 12px;
             border-top: 1px solid #666;
             border-right: 1px solid #666;
         }
@@ -21,13 +21,14 @@
             overflow: hidden;
             font-family: '宋体';
         }
+
         img {
             margin: 0 auto;
         }
 
         .pageNext {
-            clear: both;
             page-break-after: always;
+            clear: both;
         }
     </style>
     <style type="text/css" media="print">
@@ -42,14 +43,14 @@
         $(".qrcode").each(function (index, ele) {
             var qrcode = new QRCode(ele, {
                 text: $(ele).attr("title"),
-                width: 64,
-                height: 64,
+                width: 96,
+                height: 96,
                 correctLevel: QRCode.CorrectLevel.H
             });
         });
 
         $("#btReflesh").on("click", function () {
-            window.location.href = "@Url.Content("~/Report/PrintOuterQrcode?billId=")" + "@ViewData["billId"]" + "&numPerPage=" + $("#nbPageNum").numberbox("getValue");
+            window.location.href = "@Url.Content("~/Report/PrintSelectedOuterBox?boxIds=")" + "@ViewData["boxIds"]" + "&numPerPage=" + $("#nbPageNum").numberbox("getValue");
         });
         $("#btPrint").on("click", function () {
             window.print();
@@ -62,6 +63,7 @@
         });
 
     });
+
     function countCharNum(str) {
         return str.replace(/[^\u0000-\u00ff]/g, "aa").length;
     }
@@ -74,7 +76,7 @@
 
         var tempLen = 0;
         var result = "";
-        
+
         for (var i = 0; i < str.length && tempLen < len; i++) {
             result += str[i];
             tempLen += countCharNum(str[i]);
@@ -103,57 +105,75 @@
 @for (int i = 0; i < boxes.Count(); i++) {
     var b = boxes[i];
     <div style="padding:6px;float:left;" class="wrapDiv">
-        <table style="width:5.8cm;height:3.6cm;border-spacing:0;">
+        <table style="width:350px;height:228px;border-spacing:0;">
             <tr>
-                <td style="width:2cm;" rowspan="5">
+                <td height="22" colspan="4">
+                    <span style="margin-left:64px;font-size:16px;">@b.companyName</span>
+                    <span style="margin-left:64px;font-size:14px;border:1px solid #666;padding:0 4px;">@b.rohs</span>
+                </td>
+            </tr>
+            <tr>
+                <td width="114" rowspan="6">
                     <div class="qrcode" title="@b.qrcodeContent">
 
                     </div>
                 </td>
-                <td style="width:0.9cm;">编码:</td>
-                <td style="width:2.9cm;font-family:'Arial Narrow'">@b.itemNumber</td>
+                <td width="67">TRULY PO:</td>
+                <td colspan="2">@b.poNumber</td>
             </tr>
             <tr>
-                <td>名称:</td>
-                <td><span class="sub_string" data-bit="20">@b.itemName</span></td>
+                <td>物料编码:</td>
+                <td colspan="2">@b.itemNumber</td>
             </tr>
             <tr>
                 <td>数量:</td>
-                <td>@b.qtyAndUnit <span style="padding:0; display:inline-block;float:right;width:1cm;text-align:right">@b.rohs</span></td>
+                <td colspan="2">@b.qtyAndUnit</td>
             </tr>
             <tr>
                 <td>批次:</td>
-                <td>@b.batchNo</td>
+                <td colspan="2">@b.batchNo</td>
             </tr>
             <tr>
                 <td>材质:</td>
-                <td><span class="sub_string" data-bit="20">@b.madeBy</span></td>
+                <td colspan="2">@b.madeBy</td>
             </tr>
-            <tr>                
-                <td colspan="2">
-                @b.tradeTypeName
-                <span class="sub_string" data-bit="8" style="display:inline-block;float:right;width:1.6cm;text-align:right;">@b.brand</span> 
-                </td>
+            <tr>
+                <td>贸易类型:</td>
+                <td>@b.tradeTypeName</td>
                 <td>箱号:@b.boxNumber</td>
-            </tr>            
+            </tr>
             <tr>
                 <td colspan="3">
-                    @b.itemModel
+                    名称:@b.itemName
+                </td>
+                <td width="114">原产地:@b.madeIn</td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    型号:@b.itemModel
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
-                    生产日期:<span style="font-family:'Arial Narrow'">@b.produceDate</span>
+                <td>
+                    生产日期:@b.produceDate
                 </td>
-                <td>有效期:<span style="font-family:'Arial Narrow'">@b.expireDate</span></td>                
+                <td colspan="2">有效期:@b.expireDate</td>
+                <td>生产周期:</td>
             </tr>
-            @*<tr>
-                <td colspan="3">
+            <tr>
+                <td>
+                    品牌:<span class="sub_string" data-bit="12">@b.brand</span>
+                </td>
+                <td colspan="2">毛重KG:@b.grossWeight</td>
+                <td>净重KG:@b.netWeight</td>
+            </tr>
+            <tr>
+                <td colspan="4">
                     存储条件:@b.keepCondition
                 </td>
-            </tr>*@
+            </tr>
             <tr>
-                <td colspan="3" style="text-align:center;">
+                <td colspan="4" style="text-align:center;">
                     @b.supplierName
                 </td>
             </tr>

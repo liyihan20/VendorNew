@@ -1,0 +1,45 @@
+﻿@{
+    string status = (string)ViewData["keeperStatus"];
+    string isDisabled = "";
+    string btnText = "";
+    if (status == "已启用") {
+        isDisabled = "disabled";
+        btnText = "已启用仓管员用户";
+    }
+    else {
+        isDisabled = "";
+        btnText = "开始启用仓管员用户";
+    }
+}
+<script>
+    $(function () {
+        $("#bt_active").on("click", function () {
+            $.post("ActiveStoreKepper", { keeperName: "@ViewData["keeperName"]" }, function (data) {
+                if (data.suc) {
+                    tip("已成功启用仓管员用户及权限");
+                    setTimeout(function () {
+                        window.location.reload(true);
+                    }, 1500);
+                } else {
+                    tip("操作失败：" + data.msg);
+                }
+            });
+        });
+    });
+    
+</script>
+
+<div class="easyui-panel" style="padding:12px;text-align:center;width:400px;" title="&lt;i class='fa fa-info-circle'&gt;&lt/i&gt; 状态信息：">
+    <div class="fitem">
+        <label>启用状态:</label>
+        <input class="easyui-textbox" name="keeperStatus" id="keeperStatus" value="@ViewData["keeperStatus"]" readonly />
+    </div>
+    <div class="fitem">
+        <label>用户登录名:</label>
+        <input class="easyui-textbox" name="keeperName" id="keeperName" value="@ViewData["keeperName"]" readonly />
+    </div>
+    <div style="margin-top:8px;">
+        <a href="#" class="easyui-linkbutton c8" id="bt_active" @isDisabled><i class="fa fa-check-circle"></i> @btnText</a>
+        <a href="#" class="easyui-tooltip" title="启用后，可使用仓管员用户登录平台先做标签，初始密码和用户名是一致的"> <i class="fa fa-question-circle text-danger"></i> </a>
+    </div>
+</div>
