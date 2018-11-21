@@ -349,5 +349,44 @@ namespace VendorNew.Controllers
 
         #endregion
 
+        #region 更新日志
+
+        [AuthorityFilter]
+        public ActionResult CheckUpdateLog()
+        {
+            return View();
+        }
+
+        public JsonResult GetUpdateLog(string searchValue = "")
+        {
+            return Json(new ItemSv().GetUpdateLogs(searchValue));
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult SaveUpdateLog(UpdateLog log)
+        {
+            try {
+                new ItemSv().SaveUpdateLog(log);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+            return Json(new SRM());
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult RemoveUpdateLog(int id)
+        {
+            try {
+                new ItemSv().RemoveUpdateLog(id);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+            return Json(new SRM());
+        }
+
+        #endregion
+
     }
 }

@@ -13,6 +13,7 @@ namespace VendorNew.Models
 
     public class supplierInfo
     {
+        public string supplierNumber { get; set; }
         public string supplierName { get; set; }
         public string supplierAddr { get; set; }
         public string supplierAttn { get; set; }

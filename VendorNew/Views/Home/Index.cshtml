@@ -15,7 +15,8 @@
                 <img alt="logo" src="@Url.Content("~/Content/images/truly.png")" style="border:0;"/></div>
         <div style="float: left; width: 300px; font-size: 28px; font-family: Arial;letter-spacing:12px;">
             供应商协同平台</div>
-        <div style="float: right; width: 100px; padding-top: 4px;">
+        <div style="float: right; width: 200px; padding-top: 4px;">
+            <a href="@Url.Content("~/Home/ChangeAccount")" class="easyui-linkbutton c1"><i class="fa fa-exchange"></i> @string.Concat("切换到",ViewBag.account=="O"?"半导体":"光电")</a>
             <a href="@Url.Content("~/Account/LogOut")" class="easyui-linkbutton c6"><i class="fa fa-sign-out"></i> 退出系统</a>
         </div>
     </div>
@@ -24,7 +25,7 @@
             <span style="margin: 0 0 0 30px;">登录名: @ViewBag.userName</span> 
             <span style="margin: 0 0 0 30px;">用户名: @ViewBag.realName</span>
             <span style="margin: 0 0 0 30px;">公司: @(ViewBag.account=="O"?"信利光电股份有限公司":"信利半导体有限公司")</span>
-            <span style="margin: 0 0 0 30px;">日期: @DateTime.Now.ToShortDateString()</span>            
+            <span style="margin: 0 0 0 30px;">日期: @DateTime.Now.ToString("yyyy-MM-dd")</span>
         </div>
     </div>
     <div region="west" split="true" title="&lt;i class='fa fa-fw fa-list'&gt;&lt;/i&gt; 功能菜单" style="width: 180px; padding: 1px;">
@@ -36,7 +37,7 @@
         <div id="tabs" class="easyui-tabs" fit="true" border="false">
             <div title="&lt;i class='fa fa-fw fa-home'&gt;&lt;/i&gt; 主页">
                 <iframe frameborder="0" src="@Url.Content("~/Home/Main")"></iframe>
-            </div>            
+            </div>
         </div>
     </div>    
 </div>

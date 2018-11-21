@@ -54,7 +54,7 @@
                         return toDateStr(value,true);
                     }
                 },
-                { field: 'user_name', title: '创建人', width: 100, align: 'center' }
+                { field: 'user_name', title: '供应商代码', width: 100, align: 'center' }
             ]],
             loadFilter: function (data, parentId) {
                 if (!data.suc) {
@@ -291,6 +291,19 @@
                 { field: 'item_name', title: '物料名称', width: 120, align: 'center' },
                 { field: 'item_model', title: '规格型号', width: 240, align: 'center' }
             ]],
+            toolbar: [{
+                text: '<i class="fa fa-fw fa-remove"></i> 删除行',
+                handler: function () {
+                    var removedRow = $('#dg_select_box_po').datagrid('getCurrentRow');
+                    if (!removedRow) {
+                        tip("请先选择需要删除的行");
+                        return;
+                    }
+                    var rowIndex = $('#dg_select_box_po').datagrid('getRowIndex', removedRow);
+                    $('#dg_select_box_po').datagrid('deleteRow', rowIndex);
+                    
+                }
+            }],
             onClickRow: onClickBoxPoRow
         });
 
@@ -299,8 +312,8 @@
             var selectedPo = $('#select_box_po').combogrid('grid').datagrid('getCurrentRow');
             if (!selectedPo) return;
 
-            if (selectedPo.can_make_box_qty == 0) {
-                tip("此PO可做外箱数量为0，不能选择");
+            if (selectedPo.can_make_box_qty <= 0) {
+                tip("此PO可做外箱数量小于0，不能选择");
                 return;
             }
 
@@ -380,6 +393,7 @@
             //    tip("合并订单送货的，箱子数量必须是1件");
             //    return;
             //}
+            
             if (firstSelectedPO.trade_type_name != '国内贸易') {
                 var size = $("#fm_outer_box #size").textbox("getValue");
                 var netWeight = $("#fm_outer_box #every_net_weight").numberbox("getValue");
@@ -672,7 +686,7 @@
                         生产日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="produce_date" data-options="required:true" />
+                        <input type="text" class="easyui-datebox" name="produce_date" data-options="required:true,editable:false" />
                     </td>
                     <td>
                         保质期(月)：
@@ -684,7 +698,7 @@
                         包装日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="package_date" data-options="required:true" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="text" class="easyui-datebox" name="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </td>
                 </tr>
                 <tr>                    

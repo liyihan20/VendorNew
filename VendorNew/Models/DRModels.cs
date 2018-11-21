@@ -61,6 +61,7 @@ namespace VendorNew.Models
         public string matOrderName { get; set; }
         public string matOrderNumber { get; set; }
         public string prNo { get; set; }
+        public int prEntryID { get; set; }
         public string sourceBillNo { get; set; }
         public int sourceInterID { get; set; }
         public int sourceEntryID { get; set; }

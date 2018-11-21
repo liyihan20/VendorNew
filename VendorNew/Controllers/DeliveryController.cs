@@ -13,6 +13,9 @@ namespace VendorNew.Controllers
 {
     public class DeliveryController : BaseController
     {
+        private string innerWebSite = "http://192.168.90.100/VendorNew/";
+        private string outerWebSite = "http://59.37.42.23/VendorNew/";
+
         /// <summary>
         /// 进入po查询界面
         /// </summary>
@@ -160,9 +163,10 @@ namespace VendorNew.Controllers
             var poList = JsonConvert.DeserializeObject<List<K3POs>>(poJsonStr);
             var poHead=poList.First();
 
+            string billNo = new ItemSv().GetDRBillNo(poHead.account, "C");
             var drHead = new DRBills();
-            drHead.account = poHead.account;            
-            drHead.bill_no = new ItemSv().GetDRBillNo(poHead.account, "C");
+            drHead.account = poHead.account;
+            drHead.bill_no = billNo;
             drHead.bill_type = poHead.billType;
             drHead.buy_type = poHead.buyType;
             drHead.currency_name = poHead.currencyName;
@@ -195,18 +199,21 @@ namespace VendorNew.Controllers
                     po_entry_id = e.poEntryId,
                     po_date = e.poDate,
                     pr_number = e.prNo,
+                    pr_entry_id = e.prEntryID,
                     buyer_name = e.buyerName,
-                    buyer_number = e.buyerNumber
+                    buyer_number = e.buyerNumber,
+                    contract_entry_id=e.contractEntryId
                 });
             }
 
             ViewData["drHead"] = drHead;
             ViewData["drDetails"] = drDetails;
 
+            WLog("新增送货单", "进入新增界面，系统分配流水号", billNo);
+
             return View();
         }
-
-
+        
         [SessionTimeOutJsonFilter]
         public JsonResult SaveOuterBoxes(FormCollection fc)
         {
@@ -223,7 +230,8 @@ namespace VendorNew.Controllers
             List<OuterBoxPOs> poList = JsonConvert.DeserializeObject<List<OuterBoxPOs>>(fc.Get("poRows"));
 
             try {
-                new BoxSv().SaveOuterBox(box, poList);
+                string boxNumber = new BoxSv().SaveOuterBox(box, poList);
+                WLog("新增外箱", "保存外箱，箱号：" + boxNumber);
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -240,6 +248,8 @@ namespace VendorNew.Controllers
 
             try {
                 string[] innerBox = new BoxSv().SaveInnerBox(ib);
+                WLog("新增内箱", "保存内箱，箱号：" + innerBox[0]);
+
                 return Json(new { suc = true, msg = "内箱保存成功", boxNumber = innerBox[0], boxId = innerBox[1] });
             }
             catch (Exception ex) {
@@ -251,7 +261,8 @@ namespace VendorNew.Controllers
         public JsonResult RemoveOuterBox(int outerBoxId)
         {
             try {
-                new BoxSv().RemoveOuterBox(outerBoxId);
+                string boxNumber = new BoxSv().RemoveOuterBox(outerBoxId);
+                WLog("删除外箱", "箱号是：" + boxNumber);
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -263,7 +274,8 @@ namespace VendorNew.Controllers
         public JsonResult RemoveInnerBox(int innerBoxId)
         {
             try {
-                new BoxSv().RemoveInnerBox(innerBoxId);
+                string boxNumber = new BoxSv().RemoveInnerBox(innerBoxId);
+                WLog("删除内箱", "箱号：" + boxNumber);
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -320,7 +332,8 @@ namespace VendorNew.Controllers
         public JsonResult SplitOuterBox(int outerBoxId, int splitNum)
         {
             try {
-                new BoxSv().SplitOuterbox(outerBoxId, splitNum);
+                string[] boxArr = new BoxSv().SplitOuterbox(outerBoxId, splitNum);
+                WLog("拆分外箱", string.Format("外箱箱号为【{0}】拆分为【{1}】和【{2}】", boxArr[0], boxArr[1], boxArr[2]));
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -355,7 +368,7 @@ namespace VendorNew.Controllers
                 billId = sv.SaveApply(bill, details, boxIds);
 
             }
-            catch (Exception ex) {
+            catch (Exception ex) {                
                 return Json(new SRM(ex)); //保存失败的，suc=false，页面不跳转
             }
 
@@ -364,16 +377,19 @@ namespace VendorNew.Controllers
                 try {
                     sv.BeforeApply(bill, details, boxIds);
                     sv.beginApply(billId,currentUser.realName);
+
+                    //发送待处理邮件给订料员
+                    SendNotifyEmail(billId, "提交");
+                    WLog("提交申请单", "提交成功", bill.bill_no);
                 }
                 catch (Exception ex) {
                     return Json(new { suc = true, msg = "保存申请成功，但是提交申请失败。<br/>原因：" + ex.Message, page = 1, id = billId });
-                }
-
-                //发送通知邮件给订料员，通知审批
+                }                
 
                 return Json(new { suc = true, msg = "已成功保存并提交申请", page = 2, id = billId, bill_no = bill.bill_no });
             }
             else {
+                WLog("保存申请单", "保存成功", bill.bill_no);
                 return Json(new { suc = true, msg = "已成功保存申请", page = 1, id = billId });
             }
         }
@@ -407,6 +423,8 @@ namespace VendorNew.Controllers
             ViewData["drHead"] = h;
             ViewData["drDetails"] = details;
 
+            WLog("修改申请单", "进入修改页面", h.bill_no);
+
             return View("AddDRApply");
         }
 
@@ -415,9 +433,12 @@ namespace VendorNew.Controllers
         public ActionResult CheckDRApply(int id)
         {
             var sv = new DRSv();
-            ViewData["drHead"] = sv.GetDRBill(id);
+            var dr=sv.GetDRBill(id);
+
+            ViewData["drHead"] = dr;
             ViewData["drDetails"] = sv.GetDRBillDetails(id);
 
+            WLog("查看申请单", "查看详情", dr == null ? "" : dr.bill_no);
             return View();
         }
 
@@ -483,7 +504,8 @@ namespace VendorNew.Controllers
         public JsonResult DeleteDR(int billId,bool alsoDeleteBox)
         {
             try {
-                new DRSv().DeleteDR(billId, alsoDeleteBox, currentUser.userId, currentUser.userName);
+                var billNo = new DRSv().DeleteDR(billId, alsoDeleteBox, currentUser.userId, currentUser.userName);
+                WLog("删除申请单", alsoDeleteBox ? "同时删除关联箱子" : "不删除关联箱子", billNo);
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -496,6 +518,8 @@ namespace VendorNew.Controllers
         {
             try {
                 new DRSv().UpdatePStatus(billId, currentUser.realName, pStatusNow, "未提交", "撤销申请");
+                //发送通知邮件给订料员
+                SendNotifyEmail(billId, "撤销");                
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -525,10 +549,10 @@ namespace VendorNew.Controllers
                 ViewBag.tip = "只有申请状态是已提交的单据才能处理，当前单据申请状态是：" + dr.p_status;
                 return View("Error");
             }
-            
+
             if (!dr.mat_order_number.Equals(currentUser.userName)) {
                 if (!new UASv().hasGotPower(currentUser.userId, "audit_all_bills")) {
-                    if (!new UASv().GetAuditGroupUsers(currentUser.userId).Contains(dr.mat_order_number)) {
+                    if (new UASv().GetAuditGroupUsers(currentUser.userId).Where(u => u.user_name == dr.mat_order_number).Count() == 0) {
                         ViewBag.tip = "你没有此单据的处理权限";
                         return View("Error");
                     }
@@ -546,6 +570,8 @@ namespace VendorNew.Controllers
         {            
             try {
                 new DRSv().UpdatePStatus(billId, currentUser.realName, "已提交", (isOk ? "已确认" : "已拒绝"), (isOk ? "确认申请单" : "拒绝申请单"), opinion);
+                //发送邮件给供应商
+                SendNotifyEmail(billId, isOk ? "确认" : "拒绝");
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -561,7 +587,7 @@ namespace VendorNew.Controllers
             if (dr != null) {
                 if (!dr.mat_order_number.Equals(currentUser.userName)) {
                     if (!new UASv().hasGotPower(currentUser.userId, "audit_all_bills")) {
-                        if (!new UASv().GetAuditGroupUsers(currentUser.userId).Contains(dr.mat_order_number)) {
+                        if (new UASv().GetAuditGroupUsers(currentUser.userId).Where(u => u.user_name == dr.mat_order_number).Count() == 0) {
                             return Json(new SRM(false, "你没有此单据的反审核权限"));
                         }
                     }
@@ -570,11 +596,100 @@ namespace VendorNew.Controllers
 
             try {
                 new DRSv().UpdatePStatus(billId, currentUser.realName, pStatus, "已提交", "反审核申请单");
+                //发送邮件给供应商
+                SendNotifyEmail(billId, "反审核");
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
             }
             return Json(new SRM());
+        }
+
+        /// <summary>
+        /// 发送通知邮件
+        /// </summary>
+        /// <param name="billId"></param>
+        /// <param name="opType"></param>
+        private void SendNotifyEmail(int billId,string opType){            
+            var dr = new DRSv().GetDRBill(billId);
+            if (dr == null) return;
+
+            string subject, content,emailAddr;
+            switch (opType) {
+                case "提交":
+                    emailAddr = GetMatOrderEmail(dr);
+                    subject="你有一张待审核的供应商送货申请单";
+                    content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
+                    content += "<div style='margin-left:30px;'>";
+                    content += string.Format("你有一张待处理的单号为【{0}】的送货申请单，来自【{3}】，供应商【{1}({2})】。请尽快登录平台处理。", dr.bill_no, dr.supplier_name, dr.supplier_number, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += "</div>";
+                    content += "<div style='clear:both'><br />单击以下链接可进入平台处理这张申请单：</div>";
+                    content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/ConfirmApply?billId=", billId);
+                    content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>外网用户请点击此链接</a></div>", outerWebSite, "Delivery/ConfirmApply?billId=", billId);
+                    content += "</div>";
+                    break;
+                case "确认":
+                case "拒绝":
+                case "反审核":
+                    emailAddr = getSupplierEmail(dr);
+                    subject = "你有一张送货申请单已被订料员" + opType;
+                    content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
+                    content += "<div style='margin-left:30px;'>";
+                    content += "你有一张单号为【" + dr.bill_no + "】的送货申请单已被订料员" + opType+"。";
+                    content += "</div>";
+                    content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
+                    content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>请点击此链接查看详情</a></div>", outerWebSite, "Delivery/CheckDRApply?id=", billId);
+                    content += "</div>";
+                    break;
+                case "撤销":
+                    emailAddr = GetMatOrderEmail(dr);
+                    subject = "供应商撤销了一张送货申请单";
+                    content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
+                    content += "<div style='margin-left:30px;'>";
+                    content += "单号为【" + dr.bill_no + "】的送货申请单已被供应商撤销。";
+                    content += "</div>";
+                    content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
+                    content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/CheckDRApply?id=", billId);
+                    content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>外网用户请点击此链接</a></div>", outerWebSite, "Delivery/CheckDRApply?id=", billId);
+                    content += "</div>";
+                    break;
+                default:
+                    return;                   
+            }
+            WLog("发送通知邮件", opType, dr.bill_no);
+            MyEmail.SendEmail(subject, emailAddr, content);
+        }
+
+        /// <summary>
+        /// 订料员邮箱
+        /// </summary>
+        /// <param name="bill"></param>
+        /// <returns></returns>
+        private string getSupplierEmail(DRBills bill)
+        {
+            var user = new UserSv().GetUserByUserName(bill.supplier_number);
+            if (user == null) return "";
+            return user.email ?? "";            
+        }
+
+        /// <summary>
+        /// 订料员邮箱
+        /// </summary>
+        /// <param name="bill"></param>
+        /// <returns></returns>
+        private string GetMatOrderEmail(DRBills bill)
+        {            
+            var mat = new UserSv().GetUserByUserName(bill.mat_order_number);
+            if (mat == null) return "";
+
+            List<string> emails = new List<string>();
+            if (mat.email != null) {
+                emails.Add(mat.email);
+            }
+            var matGroupUser = new UASv().GetAuditGroupUsers(mat.user_id);
+            emails.AddRange(matGroupUser.Select(m => m.email).ToList());
+
+            return string.Join(",", emails.Distinct().ToArray());
         }
 
     }

@@ -1,5 +1,24 @@
-﻿@{
-    ViewBag.Title = "Main";
+﻿@using VendorNew.Models;
+@{
+    List<UpdateLog> logs = ViewData["updateLog"] as List<UpdateLog>;
 }
-
-<h2>Main</h2>
+<div class="easyui-panel" data-options="fit:true" title="系统说明" style="padding:12px 24px;">
+    <h2 class="text-danger"><i class="fa fa-question-circle-o"></i> 遇到问题</h2>
+    <div style="padding-left:12px;font-size:14px;" class="text-primary">
+        <div><i class="fa fa-question"></i> 订单问题：请联系对应订料员或采购员； </div>
+        <div style="margin-top:6px;"><i class="fa fa-question"></i> 操作问题：请联系平台维护人员（叶惠爱，yehuiai@trulyopto.cn，0660-3384589）； </div>
+        <div style="margin-top:6px;"><i class="fa fa-question"></i> bug反馈：请联系平台开发人员（李逸焊，liyihan.ic@truly.com.cn，0660-3387006）；</div>
+    </div>
+    <h2 class="text-danger"><i class="fa fa-file-o"></i> 操作指引</h2>
+    <div style="padding-left:12px;font-size:14px;" >
+        <div><a href="#" class="text-primary"><i class="fa fa-file-text-o"></i> 供应商操作指引点此下载 </a></div>
+        <div style="margin-top:6px;"><a href="#" class="text-primary"><i class="fa fa-file-text-o"></i> 订料员/采购员操作指引点此下载 </a></div>
+    </div>
+    <h2 class="text-danger"><i class="fa fa-list "></i> 更新日志</h2>
+    <div style="padding-left:12px;font-size:14px;" class="text-primary">
+        @foreach (var l in logs) {
+            <div><i class="fa fa-circle"></i> @(((DateTime)l.update_date).ToString("yyyy-MM-dd")) @l.update_content</div>
+        }
+        
+    </div>
+</div>

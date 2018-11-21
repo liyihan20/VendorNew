@@ -121,7 +121,7 @@
                     <div>@companyName</div>
                     <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
                     <div>电话：0660-336788-1234</div>
-                    <div>@h.mat_order_name ,供应商发票：@h.supplier_invoice_number</div>
+                    <div>@h.mat_order_name @(string.IsNullOrEmpty(h.supplier_invoice_number) ? "" : ",供应商发票：" + h.supplier_invoice_number)</div>
                 </td>
                 <td width="50%;">
                     <div>收货单位</div>
@@ -173,8 +173,9 @@
                     bool isInSameBox = false; //是否和上一行是合并箱
                     int currentRowSpan = 1; //合并行数
 
-                    for (int i = hasPrinted; i < hasPrinted + pageList[p] && i < m.boxAndPos.Count(); i++) {
+                    for (int i = hasPrinted; i < hasPrinted + pageList[p] && i < m.boxAndPos.Count(); i++) {                        
                         var bp = m.boxAndPos[i];
+                        var drEntry = m.es.Where(e => e.po_number == bp.po.po_number && e.po_entry_id == bp.po.po_entry_id).FirstOrDefault();
                         if (bp.box != null && bp.box == currentBox) {
                             isInSameBox = true;
                         }
@@ -226,10 +227,10 @@
                             }
                             <td>
                                 @string.Concat(bp.po.po_number, "-", bp.po.po_entry_id) <br />
-                                @m.es.Where(e => e.po_number == bp.po.po_number && e.po_entry_id == bp.po.po_entry_id).First().pr_number
+                                @string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())
                             </td>
                             <td>
-                                @m.es.Where(e => e.po_number == bp.po.po_number && e.po_entry_id == bp.po.po_entry_id).First().comment
+                                @drEntry.comment
                             </td>
                         </tr>
                     }
@@ -272,7 +273,7 @@
                             <td></td>
                             <td>
                                 @string.Concat(e.po_number, "-", e.po_entry_id) <br />
-                                @e.pr_number
+                                @string.Concat(e.pr_number,"-",e.pr_entry_id==null?"":e.pr_entry_id.ToString())
                             </td>
                             <td>
                                 @e.comment

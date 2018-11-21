@@ -19,18 +19,28 @@ namespace VendorNew.Controllers
         {
             int defaultNumPerPage = 14;
             int totalNumToDisplay = 0;
+            PrintApplyModels m;
 
             if (pageNumList == null) {
                 pageNumList = defaultNumPerPage.ToString();//默认1页显示14行数据
             }
 
-            var m = new ReportSv().GetData4Print(billId, currentAccount);
+            try {
+                m = new ReportSv().GetData4Print(billId, currentAccount);
+            }
+            catch (Exception ex) {
+                ViewBag.tip = ex.Message;
+                return View("Error");
+            }
+
             totalNumToDisplay = m.boxAndPos.Count() == 0 ? m.es.Count() : m.boxAndPos.Count();
             List<int> pageNumArr = MyUtils.GetPageNumberList(defaultNumPerPage, pageNumList, totalNumToDisplay);
 
             ViewData["reportData"] = m;
             ViewData["pageNumList"] = pageNumList;
             ViewData["pageNumArr"] = pageNumArr;
+
+            WLog("打印送货申请单", "进入打印界面", m.h.bill_no);
 
             return View();
         }
@@ -41,10 +51,12 @@ namespace VendorNew.Controllers
             if (numPerPage < 1) numPerPage = 1;
 
             try {
+                var dr=new DRSv().GetDRBill(billId);
                 var result = new ReportSv().GetOuterBoxes4Print(billId);
                 ViewData["outerData"] = result;
                 ViewData["numPerPage"] = numPerPage;
                 ViewData["billId"] = billId;
+                WLog("打印外箱标签", "打印送货申请关联箱子标签", dr == null ? "" : dr.bill_no);
             }
             catch (Exception ex) {
                 ViewBag.tip = ex.Message;
@@ -66,11 +78,14 @@ namespace VendorNew.Controllers
                 ViewData["outerData"] = result;
                 ViewData["numPerPage"] = numPerPage;
                 ViewData["boxIds"] = boxIds;
+
+                WLog("打印外箱", "打印所有选中的外箱：" + string.Join(",", result.Select(r => r.boxNumber).ToList()));
             }
             catch (Exception ex) {
                 ViewBag.tip = ex.Message;
                 return View("Error");
             }
+
 
             return View();
         }
@@ -81,10 +96,12 @@ namespace VendorNew.Controllers
             if (numPerPage < 1) numPerPage = 1;
 
             try {
+                var dr = new DRSv().GetDRBill(billId);
                 var result = new ReportSv().GetInnerBoxes4Print(billId);
                 ViewData["innerData"] = result;
                 ViewData["numPerPage"] = numPerPage;
                 ViewData["billId"] = billId;
+                WLog("打印内箱标签", "打印送货申请关联箱子标签", dr == null ? "" : dr.bill_no);
             }
             catch (Exception ex) {
                 ViewBag.tip = ex.Message;
@@ -112,6 +129,7 @@ namespace VendorNew.Controllers
                 ViewData["innerData"] = result;
                 ViewData["numPerPage"] = numPerPage;
                 ViewData["boxIds"] = boxIds;
+                WLog("打印内箱", "打印所有选中的内箱：" + string.Join(",", result.Select(r => r.boxNumber).ToList()));
             }
             catch (Exception ex) {
                 ViewBag.tip = ex.Message;
@@ -217,6 +235,8 @@ namespace VendorNew.Controllers
             }
 
             xls.Send();
+
+            WLog("导出申请单Excel", fileName + ":" + queryJson);
         }
 
     }

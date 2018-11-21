@@ -13,7 +13,8 @@ namespace VendorNew.Services
         /// </summary>
         /// <param name="box">外箱信息</param>
         /// <param name="poList">外箱关联的PO信息</param>
-        public void SaveOuterBox(OuterBoxes box, List<OuterBoxPOs> poList)
+        /// <returns>箱号</returns>
+        public string SaveOuterBox(OuterBoxes box, List<OuterBoxPOs> poList)
         {
             //验证可做外箱数量
             decimal everyBoxQty = 0;
@@ -49,6 +50,8 @@ namespace VendorNew.Services
                 po.out_box_id = box.outer_box_id;
             }
             db.SubmitChanges();
+
+            return box.box_number;
         }
 
         /// <summary>
@@ -204,22 +207,35 @@ namespace VendorNew.Services
         /// 删除外箱，还包括关联的所有内箱和外箱PO
         /// </summary>
         /// <param name="outerBoxId">外箱id</param>
-        public void RemoveOuterBox(int outerBoxId)
+        public string RemoveOuterBox(int outerBoxId)
         {
+            string boxNumber = "";
+            var box = db.OuterBoxes.Where(o => o.outer_box_id == outerBoxId).FirstOrDefault();
+            if (box != null) {
+                boxNumber = box.box_number;
+            }
             db.OuterBoxes.DeleteAllOnSubmit(db.OuterBoxes.Where(o => o.outer_box_id == outerBoxId));
             db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.outer_box_id == outerBoxId));
             db.OuterBoxPOs.DeleteAllOnSubmit(db.OuterBoxPOs.Where(o => o.out_box_id == outerBoxId));
             db.SubmitChanges();
+
+            return boxNumber;
         }
 
         /// <summary>
         /// 删除内箱
         /// </summary>
         /// <param name="innerBoxId">内箱id</param>
-        public void RemoveInnerBox(int innerBoxId)
+        public string RemoveInnerBox(int innerBoxId)
         {
+            var box = db.InneBoxes.Where(i => i.inner_box_id == innerBoxId).FirstOrDefault();
+            if (box == null) return "";
+            string boxNumber = box.box_number;
+
             db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.inner_box_id == innerBoxId));
             db.SubmitChanges();
+
+            return boxNumber;
         }
 
         /// <summary>
@@ -243,7 +259,7 @@ namespace VendorNew.Services
         /// </summary>
         /// <param name="outerBoxId">外箱id</param>
         /// <param name="splitNum">拆分出来的件数</param>
-        public void SplitOuterbox(int outerBoxId, int splitNum)
+        public string[] SplitOuterbox(int outerBoxId, int splitNum)
         {
             var b1 = db.OuterBoxes.Where(o => o.outer_box_id == outerBoxId).FirstOrDefault();
             if (b1 == null) {
@@ -252,6 +268,8 @@ namespace VendorNew.Services
             if (b1.pack_num <= splitNum) {
                 throw new Exception("外箱件数必须大于拆分件数");
             }
+
+            string boxNumberBefore = b1.box_number;
 
             //判断关联的内箱能否按照外箱的拆分按比例分割,因为内箱件数必须是外箱整数倍，所以不必再验证
             //foreach (var ib in db.InneBoxes.Where(i => i.outer_box_id == outerBoxId).ToList()) {
@@ -332,6 +350,7 @@ namespace VendorNew.Services
                     
                 }
                 db.SubmitChanges();
+                return new string[] { boxNumberBefore, b1.box_number, b2.box_number };
             }
             catch (Exception ex) {
                 //保存失败，回滚操作

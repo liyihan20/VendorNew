@@ -79,13 +79,15 @@ namespace VendorNew.Services
         /// <returns></returns>
         private string GetSystemNo(string prefix1, string prefix2, int digitPerDay,int num = 1)
         {
-            var currentRecord = db.SystemNos.Where(s => s.prefix1 == prefix1 && s.prefix2 == prefix2).FirstOrDefault();
+            var nowYear = DateTime.Now.ToString("yyyy");
+            var currentRecord = db.SystemNos.Where(s => s.prefix1 == prefix1 && s.prefix2 == prefix2 && s.year_str == nowYear).FirstOrDefault();
             int currentNumber;
             if (currentRecord == null) {
                 db.SystemNos.InsertOnSubmit(new SystemNos()
                 {
                     prefix1 = prefix1,
                     prefix2 = prefix2,
+                    year_str = nowYear,
                     current_num = num
                 });
                 currentNumber = num;
@@ -96,7 +98,7 @@ namespace VendorNew.Services
             }
             db.SubmitChanges();
 
-            string result = string.Format("{0}{1}{2:D" + digitPerDay + "}",prefix1,prefix2, currentNumber);
+            string result = string.Format("{0}{1}{2:D" + digitPerDay + "}", prefix1, prefix2, currentNumber);
             
             return result;
         }
@@ -149,14 +151,66 @@ namespace VendorNew.Services
 
         public supplierInfo GetSupplierInfo(string supplierNumber,string account)
         {
-            return db.Vw_SupplierInfo.Where(v => v.account == account && v.suppier_number == supplierNumber)
-                .Select(v => new supplierInfo()
+            var sInfo = db.GetSupplierInfo(supplierNumber, account).ToList();
+
+            if (sInfo.Count() == 0) {
+                throw new Exception("供应商基础资料不存在");
+            }
+
+            var info = sInfo.First();
+            return new supplierInfo()
                 {
-                    supplierName = v.supplier_name,
-                    supplierAddr = v.supplier_addr,
-                    supplierAttn = v.supplier_attn,
-                    supplierPhone = v.supplier_phone
-                }).FirstOrDefault();
+                    supplierNumber = info.suppier_number,
+                    supplierName = info.supplier_name,
+                    supplierAddr = info.supplier_addr,
+                    supplierAttn = info.supplier_attn,
+                    supplierPhone = info.supplier_phone
+                };
         }
+
+        public void SaveSupplierInfo(supplierInfo info,string account)
+        {
+            var inf = db.SupplierInfo.Where(s => s.supplier_number == info.supplierNumber && s.account == account).FirstOrDefault();
+            if (inf == null) {
+                inf = new SupplierInfo();
+                inf.supplier_number = info.supplierNumber;
+                inf.name = info.supplierName;
+                inf.account=account;
+                db.SupplierInfo.InsertOnSubmit(inf);
+            }
+            inf.attn_name = info.supplierAttn;
+            inf.address = info.supplierAddr;
+            inf.phone = info.supplierPhone;
+            inf.update_date = DateTime.Now;
+
+            db.SubmitChanges();
+        }
+
+        public List<UpdateLog> GetUpdateLogs(string searchValue)
+        {
+            return db.UpdateLog.Where(u => u.update_content.Contains(searchValue)).OrderByDescending(u=>u.update_date).ToList();
+        }
+
+        public void SaveUpdateLog(UpdateLog log)
+        {
+            if (log.id == 0) {
+                db.UpdateLog.InsertOnSubmit(log);
+            }
+            else {
+                var l = db.UpdateLog.Where(u => u.id == log.id).FirstOrDefault();
+                if (l != null) {
+                    l.update_date = log.update_date;
+                    l.update_content = log.update_content;
+                }
+            }
+            db.SubmitChanges();
+        }
+
+        public void RemoveUpdateLog(int id)
+        {
+            db.UpdateLog.DeleteAllOnSubmit(db.UpdateLog.Where(u => u.id == id).ToList());
+            db.SubmitChanges();
+        }
+
     }
 }

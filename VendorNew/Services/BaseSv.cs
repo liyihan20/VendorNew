@@ -13,8 +13,11 @@ namespace VendorNew.Services
 
         public void Wlog(EventLog log)
         {
-            db.EventLog.InsertOnSubmit(log);
-            db.SubmitChanges();            
+            try {
+                db.EventLog.InsertOnSubmit(log);
+                db.SubmitChanges();
+            }
+            catch { }
         }
     }
 }

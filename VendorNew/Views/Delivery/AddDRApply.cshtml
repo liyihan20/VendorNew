@@ -54,6 +54,10 @@
                         }
 
                         return toThousandValue(value);
+                    }, styler: function (value, row, index) {                        
+                        if (row.send_qty == row.can_send_qty) {                            
+                            return 'color:red;';
+                        }
                     }
                 },
                 { field: 'comment', title: '备注', width: 180, align: 'center', editor: { type: 'textbox', options: { validType: { length: [0, 200] } } } },
@@ -200,15 +204,25 @@
             ]],
             toolbar: [{
                 text: '<i class="fa fa-fw fa-plus-square"></i> 新增外箱',
-                handler: function () {                    
-                    $("#dlg_outer_box").dialog("open");
-                    var pos = $("#dg_detail").datagrid("getRows");
-                    $('#select_box_po').combogrid('grid').datagrid("loadData", pos);
-                    $('#dlg_outer_box .easyui-panel').panel('resize', {
-                        width: "100%",
-                    });
-                    $("#fm_outer_box").form("reset");
-                    $("#dg_select_box_po").datagrid("loadData", []);
+                handler: function () {
+                    var combogridPo = [];
+                    for (var i = 0; i < detailData.length; i++) {
+                        if (detailData[i].send_qty > poSumInfo[i].box_qty) {
+                            combogridPo.push(detailData[i]);
+                        }
+                    }
+                    if (combogridPo.length > 0) {
+                        $('#select_box_po').combogrid('grid').datagrid("loadData", combogridPo);
+                        $("#dlg_outer_box").dialog("open");
+                        $('#dlg_outer_box .easyui-panel').panel('resize', {
+                            width: "100%",
+                        });
+                        $("#fm_outer_box").form("reset");
+                        $("#dg_select_box_po").datagrid("loadData", []);
+                    } else {
+                        tip("外箱制作数量与达到本次送货数量，不需要再新增");
+                    }
+
                 }
             }, "-",
             {
@@ -356,6 +370,18 @@
                 { field: 'item_name', title: '物料名称', width: 120, align: 'center' },
                 { field: 'item_model', title: '规格型号', width: 240, align: 'center' }
             ]],
+            toolbar: [{
+                text: '<i class="fa fa-fw fa-remove"></i> 删除行',
+                handler: function () {
+                    var removedRow = $('#dg_select_box_po').datagrid('getCurrentRow');
+                    if (!removedRow) {
+                        tip("请先选择需要删除的行");
+                        return;
+                    }
+                    var rowIndex = $('#dg_select_box_po').datagrid('getRowIndex', removedRow);
+                    $('#dg_select_box_po').datagrid('deleteRow', rowIndex);
+                }
+            }],
             onClickRow:onClickBoxPoRow
         });
 
@@ -458,6 +484,13 @@
                 tip("品牌的长度限定为8个字节，即最多可输入4个中文或者8个英文，请精简");
                 return;
             }
+
+            //var produceDate = $("#produce_date").datebox("getValue");
+            //var sendDate = $("#send_date").datebox("getValue");
+            //if (produceDate > sendDate) {
+            //    tip("生产日期不能大于送货日期");
+            //    return;
+            //}
 
             $.ajax({
                 type: 'post',
@@ -964,7 +997,7 @@
                         生产日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="produce_date" data-options="required:true" />
+                        <input type="text" class="easyui-datebox" name="produce_date" id="produce_date" data-options="required:true,editable:false" />
                     </td>
                     <td>
                         保质期(月)：
@@ -976,7 +1009,7 @@
                         包装日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="package_date" data-options="required:true" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="text" class="easyui-datebox" name="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </td>
                 </tr>
                 <tr>                    

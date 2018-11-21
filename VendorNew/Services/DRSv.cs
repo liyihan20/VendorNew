@@ -79,6 +79,7 @@ namespace VendorNew.Services
                               join pos in db.OuterBoxPOs on o.outer_box_id equals pos.out_box_id
                               join ib in db.InneBoxes on o.outer_box_id equals ib.outer_box_id into tib
                               from i in tib.DefaultIfEmpty()
+                              where outerBoxIds.Contains(o.outer_box_id)
                               select new
                               {
                                   box = o,
@@ -250,13 +251,13 @@ namespace VendorNew.Services
         /// <returns></returns>
         public IQueryable<CheckApplyListModel> SearchMyAuditList(SearchMyApplyParams p, bool canCheckAll)
         {
-            var groupUser = new UASv().GetAuditGroupUsers(p.userId);
+            var groupUserName = new UASv().GetAuditGroupUsers(p.userId).Select(u => u.user_name).ToList();
             return SearchApplyListBase(p)
                 .Where(s => (canCheckAll
                     || s.matOrderNumber == p.userName
                     || s.buyerNumber == p.userName
-                    || groupUser.Contains(s.matOrderNumber)
-                    || groupUser.Contains(s.buyerName))
+                    || groupUserName.Contains(s.matOrderNumber)
+                    || groupUserName.Contains(s.buyerName))
                     )
                 .OrderBy(s => s.sendDate);
         }
@@ -314,7 +315,7 @@ namespace VendorNew.Services
             return result;
         }
 
-        public void DeleteDR(int billId,bool alsoDeleteBox,int userId,string userName)
+        public string DeleteDR(int billId,bool alsoDeleteBox,int userId,string userName)
         {
             var dr = db.DRBills.Where(d => d.bill_id == billId).FirstOrDefault();
             var details = db.DRBillDetails.Where(d => d.bill_id == billId).ToList();
@@ -353,6 +354,7 @@ namespace VendorNew.Services
                 }
             }
             db.SubmitChanges();
+            return dr.bill_no;
         }
 
         public void UpdatePStatus(int billId, string userName, string beforeStatus, string afterStatus,string doWhat=null, string comment=null)

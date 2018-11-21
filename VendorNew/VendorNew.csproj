@@ -355,6 +355,8 @@
     <Content Include="Views\Box\Boxes.cshtml" />
     <Content Include="Views\Report\PrintSelectedOuterBox.cshtml" />
     <Content Include="Views\Report\PrintSelectedInnerBox.cshtml" />
+    <Content Include="Views\Home\SupplierInfoSetting.cshtml" />
+    <Content Include="Views\Admin\CheckUpdateLog.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

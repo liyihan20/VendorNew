@@ -86,7 +86,7 @@ namespace VendorNew.Services
         /// </summary>
         /// <param name="userId"></param>
         /// <returns></returns>
-        public string[] GetAuditGroupUsers(int userId)
+        public List<Users> GetAuditGroupUsers(int userId)
         {
             return (from ga in db.GroupUsers
                     join g in db.Groups on ga.group_id equals g.group_id
@@ -94,7 +94,7 @@ namespace VendorNew.Services
                     join u in db.Users on ga2.user_id equals u.user_id
                     where g.group_type == "audit"
                     && ga.user_id == userId
-                    select u.user_name).Distinct().ToArray();
+                    select u).Distinct().ToList();
         }
 
         public List<Authorities> GetAuthorities(string searchValue)

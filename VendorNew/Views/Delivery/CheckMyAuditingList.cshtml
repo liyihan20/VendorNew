@@ -162,7 +162,7 @@
 
         $("#search_btn").on("click", function () {
             $("#dg_dr").datagrid({
-                url: 'GetMyAppliesData',
+                url: 'SearchMyAuditingList',
                 queryParams: {
                     beginDate: $("#beginDate").datebox("getValue"),
                     endDate: $("#endDate").datebox("getValue"),
@@ -216,7 +216,7 @@
                     <option value="所有">所有</option>
                     <option value="普通采购">普通采购</option>
                     <option value="委外PO">委外PO</option>
-                    <option value="VMI采购">VMI订单</option>
+                    <option value="VMI订单">VMI订单</option>
                     <option value="VMI合同">VMI合同</option>
                 </select>
             </div>

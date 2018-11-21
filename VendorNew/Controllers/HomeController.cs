@@ -24,10 +24,24 @@ namespace VendorNew.Controllers
             if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
                 ViewBag.needToChangePassword = 1;
             }
-
+            
             return View();
         }
         
+        [SessionTimeOutFilter]
+        public ActionResult ChangeAccount()
+        {
+            var cookie = Request.Cookies[MyUtils.GetCookieName()];
+            if (cookie != null) {
+                //cookie.Values.Remove("account");
+                cookie.Values.Set("account", currentAccount == "O" ? "S" : "O");
+                cookie.Expires = DateTime.Now.AddDays(1);
+                Response.AppendCookie(cookie);
+                Session.Clear();
+            }
+            return RedirectToAction("Index");
+        }
+
         public JsonResult GetMyMenuItems()
         {
             return Json(new UASv().GetMenuItems(currentUser.userId));
@@ -36,6 +50,7 @@ namespace VendorNew.Controllers
         [SessionTimeOutFilter]
         public ActionResult Main()
         {
+            ViewData["updateLog"] = new ItemSv().GetUpdateLogs("");
             return View();
         }
 
@@ -73,7 +88,7 @@ namespace VendorNew.Controllers
         [SessionTimeOutFilter]
         public ActionResult EmailSetting()
         {
-            ViewData["email"] = new UserSv().GetEmailAddr(currentUser.userId);
+            ViewData["email"] = new UserSv().GetUserByUserId(currentUser.userId).email ?? "";
             return View();
         }
 
@@ -151,6 +166,35 @@ namespace VendorNew.Controllers
                 return Json(new SRM(ex));
             }
 
+            return Json(new SRM());
+        }
+
+        [AuthorityFilter]
+        public ActionResult SupplierInfoSetting()
+        {
+            try {
+                ViewData["info"] = new ItemSv().GetSupplierInfo(currentUser.userName, currentAccount);
+            }
+            catch (Exception ex) {
+                ViewBag.tip = ex.Message;
+                return View("Error");
+            }
+
+            return View();
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult SaveSupplierInfo(FormCollection fc)
+        {
+            supplierInfo info = new supplierInfo();
+            MyUtils.SetFieldValueToModel(fc, info);
+
+            try {
+                new ItemSv().SaveSupplierInfo(info, currentAccount);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
             return Json(new SRM());
         }
 

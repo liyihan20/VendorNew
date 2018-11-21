@@ -130,13 +130,7 @@ namespace VendorNew.Services
             }
             db.SubmitChanges();
         }
-
-
-        public string GetEmailAddr(int userId)
-        {
-            return GetUserByUserId(userId).email ?? "";
-        }
-
+        
         /// <summary>
         /// 修改邮箱地址，最多可保存3个邮箱，邮箱地址之间用逗号隔开
         /// </summary>

@@ -28,14 +28,6 @@
       <Association Name="Users_GroupUsers" Member="Users" ThisKey="user_id" OtherKey="user_id" Type="Users" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.SystemNos" Member="SystemNos">
-    <Type Name="SystemNos">
-      <Column Name="num_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="prefix1" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
-      <Column Name="prefix2" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
-      <Column Name="current_num" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-    </Type>
-  </Table>
   <Table Name="dbo.Users" Member="Users">
     <Type Name="Users">
       <Column Name="user_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -171,30 +163,6 @@
       <Column Name="can_send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
     </Type>
   </Table>
-  <Table Name="dbo.DRBillDetails" Member="DRBillDetails">
-    <Type Name="DRBillDetails">
-      <Column Name="bill_detail_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
-      <Column Name="bill_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="item_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="item_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
-      <Column Name="item_model" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
-      <Column Name="unit_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="unit_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="po_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
-      <Column Name="send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
-      <Column Name="po_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="po_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="po_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="po_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
-      <Column Name="pr_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="buyer_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="buyer_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
-      <Column Name="contract_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="can_send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.BackupData" Member="BackupData">
     <Type Name="BackupData">
       <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -217,20 +185,75 @@
       <Column Name="account" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
     </Type>
   </Table>
-  <Table Name="dbo.Vw_SupplierInfo" Member="Vw_SupplierInfo">
-    <Type Name="Vw_SupplierInfo">
-      <Column Name="account" Type="System.String" DbType="VarChar(1) NOT NULL" CanBeNull="false" />
-      <Column Name="suppier_number" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
-      <Column Name="supplier_name" Type="System.String" DbType="VarChar(80)" CanBeNull="true" />
-      <Column Name="supplier_phone" Type="System.String" DbType="VarChar(40)" CanBeNull="true" />
-      <Column Name="supplier_attn" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="supplier_addr" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+  <Table Name="dbo.DRBillDetails" Member="DRBillDetails">
+    <Type Name="DRBillDetails">
+      <Column Name="bill_detail_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="bill_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="item_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="item_model" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="unit_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="unit_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="po_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="po_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="po_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="po_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="po_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="pr_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="buyer_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="buyer_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="comment" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="contract_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="can_send_qty" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="pr_entry_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SystemNos" Member="SystemNos">
+    <Type Name="SystemNos">
+      <Column Name="num_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="prefix1" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="prefix2" Type="System.String" DbType="VarChar(20)" CanBeNull="true" />
+      <Column Name="current_num" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="year_str" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.SupplierInfo" Member="SupplierInfo">
+    <Type Name="SupplierInfo">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="attn_name" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="phone" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="address" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
+      <Column Name="supplier_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="update_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.UpdateLog" Member="UpdateLog">
+    <Type Name="UpdateLog">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="update_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="update_content" Type="System.String" DbType="VarChar(5000)" CanBeNull="true" />
     </Type>
   </Table>
   <Function Name="dbo.GetSupplierNameByNumber" Method="GetSupplierNameByNumber">
     <Parameter Name="supplierNumber" Type="System.String" DbType="VarChar(50)" />
     <ElementType Name="GetSupplierNameByNumberResult">
       <Column Name="FName" Type="System.String" DbType="VarChar(80)" CanBeNull="true" />
+    </ElementType>
+  </Function>
+  <Function Name="dbo.GetSupplierInfo" Method="GetSupplierInfo">
+    <Parameter Name="supplierNumber" Type="System.String" DbType="VarChar(50)" />
+    <Parameter Name="account" Type="System.String" DbType="VarChar(10)" />
+    <ElementType Name="GetSupplierInfoResult">
+      <Column Name="account" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="suppier_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="supplier_name" Type="System.String" DbType="VarChar(200)" CanBeNull="true" />
+      <Column Name="supplier_phone" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="supplier_attn" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="supplier_addr" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
     </ElementType>
   </Function>
 </Database>

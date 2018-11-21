@@ -15,6 +15,7 @@ namespace VendorNew.Services
             m.h = sv.GetDRBill(billId);
             m.es = sv.GetDRBillDetails(billId);
             m.boxAndPos = sv.GetBoxAndPo(billId);
+
             m.supplierInfo = new ItemSv().GetSupplierInfo(m.h.supplier_number,account);
 
             return m;

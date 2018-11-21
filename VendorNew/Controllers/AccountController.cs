@@ -69,7 +69,7 @@ namespace VendorNew.Controllers
             WLog(TAG, "登录成功:" + userName + "," + account);
 
             return Json(new SRM());
-        }
+        }                
 
         public ActionResult LogOut()
         {
