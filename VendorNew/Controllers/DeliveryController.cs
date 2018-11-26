@@ -405,6 +405,11 @@ namespace VendorNew.Controllers
             var sv = new DRSv();
             var h = sv.GetDRBill(id);
 
+            if (h == null) {
+                ViewBag.tip = "单据不存在，可能已被删除";
+                return View("Error");
+            }
+
             if (!new string[] { "未提交", "已拒绝" }.Contains(h.p_status)) {
                 ViewBag.tip = "当前申请单状态是：" + h.p_status + ",不能修改";
                 return View("Error");

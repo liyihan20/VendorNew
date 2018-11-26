@@ -256,4 +256,10 @@
       <Column Name="supplier_addr" Type="System.String" DbType="VarChar(500)" CanBeNull="true" />
     </ElementType>
   </Function>
+  <Function Name="dbo.GetEmpNameByNumber" Method="GetEmpNameByNumber">
+    <Parameter Name="empNumber" Type="System.String" DbType="VarChar(50)" />
+    <ElementType Name="GetEmpNameByNumberResult">
+      <Column Name="FName" Type="System.String" DbType="VarChar(255) NOT NULL" CanBeNull="false" />
+    </ElementType>
+  </Function>
 </Database>

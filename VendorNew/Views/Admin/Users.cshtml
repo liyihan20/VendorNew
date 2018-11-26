@@ -10,9 +10,9 @@
             url: "GetUsers",
             columns: [[
                 { field: 'user_name', title: '登录名', width: 100, align: 'center' },
-                { field: 'real_name', title: '用户名', width: 180, align: 'center' },
                 { field: 'user_role', title: '角色', width: 80, align: 'center' },
-                { field: 'email', title: '邮箱', width: 240, align: 'center' },
+                { field: 'real_name', title: '用户名', width: 180, align: 'center' },
+                { field: 'email', title: '邮箱', width: 180, align: 'center' },
                 {
                     field: 'in_date', title: '注册日期', width: 120, align: 'center',
                     formatter: function (value, row, index) {
@@ -47,18 +47,28 @@
             onDblClickRow: editUser
         });
 
-        //输入供应商编码，自动取得供应商名称
+        
         $("#user_name").textbox('textbox').on("blur", function () {
             var role = $("#user_role").combobox("getValue");
+            var number = $("#user_name").textbox("getValue");
             if (role == "供应商") {
-                var number = $("#user_name").textbox("getValue");
+                //输入供应商编码，自动取得供应商名称                
                 if (number.indexOf("11.") == 0 || number.indexOf("15.") == 0) {
                     $.post("GetSupplierNameByNumber", { number: number }, function (data) {
                         if (data.suc) {
                             $("#real_name").textbox("setValue", data.extra);
                         }
-                    })
+                    });
                     
+                }
+            } else {
+                //输入厂牌，取得员工姓名
+                if (number.length > 7) {
+                    $.post("GetEmpNameByNumber", { number: number }, function (data) {
+                        if (data.suc) {
+                            $("#real_name").textbox("setValue", data.extra);
+                        }
+                    });
                 }
             }
         });

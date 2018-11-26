@@ -32,6 +32,7 @@
                     }
                 },
                 { field: 'unitName', title: '单位', width: 60, align: 'center' },
+                { field: 'supplierName', title: '供应商', width: 180, align: 'center' },
                 { field: 'itemNumber', title: '物料编码', width: 120, align: 'center' },
                 { field: 'billType', title: '订单类型', width: 100, align: 'center' },
                 { field: 'buyType', title: '采购方式', width: 100, align: 'center' },
@@ -210,9 +211,9 @@
 <div class="easyui-layout" data-options="fit:true">
     <div data-options="region:'north',title:'查询选项'" style="height:120px;padding:8px;">
         <form id="fm" method="post" style="padding:0;margin:0;">
-            <div style="float:left;width:170px;margin-right:12px;">
+            <div style="float:left;width:160px;margin-right:12px;">
                 订单类型：
-                <select class="easyui-combobox" id="billType" name="billType" data-options="panelHeight:'auto',editable:false" style="width:100px;">
+                <select class="easyui-combobox" id="billType" name="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
                     <option value="所有">所有</option>
                     <option value="普通采购">普通采购</option>
                     <option value="委外PO">委外PO</option>
@@ -226,14 +227,14 @@
                 ~
                 <input type="text" class="easyui-datebox" id="endDate" name="endDate" data-options="prompt:'结束日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd")" />
             </div>
-            <div style="float:left;width:240px;margin-right:12px;">
+            <div style="float:left;width:186px;margin-right:12px;">
                 送货单号：
-                <input type="text" class="easyui-textbox" id="billNo" name="billNo" data-options="prompt:'送货单申请单号'" style="width:160px;" />
+                <input type="text" class="easyui-textbox" id="billNo" name="billNo" data-options="prompt:'送货单申请单号'" style="width:120px;" />
             </div>
             <div style="clear:both;margin-top:8px;"></div>
-            <div style="float:left;width:170px;margin-right:12px;">
+            <div style="float:left;width:160px;margin-right:12px;">
                 申请状态：
-                <select class="easyui-combobox" id="pStatus" name="pStatus" data-options="panelHeight:'auto',editable:false" style="width:100px;">
+                <select class="easyui-combobox" id="pStatus" name="pStatus" data-options="panelHeight:'auto',editable:false" style="width:90px;">
                     <option value="所有">所有</option>
                     <option value="未提交">未提交</option>
                     <option value="已提交">已提交</option>
@@ -246,9 +247,9 @@
                 物料信息：
                 <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:216px;" />
             </div>
-            <div style="float:left;width:240px;margin-right:12px;">
+            <div style="float:left;width:186px;margin-right:12px;">
                 订单编号：
-                <input type="text" class="easyui-textbox" id="poNo" name="poNo" data-options="prompt:'信利订单编号'" style="width:160px;" />
+                <input type="text" class="easyui-textbox" id="poNo" name="poNo" data-options="prompt:'信利订单编号'" style="width:120px;" />
             </div>
             <div style="float:left;width:96px;">
                 <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>

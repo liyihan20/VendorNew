@@ -80,7 +80,7 @@
                         var poInfo = "";
                         for (var j = 0; j < ps.length; j++) {
                             var p = ps[j];
-                            poInfo += p.po_number + "[" + p.po_entry_id + "]:" + p.send_num;
+                            poInfo += p.po_number + "[" + p.po_entry_id + "]:" + p.send_num+";";
                         }
                         b.po_info = poInfo;
 
@@ -186,6 +186,10 @@
                     var selected = $("#dg_box").treegrid("getSelected");
                     if (!selected || selected.inner_box_id) {
                         tip("请先选择一行外箱再查看");
+                        return;
+                    }
+                    if (!selected.bill_id) {
+                        tip("此箱子没有关联申请单，状态是未使用");
                         return;
                     }
                     parent.addTab("<i class='fa fa-fw fa-search'></i>" + selected.bill_no, "@Url.Content("~/Delivery/CheckDRApply?id=")" + selected.bill_id);

@@ -31,6 +31,9 @@
                 word-break: break-all;
                 overflow: hidden;
             }
+        .arial{
+            font-family:'Arial Narrow', Arial, sans-serif;
+        }
     </style>
     <style type="text/css" media="print">
         .noPrint {
@@ -197,7 +200,7 @@
                                 <td rowspan="@currentRowSpan">
                                     @bp.box.item_number <br />
                                     @bp.box.item_name <br />
-                                    @bp.box.item_model
+                                    <span class="arial">@bp.box.item_model</span>
                                 </td>
                             }
                             <td>
@@ -206,7 +209,7 @@
                             @if (!isInSameBox) {
                                 <td rowspan="@currentRowSpan">
                                     @bp.box.pack_num <br />
-                                    @bp.box.box_number
+                                    <span class="arial">@bp.box.box_number</span>
                                 </td>
                             }
                             <td style="text-align:right;">
@@ -225,7 +228,7 @@
                                     @bp.box.made_in
                                 </td>
                             }
-                            <td>
+                            <td class="arial">
                                 @string.Concat(bp.po.po_number, "-", bp.po.po_entry_id) <br />
                                 @string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())
                             </td>
@@ -257,7 +260,7 @@
                             <td>
                                 @e.item_number <br />
                                 @e.item_name <br />
-                                @e.item_model
+                                <span class="arial">@e.item_model</span>
                             </td>
                             <td>
                                 @e.unit_name
@@ -271,7 +274,7 @@
                             <td></td>
                             <td></td>
                             <td></td>
-                            <td>
+                            <td class="arial">
                                 @string.Concat(e.po_number, "-", e.po_entry_id) <br />
                                 @string.Concat(e.pr_number,"-",e.pr_entry_id==null?"":e.pr_entry_id.ToString())
                             </td>

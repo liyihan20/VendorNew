@@ -149,6 +149,22 @@ namespace VendorNew.Services
             }
         }
 
+        /// <summary>
+        /// 取得k3职员姓名
+        /// </summary>
+        /// <param name="empNumber">职员厂牌</param>
+        /// <returns></returns>
+        public string GetEmpNameByNumber(string empNumber)
+        {
+            var emp = db.GetEmpNameByNumber(empNumber).FirstOrDefault();
+            if (emp == null) {
+                return "";
+            }
+            else {
+                return emp.FName;
+            }
+        }
+
         public supplierInfo GetSupplierInfo(string supplierNumber,string account)
         {
             var sInfo = db.GetSupplierInfo(supplierNumber, account).ToList();

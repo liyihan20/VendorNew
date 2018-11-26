@@ -61,6 +61,10 @@ namespace VendorNew.Services
         /// <param name="boxes"></param>
         public void BeforeApply(DRBills h, List<DRBillDetails> es, List<IDModel> boxIds)
         {
+            if (new UserSv().GetUserByUserName(h.mat_order_number) == null) {
+                throw new Exception(string.Format("订料员【{0}】未注册，请先联系订料员注册平台后再提交。",h.mat_order_name));
+            }
+
             //1. 先验证可申请数量，需要获取最新的入库数量
             decimal stockQty, transitQty, canApplyQty;
             foreach (var e in es) {

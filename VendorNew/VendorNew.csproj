@@ -314,6 +314,8 @@
     <Content Include="Content\font-awesome-4.7.0\scss\_screen-reader.scss" />
     <Content Include="Content\font-awesome-4.7.0\scss\_stacked.scss" />
     <Content Include="Content\font-awesome-4.7.0\scss\_variables.scss" />
+    <Content Include="Content\doc\供应商操作.pdf" />
+    <Content Include="Content\doc\订料员操作指引.pdf" />
     <None Include="Properties\PublishProfiles\VendorNew.pubxml" />
     <None Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\easyui-lang-zh_CN.js" />

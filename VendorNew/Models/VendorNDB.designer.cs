@@ -262,6 +262,13 @@ namespace VendorNew.Models
 			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), supplierNumber, account);
 			return ((ISingleResult<GetSupplierInfoResult>)(result.ReturnValue));
 		}
+		
+		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.GetEmpNameByNumber")]
+		public ISingleResult<GetEmpNameByNumberResult> GetEmpNameByNumber([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string empNumber)
+		{
+			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), empNumber);
+			return ((ISingleResult<GetEmpNameByNumberResult>)(result.ReturnValue));
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.GroupAuthorities")]
@@ -5211,6 +5218,32 @@ namespace VendorNew.Models
 				if ((this._supplier_addr != value))
 				{
 					this._supplier_addr = value;
+				}
+			}
+		}
+	}
+	
+	public partial class GetEmpNameByNumberResult
+	{
+		
+		private string _FName;
+		
+		public GetEmpNameByNumberResult()
+		{
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FName", DbType="VarChar(255) NOT NULL", CanBeNull=false)]
+		public string FName
+		{
+			get
+			{
+				return this._FName;
+			}
+			set
+			{
+				if ((this._FName != value))
+				{
+					this._FName = value;
 				}
 			}
 		}

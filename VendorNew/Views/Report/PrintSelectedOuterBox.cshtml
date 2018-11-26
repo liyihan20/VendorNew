@@ -30,6 +30,10 @@
             page-break-after: always;
             clear: both;
         }
+
+        .arial{
+            font-family:'Arial Narrow', Arial, sans-serif;
+        }
     </style>
     <style type="text/css" media="print">
         .noPrint {
@@ -140,7 +144,7 @@
             <tr>
                 <td>贸易类型:</td>
                 <td>@b.tradeTypeName</td>
-                <td>箱号:@b.boxNumber</td>
+                <td>箱号:<span class="arial">@b.boxNumber</span></td>
             </tr>
             <tr>
                 <td colspan="3">
@@ -150,7 +154,7 @@
             </tr>
             <tr>
                 <td colspan="4">
-                    型号:@b.itemModel
+                    型号:<span class="arial">@b.itemModel</span>
                 </td>
             </tr>
             <tr>

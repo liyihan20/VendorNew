@@ -66,6 +66,12 @@ namespace VendorNew.Controllers
         }
 
         [SessionTimeOutJsonFilter]
+        public JsonResult GetEmpNameByNumber(string number)
+        {
+            return Json(new SRM(true, "", new ItemSv().GetEmpNameByNumber(number)));
+        }
+
+        [SessionTimeOutJsonFilter]
         public JsonResult SaveUser(FormCollection fc)
         {
             Users user = new Users();
