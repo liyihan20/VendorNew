@@ -19,7 +19,7 @@
             border-bottom: 1px solid #666;
             word-break: break-all;
             overflow: hidden;
-            font-family: '宋体';
+            font-family: '黑体','宋体';
         }
         img {
             margin: 0 auto;
@@ -79,7 +79,7 @@
             result += str[i];
             tempLen += countCharNum(str[i]);
         }
-        return result;
+        return result.replace("（","(").replace("）",")");
     }
 
 </script>
@@ -115,7 +115,7 @@
             </tr>
             <tr>
                 <td>名称:</td>
-                <td><span class="sub_string" data-bit="20">@b.itemName</span></td>
+                <td><span class="sub_string" data-bit="17">@b.itemName</span></td>
             </tr>
             <tr>
                 <td>数量:</td>
@@ -123,11 +123,11 @@
             </tr>
             <tr>
                 <td>批次:</td>
-                <td>@b.batchNo</td>
+                <td><span class="sub_string" data-bit="17">@b.batchNo</span></td>
             </tr>
             <tr>
-                <td>材质:</td>
-                <td><span class="sub_string" data-bit="20">@b.madeBy</span></td>
+                <td>外箱:</td>
+                <td><span class="arial">@b.outerBoxNumber</span></td>
             </tr>
             <tr>                
                 <td colspan="2">

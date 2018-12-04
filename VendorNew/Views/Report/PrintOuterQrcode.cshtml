@@ -10,6 +10,7 @@
             font-size:12px;
             border-top:1px solid #666;
             border-right:1px solid #666;
+            /*font-family:myNarrow;*/
         }
         td {
             padding:0;
@@ -17,7 +18,7 @@
             border-bottom:1px solid #666;
             word-break:break-all;
             overflow:hidden;
-            font-family:'宋体'
+            font-family:'黑体','宋体'
         }
         img {
             margin:0 auto;
@@ -26,9 +27,9 @@
             page-break-after: always;
             clear:both;
         }
-        .arial{
+        /*.arial{
             font-family:'Arial Narrow', Arial, sans-serif;
-        }
+        }*/
     </style>
     <style type="text/css" media="print">
         .noPrint {
@@ -157,7 +158,7 @@
                 生产日期:@b.produceDate
             </td>
             <td colspan="2">有效期:@b.expireDate</td>
-            <td>生产周期:</td>
+            <td>生产周期:@b.produceCircle</td>
         </tr>
         <tr>
             <td>

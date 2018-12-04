@@ -22,7 +22,7 @@ namespace VendorNew.Services
                 //所有未关联的数量加上此张申请已关联的数量+本次新增的数量不能大于可申请数量
                 var notRelatedQty = (from op in db.OuterBoxPOs
                                      join o in db.OuterBoxes on op.out_box_id equals o.outer_box_id
-                                     where op.po_id == po.po_id && op.entry_id == po.entry_id
+                                     where op.po_id == po.po_id && op.po_entry_id == po.po_entry_id
                                      && (o.bill_id == null || o.bill_id == box.bill_id)
                                      select op.send_num * o.pack_num).Sum();
                 var sendNum = po.send_num * box.pack_num; //本次制作数量
@@ -48,6 +48,14 @@ namespace VendorNew.Services
             //因为取消了外键，保存后还需要再保存两者的关系
             foreach (var po in poList) {
                 po.out_box_id = box.outer_box_id;
+            }
+            //保存外箱明细 2018-12-04
+            foreach (var num in box.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )) {
+                db.OuterBoxesDetail.InsertOnSubmit(new OuterBoxesDetail()
+                {
+                    outer_box_id = box.outer_box_id,
+                    box_number = num
+                });
             }
             db.SubmitChanges();
 
@@ -96,6 +104,20 @@ namespace VendorNew.Services
             ib.box_number_long = innerBoxNumber[1];
 
             db.InneBoxes.InsertOnSubmit(ib);
+            db.SubmitChanges();
+
+            //保存内箱明细
+            var innerBoxArr = ib.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var outerBoxArr = outerBox.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            for (var j = 0; j < innerBoxArr.Count(); j++) {
+                db.InnerBoxesDetail.InsertOnSubmit(new InnerBoxesDetail()
+                {
+                    inner_box_id = ib.inner_box_id,
+                    outer_box_id = outerBox.outer_box_id,
+                    inner_box_number = innerBoxArr[j],
+                    outer_box_number = outerBoxArr[j / (innerBoxArr.Count() / outerBoxArr.Count())]
+                });
+            }
             db.SubmitChanges();
 
             return new string[] { ib.box_number, ib.inner_box_id.ToString() };
@@ -217,6 +239,8 @@ namespace VendorNew.Services
             db.OuterBoxes.DeleteAllOnSubmit(db.OuterBoxes.Where(o => o.outer_box_id == outerBoxId));
             db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.outer_box_id == outerBoxId));
             db.OuterBoxPOs.DeleteAllOnSubmit(db.OuterBoxPOs.Where(o => o.out_box_id == outerBoxId));
+            db.OuterBoxesDetail.DeleteAllOnSubmit(db.OuterBoxesDetail.Where(o => o.outer_box_id == outerBoxId));
+            db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.outer_box_id == outerBoxId));
             db.SubmitChanges();
 
             return boxNumber;
@@ -233,6 +257,7 @@ namespace VendorNew.Services
             string boxNumber = box.box_number;
 
             db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.inner_box_id == innerBoxId));
+            db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.inner_box_id == innerBoxId));
             db.SubmitChanges();
 
             return boxNumber;
@@ -309,10 +334,10 @@ namespace VendorNew.Services
             }
             b2.box_number_long = string.Join(",", num2);
             b2.pack_num = splitNum;
-            db.OuterBoxes.InsertOnSubmit(b2);
-            
-            db.SubmitChanges();
+            db.OuterBoxes.InsertOnSubmit(b2);                       
 
+            db.SubmitChanges();
+                        
             try {
                 //第二个外箱关联的PO信息也从第一个外箱拷贝
                 var pos = db.OuterBoxPOs.Where(o => o.out_box_id == outerBoxId).ToList();
@@ -337,19 +362,35 @@ namespace VendorNew.Services
                         var iNum2 = iNumArr.Skip(iPackNum * (packNum - splitNum) / packNum);
 
                         i1.pack_num = iNum1.Count();
-                        i1.box_number = iNum1.First() + "~" + iNum1.Last();
+                        if (iNum1.Count() == 1) {
+                            i.box_number = iNum1.First();
+                        }
+                        else { 
+                            i1.box_number = iNum1.First() + "~" + iNum1.Last();
+                        }
                         i1.box_number_long = string.Join(",", iNum1);
 
                         i2.inner_box_id = 0;
                         i2.outer_box_id = b2.outer_box_id;
                         i2.pack_num = iNum2.Count();
-                        i2.box_number = iNum2.First() + "~" + iNum2.Last();
+                        if (iNum2.Count() == 1) {
+                            i2.box_number = iNum2.First();
+                        }
+                        else {
+                            i2.box_number = iNum2.First() + "~" + iNum2.Last();
+                        }                        
                         i2.box_number_long = string.Join(",", iNum2);
                         db.InneBoxes.InsertOnSubmit(i2);
+
+                        
                     }
                     
                 }
                 db.SubmitChanges();
+
+                //更新箱子明细
+                UpdateBoxDetaiId(b2.outer_box_id);
+
                 return new string[] { boxNumberBefore, b1.box_number, b2.box_number };
             }
             catch (Exception ex) {
@@ -361,8 +402,43 @@ namespace VendorNew.Services
                 db.SubmitChanges();
                 throw new Exception("保存拆分外箱关联的PO信息或内箱信息失败，原因："+ex.Message);
             }
+
+            
+
         }
 
+        /// <summary>
+        /// 拆分箱子后，在同步修改一下箱子明细
+        /// </summary>
+        /// <param name="newOuterBoxNumber"></param>
+        private void UpdateBoxDetaiId(int newOuterBoxId)
+        {
+            var outerBox = db.OuterBoxes.Where(o => o.outer_box_id == newOuterBoxId).FirstOrDefault();
+            if (outerBox == null) return;
+            var innerboxes = db.InneBoxes.Where(i => i.outer_box_id == outerBox.outer_box_id).ToList();
+
+            //更新外箱明细
+            var outerNumberArr = outerBox.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var oNum in outerNumberArr) {
+                foreach (var od in db.OuterBoxesDetail.Where(o => o.box_number == oNum)) {
+                    od.outer_box_id = outerBox.outer_box_id;
+                }
+            }
+
+            //更新内箱明细
+            foreach (var ib in innerboxes) {
+                var innerBoxNumberArr = ib.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var iNum in innerBoxNumberArr) {
+                    foreach (var id in db.InnerBoxesDetail.Where(i => i.inner_box_number == iNum)) {
+                        id.outer_box_id = newOuterBoxId;
+                        id.inner_box_id = ib.inner_box_id;
+                    }
+                }
+            }
+
+            db.SubmitChanges();
+
+        }
 
         public IQueryable<OuterBoxes> GetOuterBoxes(SearchBoxParams p,bool canCheckAll)
         {
@@ -452,7 +528,38 @@ namespace VendorNew.Services
             return db.OuterBoxes.Where(o => o.user_name == supplierNumber && o.item_number == itemNumber).OrderByDescending(o=>o.outer_box_id).FirstOrDefault();
         }
 
-        
 
+        //public void GenerateOuterBoxDetail()
+        //{
+        //    foreach (var o in db.OuterBoxes.Where(o=>o.outer_box_id<1413).ToList()) {
+        //        var longNumberArr = o.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        //        foreach (var num in longNumberArr) {
+        //            db.OuterBoxesDetail.InsertOnSubmit(new OuterBoxesDetail()
+        //            {
+        //                box_number = num,
+        //                outer_box_id = o.outer_box_id
+        //            });
+        //        }
+        //    }
+        //    db.SubmitChanges();
+        //}
+
+        //public void GenerateInnerBoxDetail()
+        //{
+        //    foreach (var i in db.InneBoxes.Where(i=>i.inner_box_id<1070).ToList()) {
+        //        var innerBoxArr = i.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        //        var outerBoxArr = db.OuterBoxes.Where(ob => ob.outer_box_id == i.outer_box_id).FirstOrDefault()
+        //                            .box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+        //        for (var j = 0; j < innerBoxArr.Count(); j++) {                    
+        //            db.InnerBoxesDetail.InsertOnSubmit(new InnerBoxesDetail(){
+        //                inner_box_id=i.inner_box_id,
+        //                outer_box_id=(int)i.outer_box_id,
+        //                inner_box_number=innerBoxArr[j],
+        //                outer_box_number=outerBoxArr[j / (innerBoxArr.Count() / outerBoxArr.Count())]
+        //            });
+        //        }
+        //    }
+        //    db.SubmitChanges();
+        //}
     }
 }

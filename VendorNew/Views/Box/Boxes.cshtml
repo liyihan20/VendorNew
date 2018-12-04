@@ -123,6 +123,10 @@
                         tip("请先选择一行外箱再添加内箱");
                         return;
                     }
+                    if (selected.has_used == "已使用") {
+                        tip("已使用的外箱不能再添加内箱");
+                        return;
+                    }
                     $("#dlg_inner_box").dialog("open");
                     $("#fm_inner_box").form("reset");
                     $("#fm_inner_box input[name='outer_box_id']").val(selected.outer_box_id);
@@ -327,6 +331,7 @@
                 $("input[name='item_name']").val(selectedPo.item_name);
                 $("input[name='item_model']").val(selectedPo.item_model);
                 $("input[name='unit_name']").val(selectedPo.unit_name);
+                $("input[name='unit_number']").val(selectedPo.unit_number);
                 $("input[name='trade_type_name']").val(selectedPo.trade_type_name);
                 $("input[name='user_name']").val(selectedPo.supplier_number);
                 $('#dg_select_box_po').datagrid('appendRow', selectedPo);
@@ -339,7 +344,7 @@
                         return;
                     }
                     if (selectedPo.department_name != firstSelectedPO.department_name) {
-                        tip("只有相同型号的物料才能放在同一外箱里面");
+                        tip("只有同一申购部门的物料才能放在同一外箱里面");
                         return;
                     }
                     if (selectedPo.mat_order_name != firstSelectedPO.mat_order_name) {
@@ -347,7 +352,7 @@
                         return;
                     }
                     if (selectedPo.trade_type_name != firstSelectedPO.trade_type_name) {
-                        tip("只有贸易类型的PO才能放在同一外箱里面");
+                        tip("只有贸易类型相同的PO才能放在同一外箱里面");
                         return;
                     }
                     if (selectedPo.supplier_name != firstSelectedPO.supplier_name) {
@@ -577,7 +582,7 @@
                     <option value="未使用">未使用</option>
                 </select>
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 创建日期：
                 <input type="text" class="easyui-datebox" id="beginDate" name="beginDate" data-options="prompt:'开始日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
                 ~
@@ -592,7 +597,7 @@
                 申请单号：
                 <input type="text" class="easyui-textbox" id="billNo" name="billNo" data-options="prompt:'箱子关联的送货申请单号'" style="width:130px;" />
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 物料信息：
                 <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:216px;" />
             </div>
@@ -663,6 +668,7 @@
         <input type="hidden" name="item_name" />
         <input type="hidden" name="item_model" />
         <input type="hidden" name="unit_name" />
+        <input type="hidden" name="unit_number" />
         <div class="easyui-panel" title="&lt;i class=&quot;fa fa-th-large&quot;&gt;&lt;i&gt; 标签信息" style="width:100%;padding:6px 0;" data-options="collapsible:true">
             <table cellspacing="4" style="width:100%;">
                 <tr>
@@ -763,7 +769,7 @@
             </table>  
         </div>
         <div style="text-align:right;padding:12px;">
-            外箱制作数量：
+            外箱制作件数：
             <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" />
             <a href="#dg_box" class="easyui-linkbutton c5" id="btn_save_outer_box"><i class="fa fa-check"></i> 保存外箱</a>
         </div>

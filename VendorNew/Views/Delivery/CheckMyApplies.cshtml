@@ -8,7 +8,7 @@
             pagination: true,
             columns: [[
                 {
-                    field: 'sendDate', title: '发货日期', width: 100, align: 'center',
+                    field: 'sendDate', title: '送货日期', width: 100, align: 'center',
                     formatter: function (value, row, index) {
                         return toDateStr(value);
                     }
@@ -58,7 +58,7 @@
                 handler: function () {
                     var row = $("#dg_dr").datagrid("getCurrentRow");
                     if (row) {
-                        parent.addTab("<i class='fa fa-fw fa-search'></i>" + row.billNo, "@Url.Content("~/Delivery/CheckDRApply?id=")" + row.billId);
+                        parent.addTab("<i class='fa fa-fw fa-search'></i>" + row.billNo, "@Url.Content("~/Delivery/CheckDRApply?id=")" + row.billId,true);
                     } else {
                         tip("请先选择一行申请单再操作");
                     }
@@ -230,7 +230,7 @@
                     <option value="VMI合同">VMI合同</option>
                 </select>
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 送货日期：
                 <input type="text" class="easyui-datebox" id="beginDate" name="beginDate" data-options="prompt:'开始日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
                 ~
@@ -252,7 +252,7 @@
                     <option value="已拒绝">已拒绝</option>
                 </select>
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 物料信息：
                 <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:216px;" />                
             </div>

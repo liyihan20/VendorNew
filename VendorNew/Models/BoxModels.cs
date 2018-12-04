@@ -63,8 +63,10 @@ namespace VendorNew.Models
         public string item_name { get; set; }
         public string item_model { get; set; }
         public string unit_name { get; set; }
+        public string unit_number { get; set; }
         public decimal po_qty { get; set; }
         public decimal realte_qty { get; set; }
+        public decimal tax_price { get; set; }
         public decimal can_make_box_qty { get; set; } //不会一开始从k3服务器读取
         public string id_field { get; set; }
     }

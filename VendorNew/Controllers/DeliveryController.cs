@@ -133,6 +133,7 @@ namespace VendorNew.Controllers
             }
 
             try {
+                list.ForEach(l => { l.itemModel = l.itemModel.Replace("\"", "&quot;").Replace("'", "&apos;"); }); //双引号转义
                 //验证没问题之后，将获取最新的在途数量的list转化为json后，保存在临时字典表
                 var dicId = new ItemSv().SaveTempDic("add_dr_apply", JsonConvert.SerializeObject(list), currentAccount, currentUser.userName);
                 return Json(new SRM(true, "", dicId.ToString()));
@@ -202,7 +203,8 @@ namespace VendorNew.Controllers
                     pr_entry_id = e.prEntryID,
                     buyer_name = e.buyerName,
                     buyer_number = e.buyerNumber,
-                    contract_entry_id=e.contractEntryId
+                    contract_entry_id = e.contractEntryId,
+                    tax_price = e.taxPrice
                 });
             }
 
@@ -226,7 +228,7 @@ namespace VendorNew.Controllers
             if (box.produce_date == DateTime.MinValue) {
                 return Json(new SRM(false, "请填写正确的生产日期"));
             }
-            
+                        
             List<OuterBoxPOs> poList = JsonConvert.DeserializeObject<List<OuterBoxPOs>>(fc.Get("poRows"));
 
             try {
@@ -519,6 +521,19 @@ namespace VendorNew.Controllers
         }
 
         [SessionTimeOutJsonFilter]
+        public JsonResult DeleteDRDetail(int detailId)
+        {
+            try {
+                new DRSv().DeleteDREntry(detailId, currentAccount, currentUser.userId, currentUser.userName);
+                WLog("删除申请单分录", detailId.ToString());
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+            return Json(new SRM());
+        }
+
+        [SessionTimeOutJsonFilter]
         public JsonResult UndoDR(int billId,string pStatusNow)
         {
             try {
@@ -640,7 +655,7 @@ namespace VendorNew.Controllers
                     subject = "你有一张送货申请单已被订料员" + opType;
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += "你有一张单号为【" + dr.bill_no + "】的送货申请单已被订料员" + opType+"。";
+                    content += string.Format("你有一张单号为【{0}】的送货申请单已被{1}{2},来自【{3}】", dr.bill_no, dr.mat_order_name, opType, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>请点击此链接查看详情</a></div>", outerWebSite, "Delivery/CheckDRApply?id=", billId);
@@ -651,7 +666,7 @@ namespace VendorNew.Controllers
                     subject = "供应商撤销了一张送货申请单";
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += "单号为【" + dr.bill_no + "】的送货申请单已被供应商撤销。";
+                    content += string.Format("单号为【{0}】的送货申请单已被供应商撤销，来自【{3}】，供应商【{1}({2})】。", dr.bill_no, dr.supplier_name, dr.supplier_number, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/CheckDRApply?id=", billId);

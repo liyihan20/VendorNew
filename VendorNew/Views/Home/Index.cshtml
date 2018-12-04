@@ -88,13 +88,13 @@
     });
 
     //打开或新增tab
-    function addTab(text, url) {
+    function addTab(text, url,forceUpate) {
         var maxTabNums = 11;//包含主页1个tab，和自己打开的10个tab
         //如果标签已经存在，则不再新建，而是转到那个标签页
         var tab = $('#tabs').tabs('getTab', text);
         if (tab) {
             $('#tabs').tabs('select', text);
-            if (tab.panel("options").id != url) {
+            if (tab.panel("options").id != url || forceUpate) {
                 $('#tabs').tabs('update', {
                     tab: tab,
                     options: {

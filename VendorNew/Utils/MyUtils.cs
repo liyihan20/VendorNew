@@ -17,9 +17,9 @@ namespace VendorNew.Utils
         //生成随机数列
         public static string CreateValidateNumber(int length)
         {
-            //去掉数字0和字母o，因为不容易区分
-            string Vchar = "1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,i,j,k,l,m,n,p" +
-            ",q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,I,J,K,L,M,N,P,Q" +
+            //去掉数字0和字母o，小写l和大写I，因为不容易区分
+            string Vchar = "1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,i,j,k,m,n,p" +
+            ",q,r,s,t,u,v,w,x,y,z,A,B,C,D,E,F,G,H,J,K,L,M,N,P,Q" +
             ",R,S,T,U,V,W,X,Y,Z";
 
             string[] VcArray = Vchar.Split(new Char[] { ',' });//拆分成数组

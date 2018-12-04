@@ -8,7 +8,7 @@
     var companyName = h.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司";
     ViewBag.Title = h.bill_no;
 }
-@section CSS{
+@section CSS{   
 
     <style type="text/css">
         body {
@@ -30,8 +30,9 @@
                 border-bottom: 1px solid #666;
                 word-break: break-all;
                 overflow: hidden;
-            }
-        .arial{
+            }          
+           
+        .arial{            
             font-family:'Arial Narrow', Arial, sans-serif;
         }
     </style>
@@ -97,7 +98,7 @@
             <tr>
                 <td style="width:30%;padding-left:16px;">
                     <div class="qrcode" title="@h.bill_no"></div>
-                    <div style="font-size:12px;padding-top:4px;">送货日期：@(((DateTime)h.bill_date).ToString("yyyy-MM-dd"))</div>
+                    <div style="font-size:12px;padding-top:4px;">送货日期：@(((DateTime)h.send_date).ToString("yyyy-MM-dd"))</div>
                 </td>
                 <td style="width:40%;text-align:center;">
                     <div style="font-size:16px;font-weight:bold;">
@@ -131,7 +132,7 @@
                     <div>@companyName</div>
                     <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
                     <div>电话：0660-336788-1234</div>
-                    <div>收货部门：@h.department_name</div>
+                    <div>收货部门：@h.department_name @(string.IsNullOrEmpty(h.comment)?"":"("+h.comment+")")</div>
                 </td>
             </tr>
         </table>

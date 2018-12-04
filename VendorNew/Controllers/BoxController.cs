@@ -95,6 +95,8 @@ namespace VendorNew.Controllers
             if (result == null) {
                 return Json(new SRM(false));
             }
+            result.bill_id = 0;//2018-11-29 if not 0, the relation will be faulty
+            result.account = currentAccount;
             return Json(new { suc = true, boxInfo = result });
         }
 

@@ -9,6 +9,7 @@
             checkOnSelect: true,
             selectOnCheck: true,
             pagination: true,
+            pageList: [20, 50, 100, 200, 500],
             columns: [[
                     { field: 'ck', checkbox: true },
                     { field: 'poNo', title: '订单编号', width: 110 },
@@ -34,6 +35,14 @@
                             return toThousandValue(value);
                         }
                     },
+                    {
+                        field: 'leftQty', title: '可申请数量', width: 90, align: 'right',
+                        formatter: function (value, row, index) {
+                            return toThousandValue(value);
+                        }
+                    },
+                    { field: 'matOrderName', title: '订料员', width: 70 },
+                    { field: 'departmentName', title: '申购部门', width: 150 },
                     { field: 'unitName', title: '单位', width: 60, align: 'center' },
                     { field: 'itemNumber', title: '物料编码', width: 120 },
                     { field: 'billType', title: '订单类型', width: 80 },
@@ -48,8 +57,7 @@
                     { field: 'departmentName', title: '申购部门', width: 160 },
                     { field: 'tradeTypeName', title: '贸易类型', width: 80 },
                     { field: 'currencyName', title: '币别', width: 70 },
-                    { field: 'buyerName', title: '采购员', width: 80 },
-                    { field: 'matOrderName', title: '订料员', width: 80 }
+                    { field: 'buyerName', title: '采购员', width: 80 }
             ]],
             toolbar: [{
                 id: 'add_btn',
@@ -103,6 +111,10 @@
                 handler: function () {
                     var checked = $("#dg_po").datagrid("getChecked");
                     if (checked.length > 0) {
+                        if (checked.length > 1) {
+                            tip("只能选择一行再查看入库记录");
+                            return;
+                        }
                         var r = checked[0];
                         if (r.realteQty == 0) {
                             tip("入库数量为0的没有入库记录");
@@ -157,6 +169,7 @@
                     var transitQtyArr = result.split(",");
                     for (var i = 0; i < currentPageRows.length; i++) {
                         currentPageRows[i].transitQty = transitQtyArr[i];
+                        currentPageRows[i].leftQty = parseFloat(currentPageRows[i].orderQty) - parseFloat(currentPageRows[i].realteQty) - parseFloat(transitQtyArr[i]);
 
                         $("#dg_po").datagrid("updateRow", {
                             index: rowIndexArr[i],
@@ -252,9 +265,9 @@
                     <option value="VMI合同">VMI合同</option>
                 </select>
             </div>
-            <div style="float:left;width:530px;margin-right:12px;">
+            <div style="float:left;width:520px;margin-right:12px;">
                 订单编号：
-                <input type="text" class="easyui-textbox" name="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:432px;" />
+                <input type="text" class="easyui-textbox" name="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:422px;" />
                 <a href="#" class="easyui-tooltip" title="例如需要搜索3张PO，可以这样输入：#PO1 #PO2 #PO3"><i class="fa fa-info-circle text-danger"></i> </a>
             </div>
             <div style="clear:both;margin-top:8px;"></div>
@@ -265,15 +278,15 @@
                     <option value="true">已关闭</option>
                 </select>
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 订单日期：
                 <input type="text" class="easyui-datebox" name="beginDate" data-options="prompt:'开始日期'" style="width:100px;" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")" />
                 ~
                 <input type="text" class="easyui-datebox" name="endDate" data-options="prompt:'结束日期'" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
             </div>
-            <div style="float:left;width:215px;margin-right:12px;">
+            <div style="float:left;width:186px;margin-right:12px;">
                  物料信息：
-                <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:140px;" />
+                <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或型号'" style="width:120px;" />
             </div>
             <div style="float:left;width:96px;">
                 <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>

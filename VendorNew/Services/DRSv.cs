@@ -137,7 +137,7 @@ namespace VendorNew.Services
                 foreach (var e in es) {
                     e.bill_id = h.bill_id;
                 }
-                foreach (var b in boxes) {
+                foreach (var b in boxes.Distinct()) {
                     var box = db.OuterBoxes.Where(o => o.outer_box_id == b.interId).FirstOrDefault();
                     if (box != null) {
                         box.bill_id = h.bill_id;
@@ -400,5 +400,22 @@ namespace VendorNew.Services
             return db.DRBills.Where(d => billIds.Contains(d.bill_id)).Select(d => new IntStringModel() { id = d.bill_id, text = d.bill_no }).ToList();
         }
 
+        public void DeleteDREntry(int billDetailId,string account,int userId,string userName)
+        {
+            var detail = db.DRBillDetails.Where(d => d.bill_detail_id == billDetailId).FirstOrDefault();
+            if (detail != null) {
+                db.BackupData.InsertOnSubmit(new BackupData()
+                {
+                    account = account,
+                    bill_no = detail.bill_id.ToString(),
+                    details = JsonConvert.SerializeObject(detail),
+                    op_date = DateTime.Now,
+                    user_id = userId,
+                    user_name = userName
+                });
+                db.DRBillDetails.DeleteOnSubmit(detail);
+                db.SubmitChanges();
+            }
+        }
     }
 }

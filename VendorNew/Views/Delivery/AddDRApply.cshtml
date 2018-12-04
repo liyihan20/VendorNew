@@ -71,11 +71,41 @@
                     }
                 }
             ]],
+            toolbar: [{
+                text: '<i class="fa fa-fw fa-remove"></i> 删除行',
+                handler: function () {
+                    var removedRow = $('#dg_detail').datagrid('getCurrentRow');
+                    if (!removedRow) {
+                        tip("请先选择需要删除的行");
+                        return;
+                    }
+                    if ($('#dg_detail').datagrid('getRows').length <= 1) {
+                        tip("当前行数只有1行，不能再删除");
+                        return;
+                    }
+                    $.messager.confirm('操作确认', '确定要删除选中行吗？', function (r) {
+                        if(r){
+                            var rowIndex = $('#dg_detail').datagrid('getRowIndex', removedRow);
+                            if (removedRow.bill_detail_id > 0) {
+                                $.post("DeleteDRDetail", { detailId: removedRow.bill_detail_id }, function (data) {
+                                    if (data.suc) {
+                                        $('#dg_detail').datagrid('deleteRow', rowIndex);
+                                    } else {
+                                        tip(data.msg);
+                                    }
+                                })
+                            } else {
+                                $('#dg_detail').datagrid('deleteRow', rowIndex);
+                            }
+                        }
+                    });                                
+                    
+                }
+            }],
             onClickRow: onClickRow,
             onLoadSuccess: function (data) {
                 updateDetailFooter(); //更新表脚                
-                loadBoxDatas(); //获取订单关联的箱子
-                
+                loadBoxDatas(); //获取订单关联的箱子                
             }
         });
 
@@ -396,6 +426,7 @@
                 $("input[name='item_name'").val(selectedPo.item_name);
                 $("input[name='item_model'").val(selectedPo.item_model);
                 $("input[name='unit_name'").val(selectedPo.unit_name);
+                $("input[name='unit_number'").val(selectedPo.unit_number);
                 $('#dg_select_box_po').datagrid('appendRow', selectedPo);
             } else {
                 var existedIndex = $("#dg_select_box_po").datagrid('getRowIndex', selectedPo);
@@ -427,6 +458,7 @@
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
                         $("#fm_outer_box #pack_num").numberbox("setValue", "");
+                        $("#fm_outer_box #bill_id").val("@h.bill_id"); 
                     }
                 });
             }
@@ -492,10 +524,12 @@
             //    return;
             //}
 
+            
+
             $.ajax({
                 type: 'post',
                 url: 'SaveOuterBoxes',
-                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows),
+                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows).replace(/&quot;/g, '').replace(/&apos;/g, ""),
                 cache: false,
                 dataType: 'json',
                 success: function (data) {
@@ -673,7 +707,7 @@
             return;
         }
 
-        if (outerQty < Math.round(innerEveryQty * innerPackNum, 4)) {
+        if (outerQty < innerEveryQty * innerPackNum) {
             tip("内箱每件数量*内箱件数不能大于外箱总数量");
             return;
         }
@@ -870,12 +904,6 @@
                     <input type="text" class="easyui-textbox" name="trade_type_name" value="@h.trade_type_name" data-options="readonly:true" />
                 </td>
                 <td style="text-align:right;">
-                    币别：
-                </td>
-                <td>
-                    <input type="text" class="easyui-textbox" name="currency_name" value="@h.currency_name" data-options="readonly:true" />
-                </td>
-                <td style="text-align:right;">
                     供应商编码：
                 </td>
                 <td>
@@ -886,6 +914,12 @@
                 </td>
                 <td>
                     <input type="text" class="easyui-textbox" name="supplier_name" value="@h.supplier_name" data-options="readonly:true" />
+                </td>
+                <td style="text-align:right;">
+                    币别：
+                </td>
+                <td>
+                    <input type="text" class="easyui-textbox" name="currency_name" value="@h.currency_name" data-options="readonly:true" />
                 </td>
             </tr>
             <tr>
@@ -916,12 +950,12 @@
             </tr>
             <tr>
                 <td style="text-align:right;">
-                    备注信息：
+                    部门地址：
                 </td>
-                <td colspan="3">
-                    <input type="text" class="easyui-textbox" name="comment" id="comment" value="@h.comment" style="width:100%;" data-options="validType:{length:[0,200]}" />
+                <td>
+                    <input type="text" class="easyui-textbox" name="comment" id="comment" value="@h.comment" data-options="validType:{length:[0,200]}" />
                 </td>
-                <td></td><td></td><td></td><td></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td>
             </tr>
         </table>
     </div>
@@ -962,7 +996,7 @@
     </div>
 
     <form id="fm_outer_box" method="post">
-        <input type="hidden" name="bill_id" value="@h.bill_id" />
+        <input type="hidden" name="bill_id" id="bill_id" value="@h.bill_id" />
         <input type="hidden" name="user_name" value="@h.supplier_number" />
         <input type="hidden" name="trade_type_name" value="@h.trade_type_name" />
         <input type="hidden" name="account" value="@h.account" />
@@ -970,6 +1004,7 @@
         <input type="hidden" name="item_name" />
         <input type="hidden" name="item_model" />
         <input type="hidden" name="unit_name" />
+        <input type="hidden" name="unit_number" />
         <div class="easyui-panel" title="&lt;i class=&quot;fa fa-th-large&quot;&gt;&lt;i&gt; 标签信息" style="width:100%;padding:6px 0;" data-options="collapsible:true">
             <table cellspacing="4" style="width:100%;">
                 <tr>
@@ -1070,7 +1105,7 @@
             </table>  
         </div>
         <div style="text-align:right;padding:12px;">
-            外箱制作数量：
+            外箱制作件数：
             <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" />
             <a href="#dg_box" class="easyui-linkbutton c5" id="btn_save_outer_box"><i class="fa fa-check"></i> 保存外箱</a>
         </div>

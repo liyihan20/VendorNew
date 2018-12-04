@@ -71,6 +71,7 @@ namespace VendorNew.Models
         public string keepCondition { get; set; }
         public string supplierName { get; set; }
         public string itemModel { get; set; }
+        public string outerBoxNumber { get; set; }
 
     }
 

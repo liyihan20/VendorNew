@@ -8,7 +8,7 @@
             pagination: true,
             columns: [[
                 {
-                    field: 'sendDate', title: '发货日期', width: 100, align: 'center',
+                    field: 'sendDate', title: '送货日期', width: 100, align: 'center',
                     formatter: function (value, row, index) {
                         return toDateStr(value);
                     }
@@ -221,7 +221,7 @@
                     <option value="VMI合同">VMI合同</option>
                 </select>
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 送货日期：
                 <input type="text" class="easyui-datebox" id="beginDate" name="beginDate" data-options="prompt:'开始日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
                 ~
@@ -237,13 +237,13 @@
                 <select class="easyui-combobox" id="pStatus" name="pStatus" data-options="panelHeight:'auto',editable:false" style="width:90px;">
                     <option value="所有">所有</option>
                     <option value="未提交">未提交</option>
-                    <option value="已提交">已提交</option>
+                    <option value="已提交" selected>已提交</option>
                     <option value="已确认">已确认</option>
                     <option value="已入库">已入库</option>
                     <option value="已拒绝">已拒绝</option>
                 </select>
             </div>
-            <div style="float:left;width:280px;margin-right:12px;">
+            <div style="float:left;width:290px;margin-right:12px;">
                 物料信息：
                 <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:216px;" />
             </div>

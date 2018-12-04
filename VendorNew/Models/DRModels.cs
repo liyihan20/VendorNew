@@ -72,7 +72,10 @@ namespace VendorNew.Models
         public string unitName{get;set;}
         public decimal orderQty { get; set; }
         public decimal realteQty { get; set; }
+        public decimal taxPrice { get; set; }
+        public string leftQty { get; set; }
         public string transitQty { get; set; } //不会一开始从k3服务器读取
+        
     }
 
     /// <summary>
