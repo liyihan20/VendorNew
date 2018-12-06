@@ -19,4 +19,11 @@ namespace VendorNew.Models
         public string auth_name { get; set; }
     }
 
+    public class GroupAndAllMembers
+    {
+        public int group_id { get; set; }
+        public string name { get; set; }
+        public IQueryable<string> allMembers { get; set; }
+    }
+
 }

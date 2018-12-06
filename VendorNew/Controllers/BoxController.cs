@@ -36,7 +36,7 @@ namespace VendorNew.Controllers
             if (p.id == null) {
                 //搜索外箱信息
                 try {
-                    var result = sv.GetOuterBoxes(p, canCheckAll);
+                    var result = sv.GetOuterBoxes(p, canCheckAll).OrderByDescending(r=>r.create_date);
                     var outerBoxes = result.Skip((p.page - 1) * p.rows).Take(p.rows).ToList(); //外箱信息
                     var obIds = outerBoxes.Select(o => o.outer_box_id).ToList(); //所有外箱id
                     var pos = sv.GetBoxPos(obIds); //po信息

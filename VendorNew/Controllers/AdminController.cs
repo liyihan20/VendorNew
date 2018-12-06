@@ -242,6 +242,23 @@ namespace VendorNew.Controllers
             return Json(new { rows = result, total = total });
         }
 
+        public JsonResult GetGroupAndAllMembers(int page, int rows, string groupType = "auth", string searchGroup = "")
+        {
+            var groups = new UASv().GetGroupAndAllMembers(groupType, searchGroup);
+            int total = groups.Count();
+
+            var result = groups.Skip((page - 1) * rows).Take(rows)
+                .Select(g => new
+                {
+                    g.group_id,
+                    g.name,
+                    members = string.Join(";", g.allMembers.ToArray())
+                }).OrderBy(g => g.name).ToList();
+
+            return Json(new { rows = result, total = total });
+        }
+
+
         public JsonResult GetGroupUsers(int page, int rows,int groupId, string searchGroupUser="")
         {
             var groupUsers = new UASv().GetGroupUsers(groupId, searchGroupUser);

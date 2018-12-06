@@ -144,6 +144,19 @@ namespace VendorNew.Services
             return db.Groups.Where(g => g.group_type == groupType && g.name.Contains(searchValue));
         }
 
+        public IQueryable<GroupAndAllMembers> GetGroupAndAllMembers(string groupType, string searchValue)
+        {
+            return from g in db.Groups
+                   where g.group_type == groupType
+                   && g.name.Contains(searchValue)
+                   select new GroupAndAllMembers()
+                   {
+                       group_id = g.group_id,
+                       name = g.name,
+                       allMembers = db.Users.Where(u => g.GroupUsers.Select(gu => gu.user_id).Contains(u.user_id)).OrderBy(u=>u.user_name).Select(u => u.real_name)
+                   };
+        }
+
         public IQueryable<GroupUsersModel> GetGroupUsers(int groupId,string searchValue)
         {
             return (db.GroupUsers.Where(gu => gu.group_id == groupId && (gu.Users.user_name.Contains(searchValue) || gu.Users.real_name.Contains(searchValue)))

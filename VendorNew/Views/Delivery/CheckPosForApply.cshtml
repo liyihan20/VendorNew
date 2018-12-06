@@ -54,7 +54,6 @@
                             return toDateStr(value);
                         }
                     },
-                    { field: 'departmentName', title: '申购部门', width: 160 },
                     { field: 'tradeTypeName', title: '贸易类型', width: 80 },
                     { field: 'currencyName', title: '币别', width: 70 },
                     { field: 'buyerName', title: '采购员', width: 80 }
@@ -93,10 +92,10 @@
                             tip("同一张申请单，供应商必须一致");
                             return;
                         }
-                    }                    
+                    }
 
                     $.post("BeforeAddDRApply", { poJson: JSON.stringify(checked) }, function (data) {
-                        if (data.suc) {                            
+                        if (data.suc) {
                             parent.addTab('<i class="fa fa-plus-circle"></i> 新增申请单', '@Url.Content("~/Delivery/AddDRApply?id=")' + data.extra);
                         } else {
                             tip(data.msg);
@@ -147,6 +146,21 @@
                     } else {
                         tip("请先选择数据行");
                     }
+                }
+            }, '-', {
+                text: '<i class="fa fa-fw fa-file-excel-o"></i> 导出excel报表',
+                handler: function () {
+                    tip("数据正在导出，请稍等......");
+                    var queryParams = {
+                        beginDate: $("#beginDate").datebox("getValue"),
+                        endDate: $("#endDate").datebox("getValue"),
+                        billType: $("#billType").combobox("getValue"),
+                        isFinished: $("#isFinished").combobox("getValue"),
+                        poNumbers: $("#poNumbers").textbox("getValue"),
+                        itemInfo: $("#itemInfo").textbox("getValue")
+                    };
+                    window.open("@Url.Content("~/Report/ExportPOData?queryJson=")" + encodeURIComponent(JSON.stringify(queryParams)));
+
                 }
             }],
             onBeforeLoad: function (data) {
@@ -258,7 +272,7 @@
         <form id="fm" method="post" style="padding:0;margin:0;">
             <div style="float:left;width:160px;margin-right:12px;">
                 订单类型：
-                <select class="easyui-combobox" name="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
+                <select class="easyui-combobox" name="billType" id="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
                     <option value="普通采购">普通采购</option>
                     <option value="委外PO">委外PO</option>
                     <option value="VMI采购">VMI订单</option>
@@ -267,26 +281,26 @@
             </div>
             <div style="float:left;width:520px;margin-right:12px;">
                 订单编号：
-                <input type="text" class="easyui-textbox" name="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:422px;" />
+                <input type="text" class="easyui-textbox" name="poNumbers" id="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:422px;" />
                 <a href="#" class="easyui-tooltip" title="例如需要搜索3张PO，可以这样输入：#PO1 #PO2 #PO3"><i class="fa fa-info-circle text-danger"></i> </a>
             </div>
             <div style="clear:both;margin-top:8px;"></div>
             <div style="float:left;width:160px;margin-right:12px;">
                 关闭状态：
-                <select class="easyui-combobox" name="isFinished" data-options="panelHeight:'auto',editable:false" style="width:90px;">
+                <select class="easyui-combobox" name="isFinished" id="isFinished" data-options="panelHeight:'auto',editable:false" style="width:90px;">
                     <option value="false">未关闭</option>
                     <option value="true">已关闭</option>
                 </select>
             </div>
             <div style="float:left;width:290px;margin-right:12px;">
                 订单日期：
-                <input type="text" class="easyui-datebox" name="beginDate" data-options="prompt:'开始日期'" style="width:100px;" value="@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")" />
+                <input type="text" class="easyui-datebox" name="beginDate" id="beginDate" data-options="prompt:'开始日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
                 ~
-                <input type="text" class="easyui-datebox" name="endDate" data-options="prompt:'结束日期'" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <input type="text" class="easyui-datebox" name="endDate" id="endDate" data-options="prompt:'结束日期',editable:false" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
             </div>
             <div style="float:left;width:186px;margin-right:12px;">
                  物料信息：
-                <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或型号'" style="width:120px;" />
+                <input type="text" class="easyui-textbox" name="itemInfo" id="itemInfo" data-options="prompt:'物料名称或型号'" style="width:120px;" />
             </div>
             <div style="float:left;width:96px;">
                 <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>

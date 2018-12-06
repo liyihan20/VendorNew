@@ -137,6 +137,8 @@ namespace VendorNew.Models
         public int? userId { get; set; }
         public string supplierNumber { get; set; }
 
+        public string comment { get; set; }
+
     }
 
 }

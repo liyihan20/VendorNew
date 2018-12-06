@@ -158,6 +158,12 @@
                 if ('@ViewData["exportExcelPower"]' == '0') {
                     $("#export_excel_btn").hide();
                 }
+            }, onDblClickRow: function (index, row) {
+                if (row.pStatus != "已提交") {
+                    tip("只有状态是已提交的单据才能处理");
+                    return;
+                }
+                parent.addTab("<i class='fa fa-fw fa-edit'></i> 处理申请单", "@Url.Content("~/Delivery/ConfirmApply?billId=")" + row.billId);
             }
         });
 

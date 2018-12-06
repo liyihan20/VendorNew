@@ -104,13 +104,24 @@ namespace VendorNew.Controllers
 
         public JsonResult GetPOTransitQty(string interIds, string entryIds)
         {
+            
             string[] interIdArr = interIds.Split(new char[]{','});
             string[] entryIdArr = entryIds.Split(new char[] { ',' });
-            string[] result = new string[interIdArr.Length];
+
+            List<IDModel> poInfo = new List<IDModel>();
             for (var i = 0; i < interIdArr.Length; i++) {
-                result[i] = new DRSv().GetPOTransitQty(Int32.Parse(interIdArr[i]), Int32.Parse(entryIdArr[i])).ToString("0.##");
+                poInfo.Add(new IDModel()
+                {
+                    interId = Int32.Parse(interIdArr[i]),
+                    entryId = Int32.Parse(entryIdArr[i])
+                });
             }
-            return Json(string.Join(",", result));
+            var result = new DRSv().GetPOTransitQty(poInfo);
+            var stringResult = new List<string>();
+            foreach (var r in result) {
+                stringResult.Add(r.ToString("0.##"));
+            }
+            return Json(string.Join(",",stringResult));
         }
 
         /// <summary>
@@ -133,7 +144,7 @@ namespace VendorNew.Controllers
             }
 
             try {
-                list.ForEach(l => { l.itemModel = l.itemModel.Replace("\"", "&quot;").Replace("'", "&apos;"); }); //双引号转义
+                //list.ForEach(l => { l.itemModel = l.itemModel.Replace("\"", "&quot;").Replace("'", "&apos;"); }); //双引号转义
                 //验证没问题之后，将获取最新的在途数量的list转化为json后，保存在临时字典表
                 var dicId = new ItemSv().SaveTempDic("add_dr_apply", JsonConvert.SerializeObject(list), currentAccount, currentUser.userName);
                 return Json(new SRM(true, "", dicId.ToString()));
@@ -476,7 +487,7 @@ namespace VendorNew.Controllers
 
             var result = new DRSv().SearchMyApplyList(p, canCheckAll);
 
-            return Json(new { total = result.Count(), rows = result.Skip((p.page - 1) * p.rows).Take(p.rows).ToList() });
+            return Json(new { total = result.Count(), rows = result.OrderByDescending(r => r.sendDate).Skip((p.page - 1) * p.rows).Take(p.rows).ToList() });
         }
 
         [AuthorityFilter]

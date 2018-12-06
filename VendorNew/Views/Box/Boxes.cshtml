@@ -378,7 +378,9 @@
                     $("#fm_outer_box").form("load", data.boxInfo);
                     $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                     $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
-                    $("#fm_outer_box #pack_num").numberbox("setValue", "");
+                    $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                    $("#fm_outer_box #package_date").datebox("setValue", toDateStr(data.boxInfo.package_date));
+                    $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));
                 }
             });
             
@@ -696,7 +698,7 @@
                         生产日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="produce_date" data-options="required:true,editable:false" />
+                        <input type="text" class="easyui-datebox" name="produce_date" id="produce_date" data-options="required:true,editable:false" />
                     </td>
                     <td>
                         保质期(月)：
@@ -708,7 +710,7 @@
                         包装日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="text" class="easyui-datebox" name="package_date" id="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </td>
                 </tr>
                 <tr>                    
@@ -770,7 +772,7 @@
         </div>
         <div style="text-align:right;padding:12px;">
             外箱制作件数：
-            <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" />
+            <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" value="1" />
             <a href="#dg_box" class="easyui-linkbutton c5" id="btn_save_outer_box"><i class="fa fa-check"></i> 保存外箱</a>
         </div>
     </form>

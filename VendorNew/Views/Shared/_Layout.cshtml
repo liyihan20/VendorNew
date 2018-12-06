@@ -34,6 +34,15 @@
             $("textarea").attr("spellcheck", false);
         });
 
+        //$.fn.datebox.defaults.formatter = function (date) {
+        //    var y = date.getFullYear();
+        //    var m = date.getMonth() + 1;
+        //    var d = date.getDate();
+        //    m = m < 10 ? '0' + m : m;
+        //    d = d < 10 ? '0' + d : d;
+        //    return y + '-' + m + '-' + d;
+        //}
+
         $.extend($.fn.datagrid.defaults, { pageSize: 50, pageList: [20, 50, 100, 200] }); //设置默认每页显示50行，页码可选择范围是20，50，100，200
         //扩展datagrid，获取当前选择行，如果没有选择，但是只有1行，也会返回此行
         $.extend($.fn.datagrid.methods, {

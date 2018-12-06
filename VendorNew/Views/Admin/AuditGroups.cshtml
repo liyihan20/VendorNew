@@ -7,7 +7,7 @@
 
     $(function () {
         $("#tb_group").datagrid({
-            url: "GetGroups",
+            url: "GetGroupAndAllMembers",
             queryParams: { groupType: groupType },
             fit: true,
             fitColumns: true,
@@ -16,7 +16,7 @@
             pagination: true,
             columns: [[
                         { field: 'name', title: '组名', width: 100, align: "center" },
-                        { field: 'comment', title: '备注', width: 300, align: "center" }
+                        { field: 'members', title: '组员', width: 300, align: "center" }
             ]],
             toolbar: '#toolbar_group',
             onDblClickRow: function (rowIndex, rowData) {

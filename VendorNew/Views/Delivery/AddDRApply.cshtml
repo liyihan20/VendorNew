@@ -9,8 +9,8 @@
 
 
 <script>
-    var detailData = $.parseJSON('@Html.Raw(dsJson)');
-    for (var i = 0; i < detailData.length; i++) {        
+    var detailData = @Html.Raw(dsJson);    
+    for (var i = 0; i < detailData.length; i++) {
         detailData[i].id_field = detailData[i].po_id + "_" + detailData[i].po_entry_id; //用于标识唯一
     }
 
@@ -54,8 +54,8 @@
                         }
 
                         return toThousandValue(value);
-                    }, styler: function (value, row, index) {                        
-                        if (row.send_qty == row.can_send_qty) {                            
+                    }, styler: function (value, row, index) {
+                        if (row.send_qty == row.can_send_qty) {
                             return 'color:red;';
                         }
                     }
@@ -98,14 +98,14 @@
                                 $('#dg_detail').datagrid('deleteRow', rowIndex);
                             }
                         }
-                    });                                
-                    
+                    });
+
                 }
             }],
             onClickRow: onClickRow,
             onLoadSuccess: function (data) {
-                updateDetailFooter(); //更新表脚                
-                loadBoxDatas(); //获取订单关联的箱子                
+                updateDetailFooter(); //更新表脚
+                loadBoxDatas(); //获取订单关联的箱子
             }
         });
 
@@ -116,7 +116,7 @@
 
     var editIndex = undefined;
     function endEditing() {
-        if (editIndex == undefined) { return true; }        
+        if (editIndex == undefined) { return true; }
         if ($('#dg_detail').datagrid('validateRow', editIndex)) {
             $('#dg_detail').datagrid('endEdit', editIndex);
             editIndex = undefined;
@@ -158,9 +158,9 @@
 
         var totalQty = 0;
         for (var i = 0; i < rows.length; i++) {
-            totalQty += parseFloat(rows[i].send_qty); 
+            totalQty += parseFloat(rows[i].send_qty);
         }
-        
+
         $('#dg_detail').datagrid('reloadFooter', [
 	        { po_number: "合计:", send_qty: totalQty }
         ]);
@@ -249,8 +249,13 @@
                         });
                         $("#fm_outer_box").form("reset");
                         $("#dg_select_box_po").datagrid("loadData", []);
+
+                        //如果只有1行，则默认点击确认选择按钮
+                        if (combogridPo.length == 1) {
+                            $("#btn_select_box_po").trigger("click");
+                        }
                     } else {
-                        tip("外箱制作数量与达到本次送货数量，不需要再新增");
+                        tip("外箱制作数量已达到本次送货数量，不需要再新增");
                     }
 
                 }
@@ -446,10 +451,13 @@
             //如果在同张申请单已做了同型号的箱子，将箱子信息带过来
             var existedBoxInfo = _.filter($("#dg_box").treegrid("getData"), function (v) { return v.item_model == selectedPo.item_model });
             if (existedBoxInfo.length > 0) {
-                $("#fm_outer_box").form("load", existedBoxInfo[0]);
+                var bInfo = existedBoxInfo[existedBoxInfo.length - 1];
+                $("#fm_outer_box").form("load", bInfo);
                 $("#fm_outer_box #every_net_weight").numberbox("setValue","");
                 $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
-                $("#fm_outer_box #pack_num").numberbox("setValue", "");
+                $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                $("#fm_outer_box #package_date").datebox("setValue", toDateStr(bInfo.package_date));
+                $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(bInfo.produce_date));
             } else {
                 //看服务器有没有
                 $.post("@Url.Content("~/Box/GetBoxBySupplierAndItem")", { supplierNumber: "@h.supplier_number", itemNumber: selectedPo.item_number }, function (data) {
@@ -457,8 +465,10 @@
                         $("#fm_outer_box").form("load", data.boxInfo);
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
-                        $("#fm_outer_box #pack_num").numberbox("setValue", "");
-                        $("#fm_outer_box #bill_id").val("@h.bill_id"); 
+                        $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                        $("#fm_outer_box #bill_id").val("@h.bill_id");
+                        $("#fm_outer_box #package_date").datebox("setValue", toDateStr(data.boxInfo.package_date));
+                        $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));
                     }
                 });
             }
@@ -529,7 +539,7 @@
             $.ajax({
                 type: 'post',
                 url: 'SaveOuterBoxes',
-                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows).replace(/&quot;/g, '').replace(/&apos;/g, ""),
+                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows).replace(/\&/g, "%26"),
                 cache: false,
                 dataType: 'json',
                 success: function (data) {
@@ -1044,7 +1054,7 @@
                         包装日期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="text" class="easyui-datebox" name="package_date" id="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </td>
                 </tr>
                 <tr>                    
@@ -1106,7 +1116,7 @@
         </div>
         <div style="text-align:right;padding:12px;">
             外箱制作件数：
-            <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" />
+            <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" value="1" />
             <a href="#dg_box" class="easyui-linkbutton c5" id="btn_save_outer_box"><i class="fa fa-check"></i> 保存外箱</a>
         </div>
     </form>

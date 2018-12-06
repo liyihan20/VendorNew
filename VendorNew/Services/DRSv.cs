@@ -43,6 +43,12 @@ namespace VendorNew.Services
                 account, billType, poInterId, poEntryId).FirstOrDefault();
         }
         
+        /// <summary>
+        /// 逐个获取在途数量
+        /// </summary>
+        /// <param name="poId"></param>
+        /// <param name="entryId"></param>
+        /// <returns></returns>
         public decimal GetPOTransitQty(int poId, int entryId)
         {
             var result = (from de in db.DRBillDetails
@@ -51,6 +57,40 @@ namespace VendorNew.Services
                           && de.po_id == poId && de.po_entry_id == entryId
                           select de.send_qty).Sum();
             return result ?? 0;
+        }
+
+        /// <summary>
+        /// 批量获取在途数量
+        /// </summary>
+        /// <param name="poInfo"></param>
+        /// <returns></returns>
+        public List<decimal> GetPOTransitQty(List<IDModel> poInfo)
+        {
+            var qtys = (from de in db.DRBillDetails
+                        join d in db.DRBills on de.bill_id equals d.bill_id
+                        where d.p_status != "已入库"
+                        && poInfo.Contains(new IDModel() { interId = de.po_id, entryId = de.po_entry_id })
+                        group de by new{de.po_id,de.po_entry_id} into g
+                        select new
+                        {
+                            po_id = g.Key.po_id,
+                            po_entry_id = g.Key.po_entry_id,
+                            send_qty = g.Sum(x=>x.send_qty)
+                        }).ToList();
+            List<decimal> result = new List<decimal>();
+            decimal sumQty = 0;
+            foreach (var p in poInfo) {
+                var q = qtys.Where(s => s.po_id == p.interId && s.po_entry_id == p.entryId).FirstOrDefault();
+                if (q != null) {
+                    sumQty = q.send_qty ?? 0;
+                }
+                else {
+                    sumQty = 0;
+                }
+                result.Add(sumQty);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -314,7 +354,8 @@ namespace VendorNew.Services
                              tradeTypeName = d.trade_type_name,
                              unitName = e.unit_name,
                              userId = d.user_id,
-                             supplierNumber = d.supplier_number
+                             supplierNumber = d.supplier_number,
+                             comment = e.comment
                          };
             return result;
         }
