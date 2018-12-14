@@ -142,16 +142,46 @@
 
     //阻止冒泡事件
     function preventBubble() {
-        if (navigator.userAgent.indexOf("Firefox") > 0) {
-            var $E = function () { var c = $E.caller; while (c.caller) c = c.caller; return c.arguments[0] };
-            __defineGetter__("event", $E);
+        //if (navigator.userAgent.indexOf("Firefox") > 0) {           
+        //    var $E = function () { var c = $E.caller; while (c.caller) c = c.caller; return c.arguments[0] };
+        //    __defineGetter__("event", $E);
+        //}
+        //if (window.event) {
+        //    event.cancelBubble = true;
+        //} else if (evt) {
+        //    event.stopPropagation();
+        //}
+        cancelBubble();
+    }
+
+    function getEvent(){
+        if(window.event)    {return window.event;}
+        var func=getEvent.caller;
+        while(func!=null){
+            var arg0=func.arguments[0];
+            if(arg0){
+                if((arg0.constructor==Event || arg0.constructor ==MouseEvent
+                    || arg0.constructor==KeyboardEvent)
+                    ||(typeof(arg0)=="object" && arg0.preventDefault
+                    && arg0.stopPropagation)){
+                    return arg0;
+                }
+            }
+            func=func.caller;
         }
-        if (window.event) {
-            event.cancelBubble = true;
-        } else if (evt) {
-            event.stopPropagation();
+        return null;
+    }
+    //阻止冒泡
+    function cancelBubble()
+    {
+        var e=getEvent();
+        if(window.event){
+            e.cancelBubble=true;//阻止冒泡
+        }else if(e.preventDefault){
+            e.stopPropagation();//阻止冒泡
         }
     }
+
 
     function updateDetailFooter() {
         var rows = $("#dg_detail").datagrid("getRows");
@@ -237,7 +267,7 @@
                 handler: function () {
                     var combogridPo = [];
                     for (var i = 0; i < detailData.length; i++) {
-                        if (detailData[i].send_qty > poSumInfo[i].box_qty) {
+                        if (detailData[i].send_qty > parseFloat(poSumInfo[i].box_qty)) {
                             combogridPo.push(detailData[i]);
                         }
                     }
@@ -608,7 +638,7 @@
             footer.push({
                 iconCls: "icon-sum",
                 box_number: "外箱合计：",
-                every_qty: totalOuterQty,
+                every_qty: totalOuterQty.toFixed(4),
                 pack_num: totalOuterPackNum,
                 po_info: "<a href='#dg_box' id='tip_box_footer'>点击查看箱内关联订单汇总数量</a>"
             });
@@ -617,7 +647,7 @@
             footer.push({
                 iconCls: "icon-sum",
                 box_number: "内箱合计：",
-                every_qty: totalInnerQty,
+                every_qty: totalInnerQty.toFixed(4),
                 pack_num: totalInnerPackNum
             });
         }        
@@ -628,7 +658,7 @@
             poSumInfo.push({
                 po_number: detailData[i].po_number,
                 po_entry_id: detailData[i].po_entry_id,
-                box_qty: _.sumBy(fo, "send_num")
+                box_qty: _.sumBy(fo, "send_num").toFixed(4)
             });
         }
 
@@ -1144,7 +1174,7 @@
 </div>
 
 @*拆分外箱对话框*@
-<div id="dlg_split_box" class="easyui-dialog" style="width: 400px;padding:10px 20px;" closed="true" modal="true" buttons="#dlg_split_buttons" title="&lt;i class=&quot;fa fa-plus-circle&quot;&gt;&lt;i&gt; 新增内箱">
+<div id="dlg_split_box" class="easyui-dialog" style="width: 400px;padding:10px 20px;" closed="true" modal="true" buttons="#dlg_split_buttons" title="&lt;i class=&quot;fa fa-copy&quot;&gt;&lt;i&gt; 拆分内箱">
     <div class="fitem">
         <label>需拆分出件数:</label>
         <input type="text" class="easyui-numberbox" name="split_pack_num" id="split_pack_num" data-options="required:true" />

@@ -40,7 +40,7 @@ namespace VendorNew.Services
                            icon = a.fa_name,
                            color = a.btn_color,
                            url = a.number % 1 == 0 ? "" : "/VendorNew/" + a.controller_name + "/" + a.action_name
-                       })).ToList();
+                       })).Distinct().ToList();
 
             return list;            
         }

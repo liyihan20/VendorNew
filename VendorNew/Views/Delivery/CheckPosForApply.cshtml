@@ -183,7 +183,7 @@
                     var transitQtyArr = result.split(",");
                     for (var i = 0; i < currentPageRows.length; i++) {
                         currentPageRows[i].transitQty = transitQtyArr[i];
-                        currentPageRows[i].leftQty = parseFloat(currentPageRows[i].orderQty) - parseFloat(currentPageRows[i].realteQty) - parseFloat(transitQtyArr[i]);
+                        currentPageRows[i].leftQty = (parseFloat(currentPageRows[i].orderQty) - parseFloat(currentPageRows[i].realteQty) - parseFloat(transitQtyArr[i])).toFixed(4);
 
                         $("#dg_po").datagrid("updateRow", {
                             index: rowIndexArr[i],

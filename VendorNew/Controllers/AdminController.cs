@@ -252,7 +252,7 @@ namespace VendorNew.Controllers
                 {
                     g.group_id,
                     g.name,
-                    members = string.Join(";", g.allMembers.ToArray())
+                    members = string.Join("; ", g.allMembers.ToArray())
                 }).OrderBy(g => g.name).ToList();
 
             return Json(new { rows = result, total = total });

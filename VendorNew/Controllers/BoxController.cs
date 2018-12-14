@@ -19,8 +19,7 @@ namespace VendorNew.Controllers
             ViewData["account"] = currentAccount;
             return View();
         }
-
-
+        
         [SessionTimeOutJsonFilter]
         public JsonResult GetBoxNodes(FormCollection fc)
         {
@@ -100,5 +99,96 @@ namespace VendorNew.Controllers
             return Json(new { suc = true, boxInfo = result });
         }
 
+        [AuthorityFilter]
+        public ActionResult InnerBoxesExtra()
+        {
+            ViewData["account"] = currentAccount;
+            return View();
+        }
+
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult GetInnerBoxexExtra(FormCollection fc)
+        {
+            SearchInnerBoxExtraParam p = new SearchInnerBoxExtraParam();
+            MyUtils.SetFieldValueToModel(fc, p);
+
+            p.endDate = p.endDate.AddDays(1);
+            p.account = currentAccount;
+            p.itemInfo = p.itemInfo ?? "";
+            p.userName = currentUser.userName;
+            p.innerBoxNumber = p.innerBoxNumber ?? "";
+            p.outerBoxNumber = p.outerBoxNumber ?? "";
+
+            var result = new BoxSv().GetInnerBoxesExtra(p, canCheckAll);
+            int total = result.Count();
+
+            return Json(new { suc = true, total = total, result = result.Skip((p.page - 1) * p.rows).Take(p.rows).ToList() });
+
+        }
+                
+        public JsonResult SearchK3Item(string searchValue)
+        {
+            return Json(new ItemSv().SearchK3Item(searchValue, currentAccount));
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult GetInnerBoxExtraBefore(string itemNumber)
+        {
+            var extra = new BoxSv().GetInnerBoxExtraBefore(currentUser.userName, itemNumber);
+            if (extra == null) {
+                return Json(new SRM(false));
+            }
+            extra.account = currentAccount;
+            return Json(new { suc = true, boxInfo = extra });
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult SaveInnerBoxWithExtra(FormCollection fc)
+        {
+            InnerBoxesExtra extra = new InnerBoxesExtra();
+            MyUtils.SetFieldValueToModel(fc, extra);
+
+            try {
+                extra.create_date = DateTime.Now;
+                extra.user_name = currentUser.userName;
+                int packNum = Int32.Parse(fc.Get("pack_num"));
+                decimal everyQty = decimal.Parse(fc.Get("every_qty"));
+
+                string innerBoxNumber = new BoxSv().SaveInnerBoxWithExtra(extra, packNum, everyQty);
+                WLog("保存Extra内箱", "箱号：" + innerBoxNumber);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+            return Json(new SRM());
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult SplitInnerBoxWithExtra(int innerBoxId, int splitNum)
+        {
+            try {
+                var result = new BoxSv().SplitInnerBoxesWithExtra(innerBoxId, splitNum);
+                WLog("拆分内箱Extra", string.Format("{0}-->{1};{2}", result[0], result[1], result[2]));
+                return Json(new SRM());
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult GetNoRelatedInnerBoxes(string itemNumber)
+        {
+            return Json(new { suc = true, boxInfo = new BoxSv().GetNoRelatedInnerBox(currentUser.userName, itemNumber,currentAccount, canCheckAll) });
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult CancelIOBoxRelation(string outerBoxNumber)
+        {
+            new BoxSv().CancelIOBoxRelation(outerBoxNumber);
+            WLog("取消关联内外箱", outerBoxNumber);
+            return Json(new SRM());
+        }
     }
 }

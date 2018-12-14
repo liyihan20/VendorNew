@@ -151,11 +151,14 @@ namespace VendorNew.Services
 
             var m = (from o in db.OuterBoxes
                      join i in db.InneBoxes on o.outer_box_id equals i.outer_box_id
+                     join et in db.InnerBoxesExtra on i.inner_box_id equals et.inner_box_id into etp
+                     from e in etp.DefaultIfEmpty()
                      where o.bill_id == billId
                      select new
                      {
                          o,
-                         i
+                         i,
+                         e
                      }).ToList();
 
             foreach (var b in m) {
@@ -163,28 +166,54 @@ namespace VendorNew.Services
                 var innerBoxes = b.i.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 for (var i=0;i<innerBoxes.Count();i++) {
                     var outerBoxNum = outerBoxes[i / ((int)b.i.pack_num / (int)b.o.pack_num)];
-                    boxes.Add(new PrintInnerBoxModel()
-                    {
-                        batchNo = b.o.batch,
-                        boxNumber = innerBoxes[i],
-                        brand = b.o.brand,
-                        expireDate = ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
-                        itemModel = b.o.item_model,
-                        itemName = b.o.item_name,
-                        itemNumber = b.o.item_number,
-                        keepCondition = b.o.keep_condition,
-                        madeBy = b.o.made_by,
-                        produceDate = b.o.produce_date == null ? "" : ((DateTime)b.o.produce_date).ToString("yyyy-MM-dd"),
-                        qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.o.unit_name),
-                        rohs = b.o.rohs,
-                        supplierName = supplierName,
-                        tradeTypeName = b.o.trade_type_name,
-                        outerBoxNumber = outerBoxNum,
-                        //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
-                        //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
-                        //)
-                        qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
-                    });
+                    if (b.e == null) {
+                        boxes.Add(new PrintInnerBoxModel()
+                        {
+                            batchNo = b.o.batch,
+                            boxNumber = innerBoxes[i],
+                            brand = b.o.brand,
+                            expireDate = ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            itemModel = b.o.item_model,
+                            itemName = b.o.item_name,
+                            itemNumber = b.o.item_number,
+                            keepCondition = b.o.keep_condition,
+                            madeBy = b.o.made_by,
+                            produceDate = b.o.produce_date == null ? "" : ((DateTime)b.o.produce_date).ToString("yyyy-MM-dd"),
+                            qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.o.unit_name),
+                            rohs = b.o.rohs,
+                            supplierName = supplierName,
+                            tradeTypeName = b.o.trade_type_name,
+                            outerBoxNumber = outerBoxNum,
+                            //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
+                            //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
+                            //)
+                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                        });
+                    }
+                    else {
+                        boxes.Add(new PrintInnerBoxModel()
+                        {
+                            batchNo = b.e.batch,
+                            boxNumber = innerBoxes[i],
+                            brand = b.e.brand,
+                            expireDate = ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            itemModel = b.e.item_model,
+                            itemName = b.e.item_name,
+                            itemNumber = b.e.item_number,
+                            keepCondition = b.e.keep_condition,
+                            madeBy = b.e.made_by,
+                            produceDate = b.e.produce_date == null ? "" : ((DateTime)b.e.produce_date).ToString("yyyy-MM-dd"),
+                            qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.e.unit_name),
+                            rohs = b.e.rohs,
+                            supplierName = supplierName,
+                            tradeTypeName = b.e.trade_type_name,
+                            outerBoxNumber = outerBoxNum,
+                            //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
+                            //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
+                            //)
+                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                        });
+                    }
                 }
             }
 
@@ -202,11 +231,14 @@ namespace VendorNew.Services
 
             var m = (from o in db.OuterBoxes
                      join i in db.InneBoxes on o.outer_box_id equals i.outer_box_id
+                     join et in db.InnerBoxesExtra on i.inner_box_id equals et.inner_box_id into etp
+                     from e in etp.DefaultIfEmpty()
                      where boxIds.Contains(o.outer_box_id)
                      select new
                      {
                          o,
-                         i
+                         i,
+                         e
                      }).ToList();
 
             if (m.Count() == 0) {
@@ -221,28 +253,115 @@ namespace VendorNew.Services
                 var innerBoxes = b.i.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 for (var i = 0; i < innerBoxes.Count(); i++) {
                     var outerBoxNum = outerBoxes[i / ((int)b.i.pack_num / (int)b.o.pack_num)];
+                    if (b.e == null) {
+                        boxes.Add(new PrintInnerBoxModel()
+                        {
+                            batchNo = b.o.batch,
+                            boxNumber = innerBoxes[i],
+                            brand = b.o.brand,
+                            expireDate = ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            itemModel = b.o.item_model,
+                            itemName = b.o.item_name,
+                            itemNumber = b.o.item_number,
+                            keepCondition = b.o.keep_condition,
+                            madeBy = b.o.made_by,
+                            produceDate = b.o.produce_date == null ? "" : ((DateTime)b.o.produce_date).ToString("yyyy-MM-dd"),
+                            qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.o.unit_name),
+                            rohs = b.o.rohs,
+                            supplierName = supplierName,
+                            tradeTypeName = b.o.trade_type_name,
+                            outerBoxNumber = outerBoxNum,
+                            //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
+                            //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
+                            //)
+                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                        });
+                    }
+                    else {
+                        boxes.Add(new PrintInnerBoxModel()
+                        {
+                            batchNo = b.e.batch,
+                            boxNumber = innerBoxes[i],
+                            brand = b.e.brand,
+                            expireDate = ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            itemModel = b.e.item_model,
+                            itemName = b.e.item_name,
+                            itemNumber = b.e.item_number,
+                            keepCondition = b.e.keep_condition,
+                            madeBy = b.e.made_by,
+                            produceDate = b.e.produce_date == null ? "" : ((DateTime)b.e.produce_date).ToString("yyyy-MM-dd"),
+                            qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.e.unit_name),
+                            rohs = b.e.rohs,
+                            supplierName = supplierName,
+                            tradeTypeName = b.e.trade_type_name,
+                            outerBoxNumber = outerBoxNum,
+                            //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
+                            //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
+                            //)
+                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                        });
+                    }
+                }
+            }
+
+            return boxes.OrderBy(b => b.boxNumber).ToList();
+        }
+
+        /// <summary>
+        /// 打印小标签管理里面所有选中的内箱
+        /// </summary>
+        /// <param name="boxIds"></param>
+        /// <returns></returns>
+        public List<PrintInnerBoxModel> GetInnerBoxesWithExtra4Print(List<int> boxIds)
+        {
+            List<PrintInnerBoxModel> boxes = new List<PrintInnerBoxModel>();
+
+            var m = (from i in db.InneBoxes
+                     join et in db.InnerBoxesExtra on i.inner_box_id equals et.inner_box_id into etp
+                     from e in etp.DefaultIfEmpty()
+                     where boxIds.Contains(i.inner_box_id)
+                     select new
+                     {
+                         i,
+                         e
+                     }).ToList();
+
+            if (m.Count() == 0) {
+                throw new Exception("不存在可打印的内箱");
+            }
+
+            string supplierNumber = m.First().e.user_name;
+            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber);
+            if (string.IsNullOrEmpty(supplierName)) {
+                supplierName = "测试供应商名";
+            }
+
+            foreach (var b in m) {                
+                var innerBoxes = b.i.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                for (var i = 0; i < innerBoxes.Count(); i++) {                    
                     boxes.Add(new PrintInnerBoxModel()
                     {
-                        batchNo = b.o.batch,
+                        batchNo = b.e.batch,
                         boxNumber = innerBoxes[i],
-                        brand = b.o.brand,
-                        expireDate = ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
-                        itemModel = b.o.item_model,
-                        itemName = b.o.item_name,
-                        itemNumber = b.o.item_number,
-                        keepCondition = b.o.keep_condition,
-                        madeBy = b.o.made_by,
-                        produceDate = b.o.produce_date == null ? "" : ((DateTime)b.o.produce_date).ToString("yyyy-MM-dd"),
-                        qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.o.unit_name),
-                        rohs = b.o.rohs,
+                        brand = b.e.brand,
+                        expireDate = ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                        itemModel = b.e.item_model,
+                        itemName = b.e.item_name,
+                        itemNumber = b.e.item_number,
+                        keepCondition = b.e.keep_condition,
+                        madeBy = b.e.made_by,
+                        produceDate = b.e.produce_date == null ? "" : ((DateTime)b.e.produce_date).ToString("yyyy-MM-dd"),
+                        qtyAndUnit = string.Format("{0:0.####}{1}", b.i.every_qty, b.e.unit_name),
+                        rohs = b.e.rohs,
                         supplierName = supplierName,
-                        tradeTypeName = b.o.trade_type_name,
-                        outerBoxNumber = outerBoxNum,
+                        tradeTypeName = b.e.trade_type_name,
+                        outerBoxNumber = "",
                         //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                         //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                         //)
-                        qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                        qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";"
                     });
+                    
                 }
             }
 

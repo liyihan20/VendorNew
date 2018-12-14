@@ -239,11 +239,16 @@ namespace VendorNew.Controllers
             if (box.produce_date == DateTime.MinValue) {
                 return Json(new SRM(false, "请填写正确的生产日期"));
             }
-                        
-            List<OuterBoxPOs> poList = JsonConvert.DeserializeObject<List<OuterBoxPOs>>(fc.Get("poRows"));
 
             try {
-                string boxNumber = new BoxSv().SaveOuterBox(box, poList);
+                List<OuterBoxPOs> poList = JsonConvert.DeserializeObject<List<OuterBoxPOs>>(fc.Get("poRows"));
+
+                //关联小标签信息
+                List<int> innerBoxIds = new List<int>();
+                if (!string.IsNullOrEmpty(fc.Get("innerBoxIds"))) {
+                    innerBoxIds = fc.Get("innerBoxIds").Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(i => Int32.Parse(i)).ToList();
+                }
+                string boxNumber = new BoxSv().SaveOuterBox(box, poList, innerBoxIds);
                 WLog("新增外箱", "保存外箱，箱号：" + boxNumber);
             }
             catch (Exception ex) {
@@ -453,6 +458,11 @@ namespace VendorNew.Controllers
             var sv = new DRSv();
             var dr=sv.GetDRBill(id);
 
+            if (dr == null) {
+                ViewBag.tip = "申请单不存在，可能已被删除";
+                return View("Error");
+            }
+
             ViewData["drHead"] = dr;
             ViewData["drDetails"] = sv.GetDRBillDetails(id);
 
@@ -475,6 +485,7 @@ namespace VendorNew.Controllers
         /// </summary>
         /// <param name="fc"></param>
         /// <returns></returns>
+        [HttpPost]
         [SessionTimeOutJsonFilter]
         public JsonResult GetMyAppliesData(FormCollection fc)
         {

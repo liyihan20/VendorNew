@@ -228,5 +228,10 @@ namespace VendorNew.Services
             db.SubmitChanges();
         }
 
+        public List<Vw_K3_Item> SearchK3Item(string itemModel,string account)
+        {
+            return db.Vw_K3_Item.Where(v => v.item_model == itemModel && v.account == account).ToList();
+        }
+
     }
 }

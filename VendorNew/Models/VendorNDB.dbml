@@ -78,7 +78,7 @@
       <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
       <Column Name="t_key" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="t_value" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="t_value" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="account" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
     </Type>
   </Table>
@@ -126,8 +126,8 @@
       <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
       <Column Name="op_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="bill_no" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
-      <Column Name="head" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
-      <Column Name="details" Type="System.String" DbType="VarChar(MAX)" CanBeNull="true" />
+      <Column Name="head" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="details" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="account" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
     </Type>
   </Table>
@@ -255,6 +255,44 @@
       <Column Name="inner_box_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
       <Column Name="outer_box_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="outer_box_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.InnerBoxesExtra" Member="InnerBoxesExtra">
+    <Type Name="InnerBoxesExtra">
+      <Column Name="inner_box_extra_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="inner_box_id" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="size" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="every_net_weight" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="every_gross_weight" Type="System.Decimal" DbType="Decimal(18,4)" CanBeNull="true" />
+      <Column Name="made_in" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="brand" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="batch" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="rohs" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="produce_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="safe_period" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="made_by" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="package_date" Type="System.DateTime" DbType="SmallDateTime" CanBeNull="true" />
+      <Column Name="keep_condition" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="produce_circle" Type="System.String" DbType="VarChar(100)" CanBeNull="true" />
+      <Column Name="unit_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="unit_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="trade_type_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="account" Type="System.String" DbType="VarChar(10)" CanBeNull="true" />
+      <Column Name="user_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_number" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_name" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="item_model" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="create_date" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Vw_K3_Item" Member="Vw_K3_Item">
+    <Type Name="Vw_K3_Item">
+      <Column Name="account" Type="System.String" DbType="VarChar(1) NOT NULL" CanBeNull="false" />
+      <Column Name="item_number" Type="System.String" DbType="VarChar(80)" CanBeNull="true" />
+      <Column Name="item_name" Type="System.String" DbType="VarChar(80) NOT NULL" CanBeNull="false" />
+      <Column Name="item_model" Type="System.String" DbType="VarChar(255)" CanBeNull="true" />
+      <Column Name="unit_number" Type="System.String" DbType="VarChar(30) NOT NULL" CanBeNull="false" />
+      <Column Name="unit_name" Type="System.String" DbType="VarChar(80) NOT NULL" CanBeNull="false" />
     </Type>
   </Table>
   <Function Name="dbo.GetSupplierNameByNumber" Method="GetSupplierNameByNumber">

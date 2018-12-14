@@ -144,5 +144,17 @@
         <elementListCompartment Id="b4a93ca4-5ec8-452a-9705-f6ebdb54d86c" absoluteBounds="9.265, 4.71, 1.9700000000000002, 1.2025655110677083" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
+    <classShape Id="febc9696-cb13-4f43-a0b8-a3d8b8b03a09" isExpanded="false" absoluteBounds="9.25, 5.75, 2, 0.45">
+      <DataClassMoniker Name="/VendorNDBDataContext/InnerBoxesExtra" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c3e16600-4c0a-434b-8f2b-c12fd9147339" absoluteBounds="9.265, 6.21, 1.9700000000000002, 4.831939697265625" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="450bbfd1-bec3-4598-9afb-9920d8d359a9" isExpanded="false" absoluteBounds="0.5, 5.75, 2, 0.45">
+      <DataClassMoniker Name="/VendorNDBDataContext/Vw_K3_Item" />
+      <nestedChildShapes>
+        <elementListCompartment Id="86420d0e-b18c-4a07-8a00-b45fd6bb3d20" absoluteBounds="0.51499999999999968, 6.21, 1.9700000000000002, 1.393585205078125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
   </nestedChildShapes>
 </ordesignerObjectsDiagram>

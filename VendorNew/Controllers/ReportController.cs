@@ -116,17 +116,25 @@ namespace VendorNew.Controllers
         /// </summary>
         /// <param name="boxIds"></param>
         /// <param name="numPerPage"></param>
+        /// <param name="inOrOut">in:打印所选内箱；out:打印所选外箱</param>
         /// <returns></returns>
         [SessionTimeOutFilter]
-        public ActionResult PrintSelectedInnerBox(string boxIds, int numPerPage = 1)
+        public ActionResult PrintSelectedInnerBox(string boxIds,string inOrOut = "out", int numPerPage = 1)
         {
             if (numPerPage < 1) numPerPage = 1;
 
             List<int> boxIdList = boxIds.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(b => Int32.Parse(b)).ToList();
 
             try {
-                var result = new ReportSv().GetInnerBoxes4Print(boxIdList);
+                List<PrintInnerBoxModel> result;
+                if (inOrOut.Equals("out")) {
+                    result = new ReportSv().GetInnerBoxes4Print(boxIdList);
+                }
+                else {
+                    result = new ReportSv().GetInnerBoxesWithExtra4Print(boxIdList);
+                }
                 ViewData["innerData"] = result;
+                ViewData["inOrOut"] = inOrOut;
                 ViewData["numPerPage"] = numPerPage;
                 ViewData["boxIds"] = boxIds;
                 WLog("打印内箱", "打印所有选中的内箱：" + string.Join(",", result.Select(r => r.boxNumber).ToList()));
@@ -138,6 +146,7 @@ namespace VendorNew.Controllers
 
             return View();
         }
+
 
         /// <summary>
         /// 导出申请单excel，包括我的申请和我的审批

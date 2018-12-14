@@ -77,7 +77,7 @@
 
     function doSearch(value) {
         $('#dg').datagrid('load', {
-            searchValue: value
+            searchValue: $.trim(value)
         });
     }
 

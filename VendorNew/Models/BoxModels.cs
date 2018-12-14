@@ -78,5 +78,50 @@ namespace VendorNew.Models
         public decimal? qty { get; set; }
     }
 
-    
+    public class InnerBoxExtraModel
+    {
+        public InneBoxes ib { get; set; }
+        public InnerBoxesExtra extra { get; set; }
+        public string hasRelated { get; set; }
+        public string outerBoxNumber { get; set; }
+        public string hasUsed { get; set; }
+    }
+
+    public class SearchInnerBoxExtraParam
+    {
+        public int page { get; set; }
+        public int rows { get; set; }
+        public DateTime beginDate { get; set; }
+        public DateTime endDate { get; set; }
+        public string hasUsed { get; set; }
+        public string hasRelated { get; set; }
+        public string outerBoxNumber { get; set; }
+        public string itemInfo { get; set; }
+        public string innerBoxNumber { get; set; }
+        public string account { get; set; }
+        public string userName { get; set; }
+    }
+
+    public class NotRelatedInnerBox
+    {
+        public int inner_box_id { get; set; }
+        public string box_number { get; set; }
+        public int? pack_num { get; set; }
+        public decimal? every_qty { get; set; }
+        public string item_number { get; set; }
+        public string item_name { get; set; }
+        public string item_model { get; set; }
+        public string brand { get; set; }
+        public string batch { get; set; }
+        public string rohs { get; set; }
+        public DateTime? produce_date { get; set; }
+        public int? safe_period { get; set; }
+        public string made_in { get; set; }
+        public string made_by { get; set; }
+        public DateTime? package_date { get; set; }
+        public string keep_condition { get; set; }
+        public string produce_circle { get; set; }
+
+    }
+
 }

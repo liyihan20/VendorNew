@@ -14,7 +14,7 @@ namespace VendorNew.Services
         /// <param name="box">外箱信息</param>
         /// <param name="poList">外箱关联的PO信息</param>
         /// <returns>箱号</returns>
-        public string SaveOuterBox(OuterBoxes box, List<OuterBoxPOs> poList)
+        public string SaveOuterBox(OuterBoxes box, List<OuterBoxPOs> poList, List<int> innerBoxIds)
         {
             //验证可做外箱数量
             decimal everyBoxQty = 0;
@@ -57,6 +57,26 @@ namespace VendorNew.Services
                     box_number = num
                 });
             }
+
+            //关联小标签信息 2018-12-12
+            if (innerBoxIds.Count() > 0) {
+                var innerBoxes = db.InneBoxes.Where(i => innerBoxIds.Contains(i.inner_box_id)).ToList();
+                foreach (var ib in innerBoxes) {
+                    ib.outer_box_id = box.outer_box_id; //关联到外箱
+                    //添加内箱明细
+                    var innerBoxArr = ib.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    for (var j = 0; j < innerBoxArr.Count(); j++) {
+                        db.InnerBoxesDetail.InsertOnSubmit(new InnerBoxesDetail()
+                        {
+                            inner_box_id = ib.inner_box_id,
+                            outer_box_id = box.outer_box_id,
+                            inner_box_number = innerBoxArr[j],
+                            outer_box_number = box.box_number
+                        });
+                    }
+                }
+            }
+
             db.SubmitChanges();
 
             return box.box_number;
@@ -258,6 +278,7 @@ namespace VendorNew.Services
 
             db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.inner_box_id == innerBoxId));
             db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.inner_box_id == innerBoxId));
+            db.InnerBoxesExtra.DeleteAllOnSubmit(db.InnerBoxesExtra.Where(i => i.inner_box_id == innerBoxId));
             db.SubmitChanges();
 
             return boxNumber;
@@ -442,7 +463,7 @@ namespace VendorNew.Services
 
         public IQueryable<OuterBoxes> GetOuterBoxes(SearchBoxParams p,bool canCheckAll)
         {
-            var result = from b in db.OuterBoxes                         
+            var result = from b in db.OuterBoxes
                          where b.create_date >= p.beginDate && b.create_date <= p.endDate
                          && b.account == p.account
                          && (b.item_name.Contains(p.itemInfo) || b.item_model.Contains(p.itemInfo))
@@ -528,6 +549,187 @@ namespace VendorNew.Services
             return db.OuterBoxes.Where(o => o.user_name == supplierNumber && o.item_number == itemNumber).OrderByDescending(o=>o.outer_box_id).FirstOrDefault();
         }
 
+        public IQueryable<InnerBoxExtraModel> GetInnerBoxesExtra(SearchInnerBoxExtraParam p,bool canCheckAll)
+        {
+            var result = from ibe in db.InnerBoxesExtra
+                         join ib in db.InneBoxes on ibe.inner_box_id equals ib.inner_box_id 
+                         join o in db.OuterBoxes on ib.outer_box_id equals o.outer_box_id into ot
+                         from ob in ot.DefaultIfEmpty()
+                         where ibe.create_date >= p.beginDate && ibe.create_date <= p.endDate
+                         && ibe.account == p.account
+                         && (ibe.item_model.Contains(p.itemInfo) || ibe.item_name.Contains(p.itemInfo))
+                         && (canCheckAll || (ibe.user_name + "A").Contains(p.userName))
+                         && ((p.hasUsed == "所有") || (p.hasUsed == "已使用" && ob.bill_id != null) || (p.hasUsed == "未使用" && ob.bill_id == null))
+                         && ((p.hasRelated == "所有") || (p.hasRelated == "已关联" && ib.outer_box_id != null) || (p.hasRelated == "未关联" && ib.outer_box_id == null))
+                         && ib.box_number_long.Contains(p.innerBoxNumber)
+                         &&(p.outerBoxNumber=="" || ob.box_number_long.Contains(p.outerBoxNumber))
+                         orderby ibe.create_date descending
+                         select new InnerBoxExtraModel()
+                         {
+                             ib = ib,
+                             extra = ibe,
+                             hasRelated = ib.outer_box_id == null ? "未关联" : "已关联",
+                             hasUsed = ob == null ? "未使用" : (ob.bill_id == null ? "未使用" : "已使用"),
+                             outerBoxNumber = ob == null ? "" : ob.box_number
+                         };
+            
+            return result;
+                       
+        }
+
+        public InnerBoxesExtra GetInnerBoxExtraBefore(string supplierNumber, string itemNumber)
+        {
+            return db.InnerBoxesExtra.Where(i => i.user_name == supplierNumber && i.item_number == itemNumber).OrderByDescending(i => i.inner_box_extra_id).FirstOrDefault();
+        }
+
+        public string SaveInnerBoxWithExtra(InnerBoxesExtra extra, int packNum, decimal everyQty)
+        {
+            //首先增加内箱表
+            InneBoxes ib = new InneBoxes();           
+
+            var innerBoxNumber = new ItemSv().GetBoxNumber("I", packNum);
+            ib.box_number = innerBoxNumber[0];
+            ib.box_number_long = innerBoxNumber[1];
+            ib.pack_num = packNum;
+            ib.every_qty = everyQty;
+
+            db.InneBoxes.InsertOnSubmit(ib);
+            db.SubmitChanges();
+
+            //增加到extra表
+            try {
+                extra.inner_box_id = ib.inner_box_id;
+                db.InnerBoxesExtra.InsertOnSubmit(extra);
+                db.SubmitChanges();
+            }
+            catch (Exception ex) {
+                //extra新增失败，删除掉内箱
+                db.InneBoxes.DeleteOnSubmit(ib);
+                db.SubmitChanges();
+
+                throw ex;
+            }
+
+            return ib.box_number;
+        }
+
+
+        public string[] SplitInnerBoxesWithExtra(int innerBoxId, int splitNum)
+        {
+            var innerBox = db.InneBoxes.Where(i => i.inner_box_id == innerBoxId).FirstOrDefault();
+            if (innerBox == null) {
+                throw new Exception("内箱不存在");
+            }
+            if (innerBox.pack_num <= splitNum) {
+                throw new Exception("内箱件数必须大于拆分件数");
+            }
+            if (innerBox.outer_box_id != null) {
+                throw new Exception("只能拆分未关联外箱的内箱");
+            }
+
+            var boxNumberBefore = innerBox.box_number_long;
+            var b2 = JsonConvert.DeserializeObject<InneBoxes>(JsonConvert.SerializeObject(innerBox));
+            var boxNumberArr = boxNumberBefore.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var packNum = (int)innerBox.pack_num;            
+            var num1 = boxNumberArr.Take(packNum - splitNum);
+            var num2 = boxNumberArr.Skip(packNum - splitNum);
+
+            //更新原始内箱
+            innerBox.pack_num = packNum - splitNum;
+            if (num1.Count() == 1) {
+                innerBox.box_number = num1.First();
+            }
+            else {
+                innerBox.box_number = num1.First() + "~" + num1.Last();
+            }
+            innerBox.box_number_long = string.Join(",", num1);
+
+            //添加拆分箱
+            b2.inner_box_id = 0;
+            b2.pack_num = splitNum;
+            if (num2.Count() == 1) {
+                b2.box_number = num2.First();
+            }
+            else {
+                b2.box_number = num2.First() + "~" + num2.Last();
+            }
+            b2.box_number_long = string.Join(",", num2);
+            db.InneBoxes.InsertOnSubmit(b2);
+
+            db.SubmitChanges();
+
+            try {
+                var e1 = db.InnerBoxesExtra.Where(e => e.inner_box_id == innerBoxId).FirstOrDefault();
+                if (e1 != null) {
+                    var e2 = JsonConvert.DeserializeObject<InnerBoxesExtra>(JsonConvert.SerializeObject(e1));
+                    e2.inner_box_id = b2.inner_box_id;
+                    e2.inner_box_extra_id = 0;
+                    e2.create_date = DateTime.Now;
+                    db.InnerBoxesExtra.InsertOnSubmit(e2);
+                    db.SubmitChanges();
+                }
+            }
+            catch (Exception ex) {
+                //失败回滚
+                innerBox.pack_num = packNum;
+                innerBox.box_number = boxNumberArr.First() + "~" + boxNumberArr.Last();
+                innerBox.box_number_long = string.Join(",", boxNumberArr);
+                db.InneBoxes.DeleteOnSubmit(b2);
+                db.SubmitChanges();
+                throw new Exception("保存内箱其他信息时失败，原因：" + ex.Message);
+            }
+
+            return new string[] { boxNumberBefore, innerBox.box_number, b2.box_number };
+
+        }
+
+        public List<NotRelatedInnerBox> GetNoRelatedInnerBox(string userName, string itemNumber,string account, bool canCheckAll)
+        {
+            return (from e in db.InnerBoxesExtra
+                    join i in db.InneBoxes on e.inner_box_id equals i.inner_box_id
+                    where i.outer_box_id == null
+                    && ((userName + "A").Contains(e.user_name) || canCheckAll)
+                    && e.item_number == itemNumber
+                    && e.account == account
+                    orderby i.inner_box_id descending
+                    select new NotRelatedInnerBox()
+                    {
+                        inner_box_id = i.inner_box_id,
+                        box_number = i.box_number,
+                        every_qty = i.every_qty,
+                        pack_num = i.pack_num,
+                        batch = e.batch,
+                        brand = e.brand,
+                        item_model = e.item_model,
+                        item_name = e.item_name,
+                        item_number = e.item_number,
+                        keep_condition = e.keep_condition,
+                        made_by = e.made_by,
+                        made_in = e.made_in,
+                        package_date = e.package_date,
+                        produce_circle = e.produce_circle,
+                        produce_date = e.produce_date,
+                        safe_period = e.safe_period,
+                        rohs = e.rohs
+                    }).ToList();
+        }
+
+        public void CancelIOBoxRelation(string outerBoxNumber)
+        {
+            var ob = db.OuterBoxes.Where(o => o.box_number == outerBoxNumber).FirstOrDefault();
+            if (ob == null) {
+                throw new Exception("外箱不存在");
+            }
+            //取消和内箱关联
+            foreach (var ib in db.InneBoxes.Where(i => i.outer_box_id == ob.outer_box_id).ToList()) {
+                ib.outer_box_id = null;
+
+            }
+            //删除内箱明细信息
+            db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.outer_box_id==ob.outer_box_id));
+
+            db.SubmitChanges();
+        }
 
         //public void GenerateOuterBoxDetail()
         //{

@@ -59,7 +59,7 @@
             loadFilter: function (data, parentId) {
                 if (!data.suc) {
                     tip("数据读取失败：" + data.msg);
-                    return [];
+                    return { total: 0, rows: [] };
                 }
                 if (!parentId) {
                     //加载外箱信息和总数量
@@ -106,12 +106,12 @@
                 text: '<i class="fa fa-fw fa-plus-square"></i> 新增外箱',
                 handler: function () {
                     $("#dlg_outer_box").dialog("open");
-                    $('#select_box_po').combogrid('grid').datagrid("loadData", []);
-                    $('#dlg_outer_box .easyui-panel').panel('resize', {
-                        width: "100%",
-                    });
+                    $('#select_box_po').combogrid('grid').datagrid("loadData", []);                    
                     $("#fm_outer_box").form("reset");
                     $("#dg_select_box_po").datagrid("loadData", []);
+                    $("#dg_select_inner_box").datagrid("clearChecked"); //小标签
+                    $("#dg_select_inner_box").datagrid("loadData", []); //小标签
+                    $("#panel_select_inner_box_wrap").hide(); //小标签
                     firstSelectedPO = undefined;
                 }
             }, "-",
@@ -263,6 +263,72 @@
     });
 </script>
 
+@*关联小标签的script 2018-12-12*@
+<script>
+    $(function () {
+        $("#dg_select_inner_box").datagrid({
+            fit: true,
+            rownumbers: true,
+            checkOnSelect: true,
+            selectOnCheck: true,
+            showFooter: true,
+            idField: "inner_box_id",
+            columns: [[
+                { field: 'ck', checkbox: true },
+                { field: 'box_number', title: '内箱箱号', width: 130, align: 'center' },
+                {
+                    field: 'every_qty', title: '每件数量', width: 90, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toThousandValue(value);
+                    }
+                },                
+                { field: 'pack_num', title: '件数', width: 80, align: 'center' },
+                { field: 'batch', title: '批次号', width: 140, align: 'center' },
+                {
+                    field: 'produce_date', title: '生产日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                {
+                    field: 'package_date', title: '包装日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                }
+            ]],
+            onCheck: function (index, row) {
+                updateInnerBoxDgFooter();
+            },
+            onUncheck: function (index, row) {
+                updateInnerBoxDgFooter();
+            },
+            onCheckAll: function (rows) {
+                updateInnerBoxDgFooter();
+            },
+            onUncheckAll: function (rows) {
+                updateInnerBoxDgFooter();
+            }
+        });
+
+    });
+
+    function updateInnerBoxDgFooter() {
+        var rows = $("#dg_select_inner_box").datagrid("getChecked");
+
+        var totalQty = 0, totalPackNum = 0;
+        for (var i = 0; i < rows.length; i++) {
+            totalQty += parseFloat(rows[i].every_qty * rows[i].pack_num);
+            totalPackNum += parseFloat(rows[i].pack_num);
+        }
+
+        $('#dg_select_inner_box').datagrid('reloadFooter', [
+	        { box_number: "合计:", every_qty: totalQty,pack_num:totalPackNum }
+        ]);
+    }
+
+</script>
+
 <script>    
     $(function () {
         $("#dg_select_box_po").datagrid({
@@ -297,7 +363,7 @@
                     }
                 },
                 { field: 'item_name', title: '物料名称', width: 120, align: 'center' },
-                { field: 'item_model', title: '规格型号', width: 240, align: 'center' }
+                { field: 'item_model', title: '规格型号', width: 220, align: 'center' }
             ]],
             toolbar: [{
                 text: '<i class="fa fa-fw fa-remove"></i> 删除行',
@@ -318,6 +384,8 @@
         //确认选择po按钮单击事件
         $("#btn_select_box_po").on("click", function () {
             var selectedPo = $('#select_box_po').combogrid('grid').datagrid('getCurrentRow');
+            var formHasFilled = false; //表单是否已被填充
+
             if (!selectedPo) return;
 
             if (selectedPo.can_make_box_qty <= 0) {
@@ -336,6 +404,24 @@
                 $("input[name='user_name']").val(selectedPo.supplier_number);
                 $('#dg_select_box_po').datagrid('appendRow', selectedPo);
                 firstSelectedPO = selectedPo;
+
+                //查看是否有未关联小标签 2018-12-12
+                $.post("GetNoRelatedInnerBoxes", { itemNumber: selectedPo.item_number }, function (data) {
+                    if (data.suc) {
+                        var boxInfo = data.boxInfo;
+                        if (boxInfo.length > 0) {
+                            $("#panel_select_inner_box_wrap").show();
+                            $("#dg_select_inner_box").datagrid("loadData", boxInfo);
+                            $("#fm_outer_box").form("load", boxInfo[0]);
+                            $("#fm_outer_box #package_date").datebox("setValue", toDateStr(boxInfo[0].package_date));
+                            $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(boxInfo[0].produce_date));
+                            formHasFilled = true;
+                        }
+                    } else {
+                        tip(data.msg);
+                    }
+                });
+
             } else {
                 var existedIndex = $("#dg_select_box_po").datagrid('getRowIndex', selectedPo);
                 if (existedIndex < 0) {
@@ -373,16 +459,18 @@
             }
 
             //如果已做了同型号的箱子，将箱子信息带过来
-            $.post("GetBoxBySupplierAndItem", { supplierNumber: selectedPo.supplier_number, itemNumber: selectedPo.item_number }, function (data) {
-                if (data.suc) {
-                    $("#fm_outer_box").form("load", data.boxInfo);
-                    $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
-                    $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
-                    $("#fm_outer_box #pack_num").numberbox("setValue", "1");
-                    $("#fm_outer_box #package_date").datebox("setValue", toDateStr(data.boxInfo.package_date));
-                    $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));
-                }
-            });
+            if (!formHasFilled) {
+                $.post("GetBoxBySupplierAndItem", { supplierNumber: selectedPo.supplier_number, itemNumber: selectedPo.item_number }, function (data) {
+                    if (data.suc) {
+                        $("#fm_outer_box").form("load", data.boxInfo);
+                        $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
+                        $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
+                        $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                        $("#fm_outer_box #package_date").datebox("setValue", toDateStr(data.boxInfo.package_date));
+                        $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));
+                    }
+                });
+            }
             
         });
 
@@ -440,10 +528,29 @@
                 return;
             }
 
+            var selectedInnerboxes = [];
+            var checkedInnerBoxRow = $("#dg_select_inner_box").datagrid("getChecked");
+            var totalInnerBoxesQty = 0;
+
+            for (var i = 0; i < checkedInnerBoxRow.length; i++) {
+                selectedInnerboxes.push(checkedInnerBoxRow[i].inner_box_id);
+                totalInnerBoxesQty += parseFloat(checkedInnerBoxRow[i].every_qty * checkedInnerBoxRow[i].pack_num);
+            }
+            if (totalInnerBoxesQty > 0) {
+                if ($("#pack_num").numberbox("getValue") > 1) {
+                    tip("如果选择了未关联的小标签，外箱制作件数只能是1件，不能批量新增外箱");
+                    return;
+                }                
+                if (totalInnerBoxesQty != _.sumBy(boxPoRows, "send_num")) {
+                    tip("所选择的小标签总数量[" + totalInnerBoxesQty + "]必须等于关联订单的每件数量之和[" + _.sumBy(boxPoRows, "send_num") + "]");
+                    return;
+                }
+            }            
+
             $.ajax({
                 type: 'post',
                 url: '@Url.Content("~/Delivery/SaveOuterBoxes")',
-                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows),
+                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows) + "&innerBoxIds=" + selectedInnerboxes.join(","),
                 cache: false,
                 dataType: 'json',
                 success: function (data) {
@@ -479,7 +586,7 @@
             return;
         }
 
-        if (outerQty < Math.round(innerEveryQty * innerPackNum, 4)) {
+        if (outerQty < innerEveryQty * innerPackNum) {
             tip("内箱每件数量*内箱件数不能大于外箱总数量");
             return;
         }
@@ -535,7 +642,7 @@
             url: 'GetPO4Box',
             queryParams: {
                 billType: $("#billType").combobox("getValue"),
-                searchValue: queryValue
+                searchValue: $.trim(queryValue)
             },
             onLoadSuccess: function (data) {
                 $(self).combogrid("setText", queryValue);
@@ -552,14 +659,42 @@
 <script>
     //阻止冒泡事件
     function preventBubble() {
-        if (navigator.userAgent.indexOf("Firefox") > 0) {
-            var $E = function () { var c = $E.caller; while (c.caller) c = c.caller; return c.arguments[0] };
-            __defineGetter__("event", $E);
+        //if (navigator.userAgent.indexOf("Firefox") > 0) {
+        //    var $E = function () { var c = $E.caller; while (c.caller) c = c.caller; return c.arguments[0] };
+        //    __defineGetter__("event", $E);
+        //}
+        //if (window.event) {
+        //    event.cancelBubble = true;
+        //} else if (evt) {
+        //    event.stopPropagation();
+        //}
+        cancelBubble();
+    }
+
+    function getEvent() {
+        if (window.event) { return window.event; }
+        var func = getEvent.caller;
+        while (func != null) {
+            var arg0 = func.arguments[0];
+            if (arg0) {
+                if ((arg0.constructor == Event || arg0.constructor == MouseEvent
+                    || arg0.constructor == KeyboardEvent)
+                    || (typeof (arg0) == "object" && arg0.preventDefault
+                    && arg0.stopPropagation)) {
+                    return arg0;
+                }
+            }
+            func = func.caller;
         }
+        return null;
+    }
+    //阻止冒泡
+    function cancelBubble() {
+        var e = getEvent();
         if (window.event) {
-            event.cancelBubble = true;
-        } else if (evt) {
-            event.stopPropagation();
+            e.cancelBubble = true;//阻止冒泡
+        } else if (e.preventDefault) {
+            e.stopPropagation();//阻止冒泡
         }
     }
 
@@ -658,8 +793,14 @@
         <a href="#" class="easyui-tooltip" title="同一外箱的物料必须符合以下条件：同一规格型号、订单类型、供应商、订料员、申购部门、贸易类型"><i class="fa fa-info-circle text-danger"></i></a>
     </div>
 
-    <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联订单信息" style="width:100%;height:168px;" data-options="collapsible:true">
+    <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联订单信息" style="width:769px;height:168px;" data-options="collapsible:true">
         <table id="dg_select_box_po"></table>
+    </div>
+
+    <div id="panel_select_inner_box_wrap" style="display:none;">
+        <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联小标签(自动加载同型号的未关联小标签信息)" style="width:769px;height:280px;" data-options="collapsible:true">
+            <table id="dg_select_inner_box"></table>
+        </div>
     </div>
 
     <form id="fm_outer_box" method="post">
@@ -671,7 +812,7 @@
         <input type="hidden" name="item_model" />
         <input type="hidden" name="unit_name" />
         <input type="hidden" name="unit_number" />
-        <div class="easyui-panel" title="&lt;i class=&quot;fa fa-th-large&quot;&gt;&lt;i&gt; 标签信息" style="width:100%;padding:6px 0;" data-options="collapsible:true">
+        <div class="easyui-panel" title="&lt;i class=&quot;fa fa-th-large&quot;&gt;&lt;i&gt; 标签信息" style="width:769px;padding:6px 0;" data-options="collapsible:true">
             <table cellspacing="4" style="width:100%;">
                 <tr>
                     <td>
@@ -774,7 +915,7 @@
             外箱制作件数：
             <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" value="1" />
             <a href="#dg_box" class="easyui-linkbutton c5" id="btn_save_outer_box"><i class="fa fa-check"></i> 保存外箱</a>
-        </div>
+        </div>        
     </form>
 </div>
 
