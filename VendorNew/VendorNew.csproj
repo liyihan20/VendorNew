@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\color.css" />
+    <Content Include="Content\doc\MakingBoxHelper.txt" />
     <Content Include="Content\font-awesome-4.7.0\css\font-awesome.css" />
     <Content Include="Content\font-awesome-4.7.0\css\font-awesome.min.css" />
     <Content Include="Content\font-awesome-4.7.0\fonts\fontawesome-webfont.svg" />

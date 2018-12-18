@@ -223,7 +223,10 @@
 
         $("#btn_save_inner_box").on("click", function () {
             if (!$("#fm_inner_box").form("validate")) return;
-
+            if ($("#item_name").textbox("getValue") == "") {
+                tip("请先选择物料信息后再保存");
+                return;
+            }
             $.ajax({
                 type: 'post',
                 url: 'SaveInnerBoxWithExtra',
@@ -427,7 +430,7 @@
                         保质期(月)：
                     </td>
                     <td>
-                        <input type="text" class="easyui-numberbox" name="safe_period" data-options="required:true" />
+                        <input type="text" class="easyui-numberbox" name="safe_period" data-options="required:true,min:1,max:120,prompt:'单位是月，范围1~120'" />
                     </td>
                     <td>
                         包装日期：
@@ -493,7 +496,7 @@
                         贸易类型：
                     </td>
                     <td>
-                        <input type="text" class="easyui-combobox" name="trade_type_name" data-options="required:true,editable:false,valueField:'v',textField:'v',data:[{v:'国内贸易'},{v:'保税贸易'},{v:'一般贸易'}],panelHeight:'auto'" />
+                        <input type="text" class="easyui-combobox" name="trade_type_name" data-options="required:true,editable:false,valueField:'v',textField:'v',data:[{v:'国内贸易'},{v:'保税贸易'},{v:'一般贸易'}],panelHeight:'auto'" value="国内贸易" />
                     </td>
                 </tr>
             </table>  

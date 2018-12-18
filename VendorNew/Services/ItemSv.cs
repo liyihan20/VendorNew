@@ -140,6 +140,9 @@ namespace VendorNew.Services
         /// <returns></returns>
         public string GetSupplierNameByNumber(string supplierNumber)
         {
+            if (supplierNumber.EndsWith("A")) {
+                supplierNumber = supplierNumber.Replace("A", "");
+            }
             var supplier = db.GetSupplierNameByNumber(supplierNumber).FirstOrDefault();
             if (supplier == null) {
                 return "";

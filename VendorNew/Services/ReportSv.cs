@@ -338,6 +338,13 @@ namespace VendorNew.Services
 
             foreach (var b in m) {                
                 var innerBoxes = b.i.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                string outerBoxNumber = "";
+                if (b.i.outer_box_id != null) {
+                    var outerBox = db.OuterBoxes.Where(o => o.outer_box_id == b.i.outer_box_id).FirstOrDefault();
+                    if (outerBox != null) {
+                        outerBoxNumber = outerBox.box_number;
+                    }
+                }
                 for (var i = 0; i < innerBoxes.Count(); i++) {                    
                     boxes.Add(new PrintInnerBoxModel()
                     {
@@ -355,11 +362,11 @@ namespace VendorNew.Services
                         rohs = b.e.rohs,
                         supplierName = supplierName,
                         tradeTypeName = b.e.trade_type_name,
-                        outerBoxNumber = "",
+                        outerBoxNumber = outerBoxNumber,
                         //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                         //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                         //)
-                        qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";"
+                        qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNumber
                     });
                     
                 }

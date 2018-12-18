@@ -149,6 +149,10 @@ namespace VendorNew.Controllers
             InnerBoxesExtra extra = new InnerBoxesExtra();
             MyUtils.SetFieldValueToModel(fc, extra);
 
+            if (string.IsNullOrEmpty(extra.item_number)) {
+                return Json(new SRM(false, "请先选择物料信息后再保存"));
+            }
+
             try {
                 extra.create_date = DateTime.Now;
                 extra.user_name = currentUser.userName;
@@ -178,9 +182,9 @@ namespace VendorNew.Controllers
         }
 
         [SessionTimeOutJsonFilter]
-        public JsonResult GetNoRelatedInnerBoxes(string itemNumber)
+        public JsonResult GetNoRelatedInnerBoxes(string itemNumber, string tradeTypeName)
         {
-            return Json(new { suc = true, boxInfo = new BoxSv().GetNoRelatedInnerBox(currentUser.userName, itemNumber,currentAccount, canCheckAll) });
+            return Json(new { suc = true, boxInfo = new BoxSv().GetNoRelatedInnerBox(currentUser.userName, itemNumber, tradeTypeName,currentAccount, canCheckAll) });
         }
 
         [SessionTimeOutJsonFilter]

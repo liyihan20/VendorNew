@@ -683,14 +683,15 @@ namespace VendorNew.Services
 
         }
 
-        public List<NotRelatedInnerBox> GetNoRelatedInnerBox(string userName, string itemNumber,string account, bool canCheckAll)
+        public List<NotRelatedInnerBox> GetNoRelatedInnerBox(string userName, string itemNumber,string tradeTypeName,string account, bool canCheckAll)
         {
             return (from e in db.InnerBoxesExtra
                     join i in db.InneBoxes on e.inner_box_id equals i.inner_box_id
                     where i.outer_box_id == null
-                    && ((userName + "A").Contains(e.user_name) || canCheckAll)
+                    && ((e.user_name + "A").Contains(userName) || canCheckAll)
                     && e.item_number == itemNumber
                     && e.account == account
+                    && e.trade_type_name == tradeTypeName
                     orderby i.inner_box_id descending
                     select new NotRelatedInnerBox()
                     {

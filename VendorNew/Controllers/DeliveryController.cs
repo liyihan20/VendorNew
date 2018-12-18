@@ -136,6 +136,12 @@ namespace VendorNew.Controllers
                         
             decimal transitQty;
             foreach (var l in list) {
+                if (l.billType.Equals("普通采购") && (l.poNo.StartsWith("MVAC") || l.poNo.StartsWith("VMAC"))) {
+                    return Json(new SRM(false, "订单单号是MVAC或者VMAC开头的，订单类型必须是VMI订单而不是普通采购。请联系我司对应采购员修改后再申请。"));
+                }
+                if (l.billType.Equals("VMI订单") && !l.poNo.StartsWith("MVAC") && !l.poNo.StartsWith("VMAC")) {
+                    return Json(new SRM(false, "订单类型是VMI订单的，订单单号必须是MVAC或者VMAC开头，此单的订单类型下错。请联系我司对应采购员修改后再申请。"));
+                }
                 transitQty = new DRSv().GetPOTransitQty(l.poId, l.poEntryId);
                 if (l.orderQty - l.realteQty - transitQty <= 0) {
                     return Json(new SRM(false, string.Format("订单号【{0}】,分录号【{1}】的可申请数量不大于0，不能申请送货", l.poNo, l.poEntryId)));
@@ -494,11 +500,15 @@ namespace VendorNew.Controllers
 
             p.account = currentAccount;
             p.userId = currentUser.userId;
-            p.userName = currentUser.userName;            
+            p.userName = currentUser.userName;
 
-            var result = new DRSv().SearchMyApplyList(p, canCheckAll);
-
-            return Json(new { total = result.Count(), rows = result.OrderByDescending(r => r.sendDate).Skip((p.page - 1) * p.rows).Take(p.rows).ToList() });
+            try {
+                var result = new DRSv().SearchMyApplyList(p, canCheckAll);
+                return Json(new { total = result.Count(), rows = result.OrderByDescending(r => r.sendDate).Skip((p.page - 1) * p.rows).Take(p.rows).ToList() });
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
         }
 
         [AuthorityFilter]
