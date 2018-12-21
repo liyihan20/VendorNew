@@ -387,6 +387,10 @@ namespace VendorNew.Controllers
                 details = JsonConvert.DeserializeObject<List<DRBillDetails>>(detailJson);
                 boxIds = JsonConvert.DeserializeObject<List<IDModel>>(boxIdJson);
 
+                if (details.Where(d => d.send_qty <= 0).Count() > 0) {
+                    return Json(new SRM(false, "存在本次送货数量小于0的分录，保存失败"));
+                }
+
                 bill.user_id = currentUser.userId;
                 bill.bill_date = DateTime.Now;
                 billId = sv.SaveApply(bill, details, boxIds);
@@ -461,6 +465,15 @@ namespace VendorNew.Controllers
         [SessionTimeOutFilter]
         public ActionResult CheckDRApply(int id)
         {
+            //先验证权限
+            if (!canCheckAll) {
+                if (!new UASv().CanCheckTheDRBill(id, currentUser.userName, currentUser.userId)) {
+                    ViewBag.tip = "单据不存在或无权限查看";
+                    WLog("查看送货单", "无权访问："+id.ToString(), "", false);
+                    return View("Error");
+                }
+            }
+
             var sv = new DRSv();
             var dr=sv.GetDRBill(id);
 
@@ -520,6 +533,7 @@ namespace VendorNew.Controllers
             ViewData["printOuterBoxPower"] = sv.hasGotPower(currentUser.userId, "print_outer_qrcode") ? "1" : "0";
             ViewData["printInnerBoxPower"] = sv.hasGotPower(currentUser.userId, "print_inner_qrcode") ? "1" : "0";
             ViewData["exportExcelPower"] = sv.hasGotPower(currentUser.userId, "export_audit_list_excel") ? "1" : "0";
+            ViewData["updateToFinishPower"] = sv.hasGotPower(currentUser.userId, "update_status_to_finish") ? "1" : "0";
 
             return View();
         }
@@ -742,6 +756,19 @@ namespace VendorNew.Controllers
             emails.AddRange(matGroupUser.Select(m => m.email).ToList());
 
             return string.Join(",", emails.Distinct().ToArray());
+        }
+
+        [SessionTimeOutJsonFilter]
+        public JsonResult UpdateDRStatusToFinish(string billNo)
+        {
+            try {
+                new DRSv().UpdateDRStatusToFinish(billNo);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+
+            return Json(new SRM());
         }
 
     }

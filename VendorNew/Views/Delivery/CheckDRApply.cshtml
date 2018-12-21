@@ -311,7 +311,7 @@
                     打印相关：
                 </td>
                 <td colspan="3">
-                    @if (h.p_status == "已确认") {
+                    @if (h.p_status == "已确认" || h.p_status=="已入库") {
                         <a href="#" class="easyui-linkbutton" id="printApply" style="margin-right:8px;"><i class="fa fa-fw fa-file-text-o"></i> 打印送货单</a>
                     }
                     else {

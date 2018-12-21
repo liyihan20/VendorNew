@@ -35,7 +35,10 @@ namespace VendorNew.Controllers
             if (p.id == null) {
                 //搜索外箱信息
                 try {
-                    var result = sv.GetOuterBoxes(p, canCheckAll).OrderByDescending(r=>r.create_date);
+                    var result = sv.GetOuterBoxes(p, canCheckAll).OrderByDescending(r => r.create_date);
+                    if (result.Count() < p.rows && p.page > 1) {
+                        p.page = 1; //应该是当前easyui的bug，翻页后，比如在第二页以后的页码中搜索箱子，结果有1行，但是page还是搜索时候的那个页码，导致页面加载不出箱子，在这里手动将页码调为1
+                    }
                     var outerBoxes = result.Skip((p.page - 1) * p.rows).Take(p.rows).ToList(); //外箱信息
                     var obIds = outerBoxes.Select(o => o.outer_box_id).ToList(); //所有外箱id
                     var pos = sv.GetBoxPos(obIds); //po信息

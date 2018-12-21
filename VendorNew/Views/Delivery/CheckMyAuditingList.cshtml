@@ -138,6 +138,32 @@
                         tip("请先选择一行申请单再操作");
                     }
                 }
+            }, {
+                id: 'update_to_finish_btn',
+                text: '<i class="fa fa-fw fa-hand-rock-o"></i> 更新为入库</a>',
+                handler: function () {
+                    var row = $("#dg_dr").datagrid("getCurrentRow");
+                    if (row) {
+                        if (row.pStatus != "已确认") {
+                            tip("只有状态是已确认的单据才能更新为入库状态");
+                            return;
+                        }
+                        $.messager.confirm('操作确认', '确定要将此申请单更新为入库状态吗', function (r) {
+                            if (r) {
+                                $.post("UpdateDRStatusToFinish", { billNo: row.billNo }, function (data) {
+                                    if (data.suc) {
+                                        tip("操作成功");
+                                        $("#dg_dr").datagrid("reload");
+                                    } else {
+                                        tip(data.msg);
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        tip("请先选择一行申请单再操作");
+                    }
+                }
             }
             ],
             onBeforeLoad: function (data) {
@@ -158,6 +184,9 @@
                 if ('@ViewData["exportExcelPower"]' == '0') {
                     $("#export_excel_btn").hide();
                 }
+                if ('@ViewData["updateToFinishPower"]' == '0') {
+                    $("#update_to_finish_btn").hide();
+                }
             }, onDblClickRow: function (index, row) {
                 if (row.pStatus != "已提交") {
                     tip("只有状态是已提交的单据才能处理");
@@ -177,7 +206,7 @@
                     billNo: $("#billNo").textbox("getValue"),
                     poNo: $("#poNo").textbox("getValue"),
                     itemInfo: $("#itemInfo").textbox("getValue"),
-                    pStatus:$("#pStatus").combobox("getValue")
+                    pStatus: $("#pStatus").combobox("getValue")
                 }
             });
         });
@@ -191,7 +220,7 @@
                         {
                             field: 'op_date', title: '操作时间', width: 120, align: 'center',
                             formatter: function (value, row, index) {
-                                return toDateStr(value,true);
+                                return toDateStr(value, true);
                             }
                         },
     					{ field: 'op_user_name', title: '操作人', width: 160, align: 'center' },

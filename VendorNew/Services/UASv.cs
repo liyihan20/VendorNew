@@ -97,6 +97,36 @@ namespace VendorNew.Services
                     select u).Distinct().ToList();
         }
 
+
+        public bool CanCheckTheDRBill(int billId, string userName,int userId)
+        {
+            var bill = (from d in db.DRBills
+                        join e in db.DRBillDetails on d.bill_id equals e.bill_id
+                        where d.bill_id == billId
+                        select new
+                        {
+                            d,
+                            e
+                        }).ToList();
+            if (bill.Count() == 0) {
+                return false;
+            }
+            if (userName.StartsWith(bill.First().d.supplier_number)) {
+                return true;
+            }
+            if (bill.First().d.mat_order_number.Equals(userName) || bill.Where(b => b.e.buyer_number.Equals(userName)).Count() > 0) {
+                return true;
+            }
+            var auditGroupUsers = GetAuditGroupUsers(userId).Select(u => u.user_name).ToList(); 
+            if (auditGroupUsers.Contains(bill.First().d.mat_order_number)) {
+                return true;
+            }
+            if (bill.Where(b => auditGroupUsers.Contains(b.e.buyer_number)).Count() > 0) {
+                return true;
+            }
+            return false;
+        }
+
         public List<Authorities> GetAuthorities(string searchValue)
         {
             return db.Authorities.Where(a => a.name.Contains(searchValue) || a.en_name.Contains(searchValue)).OrderBy(a => a.number).ToList();

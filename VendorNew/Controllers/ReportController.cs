@@ -17,6 +17,15 @@ namespace VendorNew.Controllers
         [AuthorityFilter]
         public ActionResult PrintApply(int billId, string pageNumList = null)
         {
+            //先验证权限
+            if (!canCheckAll) {
+                if (!new UASv().CanCheckTheDRBill(billId, currentUser.userName, currentUser.userId)) {
+                    ViewBag.tip = "单据不存在或无权限查看";
+                    WLog("打印送货单", "无权访问：" + billId.ToString(), "", false);
+                    return View("Error");
+                }
+            }
+
             int defaultNumPerPage = 14;
             int totalNumToDisplay = 0;
             PrintApplyModels m;

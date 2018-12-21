@@ -22,12 +22,19 @@
         }
         #loginForm{
             padding:12px 32px;
-        }        
+        }
+        #forgotPassword{
+            text-decoration:none;
+        }
+        #forgotPassword:hover,#forgotPassword:focus{
+            color:#a94442;
+            text-decoration:underline;
+        }
     </style>
 }
 
 <script>
-
+    var userName;
     if (window.top != window.self) {
         //top.location.href = "@Url.Content("~/Account/Login")";
         top.location.href = window.location.href;
@@ -57,7 +64,7 @@
         $("#loginBt").on("click", function () {
             var self = this;
             var account = $("#account").combobox("getValue");
-            var userName = $("#userName").textbox("getValue");
+            userName = $("#userName").textbox("getValue");
             var password = $("#password").textbox("getValue");
             var validateCode = $("#validateCode").textbox("getValue");
 
@@ -107,7 +114,65 @@
                 }
             });
         });
+
+        $("#forgotPassword").on("click", function () {
+            userName = $.trim($("#userName").textbox("getValue"));
+            if (userName == "") {
+                tip("请先输入用户名");
+                return;
+            }
+            $.post("@Url.Content("~/Account/IsUserAndEmailExisted")", { userName: userName }, function (data) {
+                if (data.suc) {
+                    $("#dlg_reset").dialog("open");
+                } else {
+                    tip(data.msg);
+                }
+            });
+        });
     })
+
+    function sendEmailCode(btn) {
+        var emailAddr = $.trim($("#email_addr").textbox("getValue"));
+        if (emailAddr == "") {
+            tip("请先填写邮箱地址再发送验证码");
+            return;
+        }        
+        $.post("@Url.Content("~/Account/SendValidateCodeForReset")", { userName: userName, emailAddr: emailAddr }, function (data) {
+            tip(data.msg);
+            if (!data.suc) {
+                return;
+            }
+            var textBefore = $(btn).linkbutton("options").text;
+            $(btn).linkbutton("disable");
+            var sec = 30;
+            var inter = setInterval(function () {
+                if (sec <= 0) {
+                    $(btn).linkbutton({ text: textBefore });
+                    $(btn).linkbutton("enable");
+                    clearInterval(inter);
+                } else {
+                    $(btn).linkbutton({ text: (sec--) + "秒后可重新发送" });
+                }
+            }, 1000);
+
+        });
+    }
+
+    function beginReset() {
+        var code = $.trim($("#email_code").textbox("getValue"));
+        var opType = $("#op_type").combobox("getValue");
+        if (code == "" || code.length != 6) {
+            tip("请输入正确的邮箱验证码");
+            return;
+        }
+        $.post("@Url.Content("~/Account/ValidateEmail4Password")", { userName: userName, code: code, opType: opType }, function (data) {
+            tip(data.msg);
+            if (data.suc) {
+                $("#dlg_reset").dialog("close");
+            }
+        });
+    }
+
 </script>
 
 <div id="bgDiv" style="background:url('@Url.Content("~/Content/images/login_bg.png")') no-repeat 100%;">
@@ -117,20 +182,20 @@
                 <p id="panelHeader"><img src="@Url.Content("~/Content/images/truly.png")" title="truly" style="vertical-align:baseline;" /> 供应商协同平台</p>
             </header>
             <form id="loginForm">
-                <div style="margin-bottom:8px;">
+                <div style="margin-bottom:6px;">
                     <select class="easyui-combobox" name="account" id="account" data-options="prompt:'请选择公司名',label:'公司:',labelPosition:'top',panelHeight:'auto',editable:false,value:'@ViewBag.account'" style="width:100%;height:72px;padding-left:30px;">
                         <option value=""></option>
                         <option value="O">信利光电股份有限公司</option>
                         <option value="S">信利半导体有限公司</option>
                     </select>
                 </div>
-                <div style="margin-bottom:8px;">
+                <div style="margin-bottom:6px;">
                     <input type="text" class="easyui-textbox" name="user_name" id="userName" data-options="iconCls:'icon-man',iconAlign:'left',prompt:'请输入用户名',label:'用户名:',labelPosition:'top'" style="width:100%;height:72px;" value="@ViewBag.user_name" />
                 </div>                
-                <div style="margin-bottom:8px;">
-                    <input type="password" class="easyui-textbox" name="password" id="password" data-options="iconCls:'icon-lock',iconAlign:'left',prompt:'请输入登录密码',label:'密码:',labelPosition:'top'" style="width:100%;height:72px;" />
+                <div style="margin-bottom:6px;">
+                      <input type="password" class="easyui-textbox" name="password" id="password" data-options="iconCls:'icon-lock',iconAlign:'left',prompt:'请输入登录密码',label:'密码:',labelPosition:'top'" style="width:100%;height:72px;" />
                 </div>
-                <div style="margin-bottom:8px;">
+                <div style="margin-bottom:6px;">
                     <table cellspacing="0" cellpadding="0" style="width:100%;">
                         <tr>
                             <td style="width:60%;">
@@ -140,13 +205,41 @@
                                 <img title="点击刷新图片" alt="click to reflesh picture" id="validateImage" style="cursor:pointer;" src="@Url.Content("~/Account/getValidateCodeImg")" />
                             </td>
                         </tr>
-                    </table>                    
+                    </table>
                 </div>
-                <div style="margin-bottom:8px;">
+                <div style="margin-bottom:6px;">
                     <a href="#" class="easyui-linkbutton c5" id="loginBt" style="width:100%;height:36px;"><i class="fa fa-sign-in"></i> 登录系统</a>
                 </div>
+                <a href="#" id="forgotPassword"><div class="text-danger"> 被禁用/忘记密码？点此解禁/重置密码</div></a>
             </form>
         </div>
     </div>    
 </div>
 <div style="text-align:center;font-size:small;color:#8a6d3b;" ><i class="fa fa-tasks"></i> ©2018 版权所属：信利集团-信息管理部</div>
+
+
+@*重置密码对话框*@
+<div id="dlg_reset" class="easyui-dialog" style="width: 450px;padding:10px 20px;" closed="true" modal="true" buttons="#dlg_reset_buttons" title="&lt;i class=&quot;fa fa-refresh&quot;&gt;&lt;i&gt; 解禁/重置密码">
+    <div class="ftitle">用户信息验证</div>        
+        <div class="fitem">
+            <label>邮箱地址:</label>
+            <input type="text" class="easyui-textbox" id="email_addr" data-options="prompt:'请输入在此平台登记的任一邮箱地址'" style="width:255px;" />
+        </div>
+        <div class="fitem">
+            <label>验证码:</label>
+            <input type="text" class="easyui-textbox" id="email_code" data-options="prompt:'请输入邮箱中收到的验证码'" style="width:160px;" />
+            <a href="#" class="easyui-linkbutton" onclick="sendEmailCode(this)"><i class="fa fa-fw fa-send"></i> 发送验证码</a>
+        </div>
+        <div class="fitem">
+            <label>选择操作:</label>
+            <select class="easyui-combobox" id="op_type" data-options="panelHeight:'auto',editable:false" style="width:255px;">
+                <option value="RT">解禁&重置密码</option>
+                <option value="R">只重置密码</option>
+                <option value="T">只解禁</option>
+            </select>
+        </div>
+</div>
+<div id="dlg_reset_buttons">
+    <a href="#" class="easyui-linkbutton c1" onclick="beginReset()"><i class="fa fa-fw fa-check"></i> 开始验证</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript: $('#dlg_reset').dialog('close')"><i class="fa fa-fw fa-close"></i> 取消</a>
+</div>

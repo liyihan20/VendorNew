@@ -310,6 +310,13 @@ namespace VendorNew.Models
 			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), empNumber);
 			return ((ISingleResult<GetEmpNameByNumberResult>)(result.ReturnValue));
 		}
+		
+		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.UpdateStatusToFinish")]
+		public int UpdateStatusToFinish([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string bill_no)
+		{
+			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), bill_no);
+			return ((int)(result.ReturnValue));
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.GroupAuthorities")]

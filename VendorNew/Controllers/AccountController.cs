@@ -89,5 +89,75 @@ namespace VendorNew.Controllers
             return View();
         }
 
+        [AllowAnonymous]
+        public JsonResult IsUserAndEmailExisted(string userName)
+        {
+            var user = new UserSv().GetUserByUserName(userName);
+            if (user == null) {
+                return Json(new SRM(false,"用户名不存在"));
+            }
+            if (string.IsNullOrEmpty(user.email)) {
+                return Json(new SRM(false, "贵司未在此平台登记过邮箱，不能处理；请联系管理员处理"));
+            }
+            return Json(new SRM());
+        }
+
+        [AllowAnonymous]
+        public JsonResult SendValidateCodeForReset(string userName, string emailAddr)
+        {
+            bool isEmailValid;
+            try {
+                isEmailValid = new UserSv().HasEmailRegister(userName, emailAddr);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+            if (!isEmailValid) {
+                return Json(new SRM(false, "此邮箱地址与贵司在本平台登记的不匹配，请确认后重新输入再发送验证码"));
+            }
+
+            //验证通过，可以发送验证码
+            var code = MyUtils.CreateValidateNumber(6);
+            MyEmail.SendValidateCode(code, emailAddr, userName);
+
+            Session["emailCode"] = code.ToUpper();
+
+            return Json(new SRM(true,"验证码已发送，请到邮箱收取后复制到验证文本框"));
+        }
+
+        [AllowAnonymous]
+        public JsonResult ValidateEmail4Password(string userName, string code, string opType)
+        {
+            if (Session["emailCode"] == null) {
+                return Json(new SRM(false, "请先发送邮箱验证码后再操作"));
+            }
+            if (!code.Trim().ToUpper().Equals(Session["emailCode"])) {
+                return Json(new SRM(false, "验证码不正确，请重新输入"));
+            }
+            string result = "";
+            try {
+                var uv = new UserSv();
+                var user = uv.GetUserByUserName(userName);
+
+                if (opType.Contains("R")) {
+                    uv.ResetPassword(user.user_id);
+                    result += "登录密码已成功重置为和用户名一致;";
+                }
+                if (opType.Contains("T")) {
+                    if (user.is_forbit) {
+                        uv.ToggleUser(user.user_id);
+                    }
+                    result += "用户已解禁";
+                }
+                WLog(TAG, userName + ":" + result);
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+
+            Session.Remove("emailCode");
+            return Json(new SRM(true, result));
+        }
+
     }
 }

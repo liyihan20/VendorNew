@@ -187,7 +187,7 @@ namespace VendorNew.Services
                             //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                             //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                             //)
-                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                            qrcodeContent = string.Format("{0};{1};{2};{3};{4:0.####}",b.i.inner_box_id,innerBoxes[i],outerBoxNum,b.o.item_number,b.i.every_qty)
                         });
                     }
                     else {
@@ -211,7 +211,7 @@ namespace VendorNew.Services
                             //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                             //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                             //)
-                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                            qrcodeContent = string.Format("{0};{1};{2};{3};{4:0.####}",b.i.inner_box_id,innerBoxes[i],outerBoxNum,b.e.item_number,b.i.every_qty)
                         });
                     }
                 }
@@ -219,7 +219,7 @@ namespace VendorNew.Services
 
             return boxes.OrderBy(b=>b.boxNumber).ToList();
         }
-
+        
         /// <summary>
         /// 打印所有选中的外箱包含的内箱
         /// </summary>
@@ -274,7 +274,7 @@ namespace VendorNew.Services
                             //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                             //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                             //)
-                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                            qrcodeContent = string.Format("{0};{1};{2};{3};{4:0.####}",b.i.inner_box_id,innerBoxes[i],outerBoxNum,b.o.item_number,b.i.every_qty)
                         });
                     }
                     else {
@@ -298,7 +298,7 @@ namespace VendorNew.Services
                             //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                             //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                             //)
-                            qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNum
+                            qrcodeContent = string.Format("{0};{1};{2};{3};{4:0.####}",b.i.inner_box_id,innerBoxes[i],outerBoxNum,b.e.item_number,b.i.every_qty)
                         });
                     }
                 }
@@ -366,7 +366,7 @@ namespace VendorNew.Services
                         //qrcodeContent = string.Format("{9};{0};{1};{2:0.####};{3};{4};{5};{6:yyyy-MM-dd};{7};{8}",
                         //innerBoxes[i], b.o.item_number, b.i.every_qty, b.o.unit_number, supplierNumber, b.o.batch, b.o.produce_date, outerBoxNum, b.o.account == "S" ? "zb" : "gd",b.i.inner_box_id
                         //)
-                        qrcodeContent = b.i.inner_box_id + ";" + innerBoxes[i] + ";" + outerBoxNumber
+                        qrcodeContent = string.Format("{0};{1};{2};{3};{4:0.####}",b.i.inner_box_id,innerBoxes[i],outerBoxNumber,b.e.item_number,b.i.every_qty)
                     });
                     
                 }

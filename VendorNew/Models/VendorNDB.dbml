@@ -319,4 +319,8 @@
       <Column Name="FName" Type="System.String" DbType="VarChar(255) NOT NULL" CanBeNull="false" />
     </ElementType>
   </Function>
+  <Function Name="dbo.UpdateStatusToFinish" Method="UpdateStatusToFinish">
+    <Parameter Name="bill_no" Type="System.String" DbType="VarChar(50)" />
+    <Return Type="System.Int32" />
+  </Function>
 </Database>

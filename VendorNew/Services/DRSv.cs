@@ -458,5 +458,11 @@ namespace VendorNew.Services
                 db.SubmitChanges();
             }
         }
+
+        public void UpdateDRStatusToFinish(string billNo)
+        {
+            db.UpdateStatusToFinish(billNo);
+        }
+
     }
 }

@@ -38,6 +38,7 @@
         if (row) {
             $('#dlg').dialog('open').dialog('setTitle', '编辑日志');
             $('#fm').form('load', row);
+            $('#update_date').datebox("setValue", toDateStr(row.update_date));
         }
     }
     function saveLog() {
@@ -94,7 +95,7 @@
         <div class="fitem">
             <label>更新日期:</label>
             <input type="hidden" name="id" />
-            <input name="update_date" class="easyui-datebox" style="width:260px;" />
+            <input name="update_date" id="update_date" class="easyui-datebox" style="width:260px;" />
         </div>
         <div class="fitem">
             <label>更新内容:</label>

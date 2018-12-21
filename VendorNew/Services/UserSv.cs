@@ -172,5 +172,23 @@ namespace VendorNew.Services
             var user = GetUserByUserId(userId);
             return user.password == MyUtils.getMD5(user.user_name);
         }
+
+        public bool HasEmailRegister(string userName, string emailAddr)
+        {
+            var user = GetUserByUserName(userName);
+            if (user == null) {
+                throw new Exception("用户名不存在");
+            }
+            if (string.IsNullOrEmpty(user.email)) {
+                throw new Exception("贵司未在此平台登记过邮箱，不能处理；请联系管理员处理");
+            }
+            var emailArr = user.email.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            if (emailArr.Contains(emailAddr)) {
+                return true;
+            }
+            return false;
+            
+        }
+
     }
 }
