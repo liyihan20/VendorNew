@@ -747,7 +747,7 @@
             return;
         }
 
-        if (outerQty < innerEveryQty * innerPackNum) {
+        if (innerEveryQty * innerPackNum - outerQty > 0.0001) {
             tip("内箱每件数量*内箱件数不能大于外箱总数量");
             return;
         }
@@ -831,8 +831,8 @@
                 for (var j = 0; j < boxRows[i].children.length; j++) {
                     innerBoxQtySum += boxRows[i].children[j].every_qty * boxRows[i].children[j].pack_num;
                 }
-                if (innerBoxQtySum > 0 && boxRows[i].every_qty * boxRows[i].pack_num != innerBoxQtySum) {
-                    tip("外箱箱号【" + boxRows[i].box_number + "】的数量【" + (boxRows[i].every_qty * boxRows[i].pack_num) + "】不等于内箱总数量【" + innerBoxQtySum + "】,提交失败");
+                if (innerBoxQtySum > 0 && Math.abs(boxRows[i].every_qty * boxRows[i].pack_num - innerBoxQtySum)>0.0001) {
+                    tip("外箱箱号【" + boxRows[i].box_number + "】的数量【" + (boxRows[i].every_qty * boxRows[i].pack_num) + "】不等于内箱总数量【" + innerBoxQtySum.toFixed(4) + "】,提交失败");
                     return;
                 }
             }

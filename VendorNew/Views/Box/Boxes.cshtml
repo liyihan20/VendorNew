@@ -587,7 +587,7 @@
             return;
         }
 
-        if (outerQty < innerEveryQty * innerPackNum) {
+        if (innerEveryQty * innerPackNum - outerQty > 0.0001) {
             tip("内箱每件数量*内箱件数不能大于外箱总数量");
             return;
         }
@@ -773,7 +773,7 @@
             textField:'po_number',            
             pagination: true,
             pageSize:20,
-            prompt:'可输入订单编号或规格型号然后按回车查询',
+            prompt:'可输入订单编号或规格型号然后按回车键查询',
             columns:[[
                 { field:'po_number',title:'订单编号',width:110,align:'center' },
                 { field:'po_entry_id',title:'分录号',width:60,align:'center' },

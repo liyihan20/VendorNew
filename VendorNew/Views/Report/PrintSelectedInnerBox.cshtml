@@ -6,8 +6,8 @@
 }
 @section CSS{
     <style type="text/css">
-        table {
-            font-size: 9px;
+        table {     
+            font-size: 9px;       
             border-top: 1px solid #666;
             border-right: 1px solid #666;
         }
@@ -18,8 +18,8 @@
             border-bottom: 1px solid #666;
             word-break: break-all;
             overflow: hidden;
-            font-family: '黑体','宋体';
-        }
+            font-family: '黑体','宋体';            
+        }        
 
         img {
             margin: 0 auto;
@@ -84,7 +84,7 @@
 
 </script>
 
-<div class="noPrint" style="padding-top:4px;">
+<div class="noPrint" style="padding-top:4px;padding-bottom:4px;">
     <div style="width:40%;float:right;text-align:right;font-size:12px;">
         每页标签数量：
         <input type="text" class="easyui-numberbox" id="nbPageNum" style="width:120px;" data-options="validType:{min:1,max:40}" value="@numPerPage" />
@@ -94,9 +94,10 @@
     <div style="width:20%;float:right;text-align:center">
         <a href="#" class="easyui-linkbutton c5" style="padding:0 6px;" id="btPrint"><i class="fa fa-print"></i> 开始打印</a>
     </div>
-    <div style="width:39%;float:right;text-align:left;font-size:12px;padding-left:12px;">
+    <div style="width:38%;float:left;text-align:left;font-size:12px;padding-left:12px;">
         <i class="fa fa-question-circle-o text-danger"></i> 内箱标签纸尺寸：
         <input type="text" class="easyui-textbox" value="长6cm*宽4cm" readonly style="width:100px;" />
+        <div class="text-danger"><i class="fa fa-info-circle"></i> <a class="text-danger" target="_blank" href="@Url.Content("~/QA/PrintSetting")">打印效果不理想？Google Chrome或360极速浏览器请点击此处查看打印设置指引</a></div>
     </div>
 </div>
 <div style="clear:both;"></div>
@@ -127,11 +128,11 @@
             </tr>
             <tr>
                 <td>@(string.IsNullOrEmpty(b.outerBoxNumber) ? "材质:" : "外箱:") </td>
-                <td><span>@(string.IsNullOrEmpty(b.outerBoxNumber)?b.madeBy:b.outerBoxNumber)</span></td>
+                <td>@(string.IsNullOrEmpty(b.outerBoxNumber)?b.madeBy:b.outerBoxNumber)</td>
             </tr>
             <tr>
                 <td colspan="2">
-                    @b.tradeTypeName
+                    <span>@b.tradeTypeName</span>
                     <span class="sub_string" data-bit="8" style="display:inline-block;float:right;width:1.6cm;text-align:right;">@b.brand</span>
                 </td>
                 <td>箱号:@b.boxNumber</td>
@@ -147,11 +148,11 @@
                 </td>
                 <td>有效期:<span style="font-family:myNarrow">@b.expireDate</span></td>
             </tr>
-            @*<tr>
+            <tr>
                 <td colspan="3">
                     存储条件:@b.keepCondition
                 </td>
-            </tr>*@
+            </tr>
             <tr>
                 <td colspan="3" style="text-align:center;">
                     @b.supplierName

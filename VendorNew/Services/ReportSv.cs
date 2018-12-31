@@ -16,9 +16,65 @@ namespace VendorNew.Services
             m.es = sv.GetDRBillDetails(billId);
             m.boxAndPos = sv.GetBoxAndPo(billId);
 
+            m.boxAndPos = UnionBoxAndPo(m.boxAndPos); //2018-12-24 同一PO，同一分录，同一数量，没有合并箱的情况下，将行合并起来，件数汇总
+
             m.supplierInfo = new ItemSv().GetSupplierInfo(m.h.supplier_number,account);
 
             return m;
+        }
+
+        /// <summary>
+        /// 2018-12-24 同一PO，同一分录，同一数量，没有合并箱的情况下，将行合并起来，件数汇总
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        private List<BoxAndPoModels> UnionBoxAndPo(List<BoxAndPoModels> list)
+        {
+            List<BoxAndPoModels> result = new List<BoxAndPoModels>();
+            //var sameBoxId = list.Where(li => li.po.entry_id > 1).Select(li => li.box.outer_box_id).Distinct().ToArray(); //合并的箱子id，不参与合并行
+
+            var sameBoxId = (from li in list
+                         group li by li.box into lbox
+                         where lbox.Count() > 1
+                         select lbox.Key.outer_box_id).Distinct().ToArray();
+
+            foreach (var l in list) {
+                if (sameBoxId.Contains(l.box.outer_box_id)) {
+                    //合并箱子的，不再合并行
+                    result.Add(l);
+                    continue;
+                }
+                if (result.Where(r => r.box.box_number_long.Contains(l.box.box_number_long)).Count() > 0) {
+                    //已经合并过了的，跳过
+                    continue;
+                }
+                var samePoAndQtyList = list.Where(li => li.po.po_id == l.po.po_id 
+                    && li.po.po_entry_id == l.po.po_entry_id 
+                    && li.po.send_num == l.po.send_num 
+                    && !sameBoxId.Contains(l.box.outer_box_id)
+                    ).ToList();
+                if (samePoAndQtyList.Count() == 1) {
+                    //不存在相同po可合并的行，直接输出
+                    result.Add(l);
+                    continue;
+                }
+                var box = l.box;
+                box.pack_num = samePoAndQtyList.Sum(s => s.box.pack_num);
+                if (samePoAndQtyList.Select(s => s.box.box_number).Count() <= 2) {
+                    box.box_number = string.Join(",", samePoAndQtyList.Select(s => s.box.box_number).ToArray());
+                }
+                else {
+                    box.box_number = string.Join(",", samePoAndQtyList.Select(s => s.box.box_number).ToArray().Take(2)) + "...";
+                }
+                box.box_number_long = string.Join(",", samePoAndQtyList.Select(s => s.box.box_number_long).ToArray());
+                result.Add(new BoxAndPoModels()
+                {
+                    box = box,
+                    po = samePoAndQtyList.First().po
+                });
+            }
+
+            return result;
         }
 
         /// <summary>

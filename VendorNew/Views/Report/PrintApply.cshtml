@@ -181,7 +181,7 @@
                     bool isInSameBox = false; //是否和上一行是合并箱
                     int currentRowSpan = 1; //合并行数
 
-                    for (int i = hasPrinted; i < hasPrinted + pageList[p] && i < m.boxAndPos.Count(); i++) {                        
+                    for (int i = hasPrinted; i < hasPrinted + pageList[p] && i < m.boxAndPos.Count(); i++) {
                         var bp = m.boxAndPos[i];
                         var drEntry = m.es.Where(e => e.po_number == bp.po.po_number && e.po_entry_id == bp.po.po_entry_id).FirstOrDefault();
                         if (bp.box != null && bp.box == currentBox) {

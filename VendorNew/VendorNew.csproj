@@ -143,6 +143,7 @@
     <Compile Include="Controllers\BoxController.cs" />
     <Compile Include="Controllers\DeliveryController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\QAController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Filters\SessionTimeOutFilter.cs" />
     <Compile Include="Global.asax.cs">
@@ -173,6 +174,7 @@
   <ItemGroup>
     <Content Include="Content\color.css" />
     <Content Include="Content\doc\MakingBoxHelper.txt" />
+    <Content Include="Content\doc\print_setting.gif" />
     <Content Include="Content\font-awesome-4.7.0\css\font-awesome.css" />
     <Content Include="Content\font-awesome-4.7.0\css\font-awesome.min.css" />
     <Content Include="Content\font-awesome-4.7.0\fonts\fontawesome-webfont.svg" />
@@ -363,6 +365,7 @@
     <Content Include="Views\Home\SupplierInfoSetting.cshtml" />
     <Content Include="Views\Admin\CheckUpdateLog.cshtml" />
     <Content Include="Views\Box\InnerBoxesExtra.cshtml" />
+    <Content Include="Views\QA\PrintSetting.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
