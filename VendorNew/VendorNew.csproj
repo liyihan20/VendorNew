@@ -323,6 +323,7 @@
     <None Include="Properties\PublishProfiles\VendorNew.pubxml" />
     <None Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\easyui-lang-zh_CN.js" />
+    <Content Include="Scripts\echarts.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
     <Content Include="Scripts\jquery.easyui.min.js" />
@@ -366,6 +367,7 @@
     <Content Include="Views\Admin\CheckUpdateLog.cshtml" />
     <Content Include="Views\Box\InnerBoxesExtra.cshtml" />
     <Content Include="Views\QA\PrintSetting.cshtml" />
+    <Content Include="Views\Report\StatisticsChart.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

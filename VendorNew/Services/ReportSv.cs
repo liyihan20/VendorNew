@@ -431,5 +431,149 @@ namespace VendorNew.Services
             return boxes.OrderBy(b => b.boxNumber).ToList();
         }
 
+
+        public DayNumChartModel GetDayNumChartData()
+        {
+            DateTime lastMonth = DateTime.Parse(DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd"));
+            DateTime now = DateTime.Now;
+            DayNumChartModel m = new DayNumChartModel();
+
+            //送货申请
+            var applys=(from d in db.DRBills
+                   join e in db.DRBillDetails on d.bill_id equals e.bill_id
+                   where d.bill_date >= lastMonth && d.bill_date <= now
+                   select d.bill_date).ToList();
+
+            //外箱
+            var oBoxes = db.OuterBoxes.Where(o => o.create_date >= lastMonth && o.create_date <= now)
+                .Select(o => new { createDay = o.create_date, packNum = o.pack_num }).ToList();
+
+            //内箱
+            var iBoxes = (from i in db.InneBoxes
+                          join o in db.OuterBoxes on i.outer_box_id equals o.outer_box_id
+                          where o.create_date >= lastMonth && o.create_date <= now
+                          select new
+                          {
+                              createDay = o.create_date,
+                              packNum = i.pack_num
+                          }).ToList();
+
+            //先做内箱，并且未关联外箱的那部分
+            var iBoxesExtra = (from ie in db.InnerBoxesExtra
+                               join i in db.InneBoxes on ie.inner_box_id equals i.inner_box_id
+                               where i.outer_box_id == null
+                               && ie.create_date >= lastMonth
+                               && ie.create_date <= now
+                               select new
+                               {
+                                   createDay = ie.create_date,
+                                   packNum = i.pack_num
+                               }).ToList();
+
+            //对应到日期
+            DateTime aDayLater;
+            while (lastMonth < now) {
+                aDayLater = lastMonth.AddDays(1);
+                m.dayList.Add(lastMonth.ToString("MM-dd"));
+
+                m.applyNumList.Add(applys.Where(a => a >= lastMonth && a < aDayLater).Count());
+                m.oBoxNumList.Add(oBoxes.Where(o => o.createDay >= lastMonth && o.createDay < aDayLater).Select(o => o.packNum).Sum() ?? 0);
+                m.iBoxNumList.Add(iBoxes.Where(i => i.createDay >= lastMonth && i.createDay < aDayLater).Select(i => i.packNum).Sum() ?? 0
+                    + iBoxesExtra.Where(ie => ie.createDay >= lastMonth && ie.createDay < aDayLater).Select(ie => ie.packNum).Sum() ?? 0
+                    );
+                lastMonth = aDayLater;
+            }
+
+            return m;
+        }
+
+        /// <summary>
+        /// 今天申请送货数量最多的前10个供应商
+        /// </summary>
+        /// <returns></returns>
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierApplyNumToday()
+        {
+            DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
+            var result = (from d in db.DRBills
+                          join e in db.DRBillDetails on d.bill_id equals e.bill_id
+                          where d.bill_date >= today
+                          group d by d.supplier_name into dg
+                          orderby dg.Count() descending
+                          select new SupplierAndApplyNumModel()
+                          {
+                              supplierName = dg.Key,
+                              num = dg.Count()
+                          }).Take(10).ToList();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 今天制作外箱数量最多的前10个供应商
+        /// </summary>
+        /// <returns></returns>
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierOBoxNumToday()
+        {
+            DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
+            var result = (from o in db.OuterBoxes
+                          join u in db.Users on o.user_name equals u.user_name
+                          where o.create_date >= today
+                          group o by u.real_name into dg
+                          orderby dg.Sum(d => d.pack_num) descending
+                          select new SupplierAndApplyNumModel()
+                          {
+                              supplierName = dg.Key,
+                              num = dg.Sum(d => d.pack_num)
+                          }).Take(10).ToList();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 今天制作内箱数量最多的前10个供应商，外箱流程
+        /// </summary>
+        /// <returns></returns>
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierIBoxNumToday()
+        {
+            DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
+            var result = (from i in db.InneBoxes
+                          join o in db.OuterBoxes on i.outer_box_id equals o.outer_box_id
+                          join u in db.Users on o.user_name equals u.user_name
+                          join ie in db.InnerBoxesExtra on i.inner_box_id equals ie.inner_box_id into iet
+                          from it in iet.DefaultIfEmpty()
+                          where o.create_date >= today
+                          && it == null
+                          group i by u.real_name into ig
+                          orderby ig.Sum(s => s.pack_num) descending
+                          select new SupplierAndApplyNumModel()
+                          {
+                              supplierName = ig.Key,
+                              num = ig.Sum(s => s.pack_num)
+                          }).Take(10).ToList();
+            return result;
+        }
+
+        /// <summary>
+        /// 今天制作内箱数量最多的前10个供应商，小标签流程
+        /// </summary>
+        /// <returns></returns>
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierIBoxExtraNumToday()
+        {
+            DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
+            var result = (from i in db.InneBoxes
+                          join ie in db.InnerBoxesExtra on i.inner_box_id equals ie.inner_box_id
+                          join u in db.Users on ie.user_name equals u.user_name
+                          where ie.create_date >= today
+                          group i by u.real_name into ig
+                          orderby ig.Sum(s => s.pack_num) descending
+                          select new SupplierAndApplyNumModel()
+                          {
+                              supplierName = ig.Key,
+                              num = ig.Sum(s => s.pack_num)
+                          }).Take(10).ToList();
+            return result;
+        }
+
+
     }
 }

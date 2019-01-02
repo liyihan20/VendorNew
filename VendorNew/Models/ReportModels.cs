@@ -75,4 +75,29 @@ namespace VendorNew.Models
 
     }
 
+    public class DayNumChartModel
+    {
+        public DayNumChartModel()
+        {
+            dayList = new List<string>();
+            applyNumList = new List<int>();
+            oBoxNumList = new List<int>();
+            iBoxNumList = new List<int>();
+        }
+
+        public List<string> dayList { get; set; }
+        public List<int> applyNumList { get; set; }
+        public List<int> oBoxNumList { get; set; }
+        public List<int> iBoxNumList { get; set; }
+    }
+
+    public class SupplierAndApplyNumModel
+    {
+        public string supplierName { get; set; }
+        public int? num { get; set; }
+    }
+
+    
+
+
 }

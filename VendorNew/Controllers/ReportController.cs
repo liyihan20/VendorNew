@@ -364,5 +364,40 @@ namespace VendorNew.Controllers
             //return "已成功导出行数："+result.Count();
         }
 
+        [AuthorityFilter]
+        public ActionResult StatisticsChart()
+        {
+            return View();
+        }
+
+        public JsonResult GetDayNumData4Chart()
+        {
+            try {
+                var result = new ReportSv().GetDayNumChartData();
+                return Json(new { suc = true, result = result });
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+        }
+
+        /// <summary>
+        /// 获取今天做的最多的前10个申请、外箱、内箱、小标签内箱对应的供应商和数量
+        /// </summary>
+        /// <returns></returns>
+        public JsonResult GetTopTenSupplier4Chart()
+        {
+            try {
+                var d1 = new ReportSv().GetTopTenSupplierApplyNumToday();
+                var d2 = new ReportSv().GetTopTenSupplierOBoxNumToday();
+                var d3 = new ReportSv().GetTopTenSupplierIBoxNumToday();
+                var d4 = new ReportSv().GetTopTenSupplierIBoxExtraNumToday();
+                return Json(new { suc = true, d1 = d1, d2 = d2, d3 = d3, d4 = d4 });
+            }
+            catch (Exception ex) {
+                return Json(new SRM(ex));
+            }
+        }
+
     }
 }
