@@ -1,0 +1,196 @@
+﻿
+<script src="@Url.Content("~/Scripts/echarts.js")"></script>
+
+<script>
+    $(function () {
+
+        $.post("GetDayNumData4Chart", function (data) {
+            if (data.suc) {
+                var myChart1 = echarts.init(document.getElementById('chart1'));
+                var option1 = {
+                    title: {
+                        text: '最近1个月送货统计',
+                        left :'center'
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    angleAxis: {
+                        type: 'category',
+                        data: data.result.dayList,
+                        z: 10
+                    },
+                    radiusAxis: {
+                    },
+                    polar: {
+                    },
+                    series: [{
+                        type: 'bar',
+                        data: data.result.applyNumList,
+                        coordinateSystem: 'polar',
+                        name: '提交申请数量',
+                        stack: 'a'
+                    }, {
+                        type: 'bar',
+                        data: data.result.oBoxNumList,
+                        coordinateSystem: 'polar',
+                        name: '制作外箱数量',
+                        stack: 'a'
+                    }, {
+                        type: 'bar',
+                        data: data.result.iBoxNumList,
+                        coordinateSystem: 'polar',
+                        name: '制作内箱数量',
+                        stack: 'a'
+                    }],
+                    legend: {
+                        show: true,
+                        data: ['提交申请数量', '制作外箱数量', '制作内箱数量'],
+                        right: '0%',
+                        top: '0%',
+                        orient: 'vertical'
+                    }
+                };
+                myChart1.setOption(option1);
+            } else {
+                tip(data.msg);
+            }
+        });
+
+        $.post("GetTopTenSupplier4Chart", function (data) {
+            if (data.suc) {
+                var myChart2 = echarts.init(document.getElementById('chart2'));
+                var myChart3 = echarts.init(document.getElementById('chart3'));
+                var myChart4 = echarts.init(document.getElementById('chart4'));
+                var myChart5 = echarts.init(document.getElementById('chart5'));
+
+                var option2 = {
+                    title: {
+                        text: '今天送货申请数量排行',
+                        left: 'center'
+                    },
+                    dataset: {
+                        source: data.d1
+                    },
+                    grid: { containLabel: true },
+                    xAxis: {},
+                    yAxis: { type: 'category' },
+                    series: [
+                        {
+                            type: 'bar',
+                            encode: {
+                                x: 'num',
+                                y: 'supplierName'
+                            }, label: {
+                                normal: {
+                                    position: 'right',
+                                    show: true
+                                }
+                            },
+                        }
+                    ]                    
+                };
+
+                var option3 = {
+                    title: {
+                        text: '今天外箱制作数量排行',
+                        left: 'center'
+                    },
+                    dataset: {
+                        source: data.d2
+                    },
+                    grid: { containLabel: true },
+                    xAxis: {},
+                    yAxis: { type: 'category' },
+                    series: [
+                        {
+                            type: 'bar',
+                            encode: {
+                                x: 'num',
+                                y: 'supplierName'
+                            }, label: {
+                                normal: {
+                                    position: 'right',
+                                    show: true
+                                }
+                            },
+                        }
+                    ]
+                };
+                var option4 = {
+                    title: {
+                        text: '今天内箱制作数量排行',
+                        subtext:'外标签流程',
+                        left: 'center'
+                    },
+                    dataset: {
+                        source: data.d3
+                    },
+                    grid: { containLabel: true },
+                    xAxis: {},
+                    yAxis: { type: 'category' },
+                    series: [
+                        {
+                            type: 'bar',
+                            encode: {
+                                x: 'num',
+                                y: 'supplierName'
+                            }, label: {
+                                normal: {
+                                    position: 'right',
+                                    show: true
+                                }
+                            },
+                        }
+                    ]
+                };
+                var option5 = {
+                    title: {
+                        text: '今天内箱制作数量排行',
+                        subtext: '小标签流程',
+                        left: 'center'
+                    },
+                    dataset: {
+                        source: data.d4
+                    },
+                    grid: { containLabel: true },
+                    xAxis: {},
+                    yAxis: { type: 'category' },
+                    series: [
+                        {
+                            type: 'bar',
+                            encode: {
+                                x: 'num',
+                                y: 'supplierName'
+                            }, label: {
+                                normal: {
+                                    position: 'right',
+                                    show: true
+                                }
+                            },
+                        }
+                    ]
+                };
+
+                myChart2.setOption(option2);
+                myChart3.setOption(option3);
+                myChart4.setOption(option4);
+                myChart5.setOption(option5);
+            } else {
+                tip(data.msg);
+            }
+        });
+
+
+    });
+</script>
+
+<div id="chart1" style="width: 800px;height:600px;margin:12px;"></div>
+<br/>
+<div id="chart2" style="width: 800px;height:600px;margin:12px;"></div>
+<br/>
+<div id="chart3" style="width: 800px;height:600px;margin:12px;"></div>
+<br/>
+<div id="chart4" style="width: 800px;height:600px;margin:12px;"></div>
+<br/>
+<div id="chart5" style="width: 800px;height:600px;margin:12px;"></div>

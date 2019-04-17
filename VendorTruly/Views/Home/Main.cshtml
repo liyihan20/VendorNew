@@ -1,0 +1,34 @@
+﻿@using VendorTruly.Models;
+@{
+    List<UpdateLog> logs = ViewData["updateLog"] as List<UpdateLog>;
+}
+
+<div class="easyui-panel" data-options="fit:true" style="padding:12px 24px;">
+
+    <h2 class="text-danger"><i class="fa fa-bullhorn"></i> 平台公告</h2>
+    <div style="padding-left:12px;font-size:14px;" class="text-primary">
+        <div><i class="fa fa-circle"></i> 为保证兼容性和打印预览效果，请使用google chrome浏览器或360浏览器的极速模式； </div>
+        <div style="margin-top:6px;"><i class="fa fa-circle"></i> 首次登陆时，请务必修改默认密码，提高安全性； </div>
+        <div style="margin-top:6px;"><i class="fa fa-circle"></i> 开通的用户默认都是没有邮箱的，以防收取不到通知邮件，请到【用户设置】-->【邮箱设置】中设置邮箱地址； </div>
+        <div style="margin-top:6px;"><i class="fa fa-circle"></i> 供应商首次做送货申请前请先到【用户设置】-->【基础资料】中核对送货地址、联系人和电话，这些信息将体现在送货申请单中；</div>
+    </div>
+    <h2 class="text-danger"><i class="fa fa-question-circle-o"></i> 遇到问题</h2>
+    <div style="padding-left:12px;font-size:14px;" class="text-primary">
+        <div><i class="fa fa-question"></i> 订单问题：请联系对应订料员或采购员； </div>
+        <div style="margin-top:6px;"><i class="fa fa-question"></i> 操作问题：请联系平台维护人员（叶惠爱，yehuiai@trulyopto.cn，0660-3384589）； </div>
+        <div style="margin-top:6px;"><i class="fa fa-question"></i> bug反馈：请联系平台开发人员（李逸焊，liyihan.ic@truly.com.cn，0660-3387006）；</div>
+    </div>
+    <h2 class="text-danger"><i class="fa fa-file-o"></i> 操作指引</h2>
+    <div style="padding-left:12px;font-size:14px;" >
+        <div><a href="@Url.Content("~/QA/PrintSetting")" class="text-primary" target="_blank"><i class="fa fa-file-text-o"></i> 标签打印设置操作指引点此查看 </a></div>
+        <div style="margin-top:6px;"><a href="@Url.Content("~/Content/doc/供应商操作指引.pdf")" class="text-primary" target="_blank"><i class="fa fa-file-text-o"></i> 供应商操作指引点此下载 </a></div>
+        <div style="margin-top:6px;"><a href="@Url.Content("~/Content/doc/订料员操作指引.pdf")" class="text-primary" target="_blank"><i class="fa fa-file-text-o"></i> 订料员/采购员操作指引点此下载 </a></div>
+    </div>
+    <h2 class="text-danger"><i class="fa fa-list "></i> 更新日志</h2>
+    <div style="padding-left:12px;font-size:14px;" class="text-primary">
+        @foreach (var l in logs) {
+            <div style="margin-bottom:6px;"><i class="fa fa-circle"></i> @(((DateTime)l.update_date).ToString("yyyy-MM-dd")) @l.update_content</div>
+        }
+        
+    </div>
+</div>

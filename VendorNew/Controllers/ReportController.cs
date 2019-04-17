@@ -373,7 +373,7 @@ namespace VendorNew.Controllers
         public JsonResult GetDayNumData4Chart()
         {
             try {
-                var result = new ReportSv().GetDayNumChartData();
+                var result = new ReportSv().GetDayNumChartData(currentAccount);
                 return Json(new { suc = true, result = result });
             }
             catch (Exception ex) {
@@ -388,10 +388,10 @@ namespace VendorNew.Controllers
         public JsonResult GetTopTenSupplier4Chart()
         {
             try {
-                var d1 = new ReportSv().GetTopTenSupplierApplyNumToday();
-                var d2 = new ReportSv().GetTopTenSupplierOBoxNumToday();
-                var d3 = new ReportSv().GetTopTenSupplierIBoxNumToday();
-                var d4 = new ReportSv().GetTopTenSupplierIBoxExtraNumToday();
+                var d1 = new ReportSv().GetTopTenSupplierApplyNumToday(currentAccount);
+                var d2 = new ReportSv().GetTopTenSupplierOBoxNumToday(currentAccount);
+                var d3 = new ReportSv().GetTopTenSupplierIBoxNumToday(currentAccount);
+                var d4 = new ReportSv().GetTopTenSupplierIBoxExtraNumToday(currentAccount);
                 return Json(new { suc = true, d1 = d1, d2 = d2, d3 = d3, d4 = d4 });
             }
             catch (Exception ex) {

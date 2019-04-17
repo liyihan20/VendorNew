@@ -121,6 +121,7 @@ namespace VendorNew.Models
         public DateTime? package_date { get; set; }
         public string keep_condition { get; set; }
         public string produce_circle { get; set; }
+        public DateTime? expire_date { get; set; }
 
     }
 

@@ -1,0 +1,192 @@
+﻿@using VendorTruly.Models
+@{
+    ViewBag.Title = "打印外箱标签";
+    List<PrintOuterBoxModels> boxes = ViewData["outerData"] as List<PrintOuterBoxModels>;
+    int numPerPage = (int)ViewData["numPerPage"];
+}
+@section CSS{
+    <style type="text/css">        
+
+        table {
+            font-size: 12px;
+            border-top: 1px solid #666;
+            border-right: 1px solid #666;
+        }
+
+        td {
+            padding: 0;
+            border-left: 1px solid #666;
+            border-bottom: 1px solid #666;
+            word-break: break-all;
+            overflow: hidden;
+            font-family: '黑体','宋体';
+        }
+
+        img {
+            margin: 0 auto;
+        }
+
+        .pageNext {
+            page-break-after: always;
+            clear: both;
+        }
+
+    </style>
+    <style type="text/css" media="print">
+        .noPrint {
+            display: none;
+        }
+    </style>
+}
+<script type="text/javascript" src="@Url.Content("~/Scripts/qrcode.js")"></script>
+<script type="text/javascript">
+    $(function () {
+        $(".qrcode").each(function (index, ele) {
+            var qrcode = new QRCode(ele, {
+                text: $(ele).attr("title"),
+                width: 96,
+                height: 96,
+                correctLevel: QRCode.CorrectLevel.L
+            });
+        });
+
+        $("#btReflesh").on("click", function () {
+            window.location.href = "@Url.Content("~/Report/PrintSelectedOuterBox?boxIds=")" + "@ViewData["boxIds"]" + "&numPerPage=" + $("#nbPageNum").numberbox("getValue");
+        });
+        $("#btPrint").on("click", function () {
+            window.print();
+        });
+
+        $(".sub_string").each(function (index, ele) {
+            var bit = $(ele).attr("data-bit");
+            var v = $(ele).html();
+            $(ele).html(mySubStr(v, bit));
+        });
+
+    });
+
+    function countCharNum(str) {
+        return str.replace(/[^\u0000-\u00ff]/g, "aa").length;
+    }
+
+    //以字节数截取字符串，一个中文等于2个字节
+    function mySubStr(str, len) {
+        if (countCharNum(str) <= len) {
+            return str;
+        }
+
+        var tempLen = 0;
+        var result = "";
+
+        for (var i = 0; i < str.length && tempLen < len; i++) {
+            result += str[i];
+            tempLen += countCharNum(str[i]);
+        }
+        return result;
+    }
+
+</script>
+
+<div class="noPrint" style="padding-top:4px;">
+    <div style="width:40%;float:right;text-align:right;font-size:12px;">
+        每页标签数量：
+        <input type="text" class="easyui-numberbox" id="nbPageNum" style="width:120px;" data-options="validType:{min:1,max:40}" value="@numPerPage" />
+        <a href="#" class="easyui-tooltip" title="默认使用标签纸打印，一张标签纸打印一个外箱标签。特殊情况可使用其他纸张打印，根据需要设置每页打印标签数量。"><i class="fa fa-info-circle text-danger"></i></a>
+        <a href="#" class="easyui-linkbutton" id="btReflesh"><i class="fa fa-refresh"></i> 重载页面</a>
+    </div>
+    <div style="width:20%;float:right;text-align:center">
+        <a href="#" class="easyui-linkbutton c5" style="padding:0 6px;" id="btPrint"><i class="fa fa-print"></i> 开始打印</a>
+    </div>
+    <div style="width:39%;float:right;text-align:left;font-size:12px;padding-left:12px;">
+        <i class="fa fa-question-circle-o text-danger"></i> 外箱标签纸尺寸：
+        <input type="text" class="easyui-textbox" value="长10cm*宽7cm" readonly style="width:100px;" />
+    </div>
+</div>
+<div style="clear:both;"></div>
+@for (int i = 0; i < boxes.Count(); i++) {
+    var b = boxes[i];
+    <div style="padding:6px;float:left;" class="wrapDiv">
+        <table style="width:350px;height:228px;border-spacing:0;">
+            <tr>
+                <td height="22" colspan="4">
+                    <span style="margin-left:64px;font-size:16px;">@b.companyName</span>
+                    <span style="margin-left:64px;font-size:14px;border:1px solid #666;padding:0 4px;">@b.rohs</span>
+                </td>
+            </tr>
+            <tr>
+                <td width="114" rowspan="6">
+                    <div class="qrcode" title="@b.qrcodeContent">
+
+                    </div>
+                </td>
+                <td width="67">TRULY PO:</td>
+                <td colspan="2">@b.poNumber</td>
+            </tr>
+            <tr>
+                <td>物料编码:</td>
+                <td colspan="2">@b.itemNumber</td>
+            </tr>
+            <tr>
+                <td>数量:</td>
+                <td colspan="2">@b.qtyAndUnit</td>
+            </tr>
+            <tr>
+                <td>批次:</td>
+                <td colspan="2">@b.batchNo</td>
+            </tr>
+            <tr>
+                <td>材质:</td>
+                <td colspan="2">@b.madeBy</td>
+            </tr>
+            <tr>
+                <td>贸易类型:</td>
+                <td>@b.tradeTypeName</td>
+                <td>箱号:<span>@b.boxNumber</span></td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    名称:@b.itemName
+                </td>
+                <td width="114">原产地:@b.madeIn</td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    型号:<span class="arial">@b.itemModel</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    生产日期:@b.produceDate
+                </td>
+                <td colspan="2">有效期:@b.expireDate</td>
+                <td>生产周期:@b.produceCircle</td>
+            </tr>
+            <tr>
+                <td>
+                    品牌:<span class="sub_string" data-bit="12">@b.brand</span>
+                </td>
+                <td colspan="2">毛重KG:@b.grossWeight</td>
+                <td>净重KG:@b.netWeight</td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    存储条件:@b.keepCondition
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align:center;">
+                    @b.supplierName
+                </td>
+            </tr>
+        </table>
+    </div>
+    if (numPerPage == 1) {
+        @*标签纸打印，每一个标签后面都插入分页符*@
+        <div class="pageNext"></div>
+    }
+    else if (numPerPage > 1) {
+        if ((i + 1) % numPerPage == 0) {
+            <div class="pageNext"></div>
+        }
+    }
+}

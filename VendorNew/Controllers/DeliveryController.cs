@@ -245,6 +245,9 @@ namespace VendorNew.Controllers
             if (box.produce_date == DateTime.MinValue) {
                 return Json(new SRM(false, "请填写正确的生产日期"));
             }
+            if (box.expire_date == DateTime.MinValue) {
+                return Json(new SRM(false, "请填写正确的有效期"));
+            }
 
             try {
                 List<OuterBoxPOs> poList = JsonConvert.DeserializeObject<List<OuterBoxPOs>>(fc.Get("poRows"));
@@ -253,6 +256,11 @@ namespace VendorNew.Controllers
                 List<int> innerBoxIds = new List<int>();
                 if (!string.IsNullOrEmpty(fc.Get("innerBoxIds"))) {
                     innerBoxIds = fc.Get("innerBoxIds").Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(i => Int32.Parse(i)).ToList();
+                }
+                else {
+                    if (new BoxSv().GetNoRelatedInnerBox(currentUser.userName, box.item_number, box.trade_type_name, currentAccount, canCheckAll).Count()>0) {
+                        return Json(new SRM(false, string.Format("检测到型号为【{0}】的物料存在未关联的小标签，必须关联后才能保存外箱。关联路径：标签管理--->新增外箱",box.item_model)));
+                    }
                 }
                 string boxNumber = new BoxSv().SaveOuterBox(box, poList, innerBoxIds);
                 WLog("新增外箱", "保存外箱，箱号：" + boxNumber);
@@ -446,7 +454,7 @@ namespace VendorNew.Controllers
             var details = sv.GetDRBillDetails(id);
 
             //重新再计算一次可申请数量
-            decimal stockQty, transitQty;             
+            decimal stockQty, transitQty;
             foreach (var e in details) {
                 stockQty = sv.GetInstockQty(h.account, h.bill_type, (int)e.po_id, (int)e.po_entry_id); // K3已入库数量
                 transitQty = sv.GetPOTransitQty((int)e.po_id, (int)e.po_entry_id); //在途数量
@@ -475,7 +483,7 @@ namespace VendorNew.Controllers
             }
 
             var sv = new DRSv();
-            var dr=sv.GetDRBill(id);
+            var dr = sv.GetDRBill(id);
 
             if (dr == null) {
                 ViewBag.tip = "申请单不存在，可能已被删除";

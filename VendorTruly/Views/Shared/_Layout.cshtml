@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    @*<meta name="viewport" content="width=device-width"/>*@
+    <meta name="viewport" content="minimum-scale=0.1,maximum-scale=2.0,user-scalable=yes" />
+    <meta name="renderer" content="webkit"/> 
+    <title>事业部送货管理平台</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href="@Url.Content("~/Content/themes/bootstrap/easyui.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/icon.css")" rel="stylesheet" type="text/css" />  
+    <link href="@Url.Content("~/Content/color.css")" rel="stylesheet" type="text/css" />  
+    <link href="@Url.Content("~/Content/myCss.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/font-awesome-4.7.0/css/font-awesome.min.css")" rel="stylesheet" type="text/css" />     
+
+    <style>
+        @@font-face {
+            font-family: myNarrow;
+            src: url('@Url.Content("~/Content/Arial Narrow Bold.ttf")');
+        }
+    </style>
+    @RenderSection("CSS", false)
+
+    <script src="@Url.Content("~/Scripts/jquery-1.12.4.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/jquery.easyui.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/easyui-lang-zh_CN.js")" type="text/javascript"></script>
+    @*<script src="@Url.Content("~/Scripts/knockout-3.4.2.debug.js")" type="text/javascript"></script>*@
+    <script src="@Url.Content("~/Scripts/lodash.js")" type="text/javascript"></script>
+
+    <script type="text/javascript">
+    var NUMBER_PRECISION = 4; //数字小数位数，4位，用于数量、净重、毛重等
+
+    $(function () {
+        $("textarea").attr("spellcheck", false);
+    });
+
+    //$.fn.datebox.defaults.formatter = function (date) {
+    //    var y = date.getFullYear();
+    //    var m = date.getMonth() + 1;
+    //    var d = date.getDate();
+    //    m = m < 10 ? '0' + m : m;
+    //    d = d < 10 ? '0' + d : d;
+    //    return y + '-' + m + '-' + d;
+    //}
+
+    $.extend($.fn.datagrid.defaults, { pageSize: 50, pageList: [20, 50, 100, 200] }); //设置默认每页显示50行，页码可选择范围是20，50，100，200
+    //扩展datagrid，获取当前选择行，如果没有选择，但是只有1行，也会返回此行
+    $.extend($.fn.datagrid.methods, {
+        getCurrentRow: function (jq, params) {
+            var row = $(jq).datagrid('getSelected');
+            if (!row) {
+                var rows = $(jq).datagrid('getRows');
+                if (rows.length == 1) {
+                    row = rows[0];
+                }
+            }
+            return row;
+        }
+    });
+
+    function tip(msg) {
+        $.messager.show({
+            title: '操作提示',
+            msg: msg
+        });
+    }
+
+    //后台日期转为日期字符串
+    function toDateStr(value,hasHour) {
+        if (value == "" || value == null) return "";
+
+        // 2018-10-15T16:00:00Z 格式：
+        if (value.indexOf("T") > 0) {
+            return value.split("T")[0];
+        }
+
+        // /Date(1539532800000)/格式：
+        var date = eval('new ' + eval(value).source)
+        var date_str = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + " " ;
+        if (hasHour) {
+            date_str += (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ":" + (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes());
+        }
+        return date_str;
+    }
+
+    //数字添加千分位
+    function toThousandValue(value) {
+        if (value == 0) return "0";
+        if (value == "" || value == null) return "";
+        value = parseFloat(value);//去掉小数点后面的0
+        value = value.toString();
+        var arr = value.split(".");
+        value = arr[0].replace(/(\d{1,3})(?=(\d{3})+$)/g, '$1,');
+        if (arr[1]) {
+            value += "." + arr[1];
+        }
+        return value;
+    }
+
+    //计算有效期，通过后台计算
+    var excb;
+    function expireDateCal(produceDate, months,expireDate, callback) {
+        if (!produceDate || !months) {
+            callback("");
+        }
+        $.post("@Url.Content("~/Common/DateCal")", { bDate: produceDate, months: months,eDate:expireDate }, function (data) {
+                if (data.suc) {
+                    callback(data.extra);
+                } else {
+                    callback("");
+                }
+            });
+        }        
+
+    </script>
+</head>
+<body style="padding:0;margin:0">
+    @RenderBody()
+</body>
+</html>

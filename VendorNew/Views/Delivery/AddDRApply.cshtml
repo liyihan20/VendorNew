@@ -83,6 +83,18 @@
                         tip("当前行数只有1行，不能再删除");
                         return;
                     }
+
+                    //先验证是否有这一行对应的已做箱子信息，如果存在则不能删除
+                    var rows = $("#dg_box").treegrid("getData");
+                    for (var i = 0; i < rows.length; i++) {
+                        for (var j = 0; j < rows[i].poList.length; j++) {
+                            if(rows[i].poList[j].po_number==removedRow.po_number && rows[i].poList[j].po_entry_id==removedRow.po_entry_id){
+                                tip("存在此订单行对应的标签信息，请先删除箱子或移出箱子后再删除PO行。对应箱号："+rows[i].box_number);
+                                return;
+                            }
+                        }
+                    }
+
                     $.messager.confirm('操作确认', '确定要删除选中行吗？', function (r) {
                         if(r){
                             var rowIndex = $('#dg_detail').datagrid('getRowIndex', removedRow);
@@ -93,7 +105,7 @@
                                     } else {
                                         tip(data.msg);
                                     }
-                                })
+                                });
                             } else {
                                 $('#dg_detail').datagrid('deleteRow', rowIndex);
                             }
@@ -240,7 +252,7 @@
                 { field: 'made_in', title: '原产地', width: 100, align: 'center' },
                 { field: 'trade_type_name', title: '贸易类型', width: 100, align: 'center' },
                 { field: 'brand', title: '品牌', width: 100, align: 'center' },
-                { field: 'batch', title: '批次号', width: 60, align: 'center' },
+                { field: 'batch', title: '批次号', width: 100, align: 'center' },
                 { field: 'rohs', title: 'ROHS', width: 120, align: 'center' },
                 {
                     field: 'produce_date', title: '生产日期', width: 100, align: 'center',
@@ -249,6 +261,12 @@
                     }
                 },
                 { field: 'safe_period', title: '保质期(月）', width: 100, align: 'center' },
+                {
+                    field: 'expire_date', title: '有效期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
                 {
                     field: 'package_date', title: '包装日期', width: 100, align: 'center',
                     formatter: function (value, row, index) {
@@ -455,7 +473,7 @@
             var selectedPo = $('#select_box_po').combogrid('grid').datagrid('getCurrentRow');
             if (!selectedPo) return;
 
-            if ($('#dg_select_box_po').datagrid('getRows').length == 0) {
+            if ($('#dg_select_box_po').datagrid('getRows').length == 0) {                
                 //如果关联订单列表没有数据行，即直接插入行，并且将规格型号等信息保存
                 $("input[name='item_number'").val(selectedPo.item_number);
                 $("input[name='item_name'").val(selectedPo.item_name);
@@ -479,7 +497,7 @@
                 }
             }
             //如果在同张申请单已做了同型号的箱子，将箱子信息带过来
-            var existedBoxInfo = _.filter($("#dg_box").treegrid("getData"), function (v) { return v.item_model == selectedPo.item_model });
+            var existedBoxInfo = _.filter($("#dg_box").treegrid("getData"), function (v) { return v.item_number == selectedPo.item_number });
             if (existedBoxInfo.length > 0) {
                 var bInfo = existedBoxInfo[existedBoxInfo.length - 1];
                 $("#fm_outer_box").form("load", bInfo);
@@ -488,6 +506,7 @@
                 $("#fm_outer_box #pack_num").numberbox("setValue", "1");
                 $("#fm_outer_box #package_date").datebox("setValue", toDateStr(bInfo.package_date));
                 $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(bInfo.produce_date));
+                $("#fm_outer_box #expire_date").datebox("setValue", toDateStr(bInfo.expire_date));
             } else {
                 //看服务器有没有
                 $.post("@Url.Content("~/Box/GetBoxBySupplierAndItem")", { supplierNumber: "@h.supplier_number", itemNumber: selectedPo.item_number }, function (data) {
@@ -498,7 +517,8 @@
                         $("#fm_outer_box #pack_num").numberbox("setValue", "1");
                         $("#fm_outer_box #bill_id").val("@h.bill_id");
                         $("#fm_outer_box #package_date").datebox("setValue", toDateStr(data.boxInfo.package_date));
-                        $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));
+                        $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));                        
+                        $("#fm_outer_box #expire_date").datebox("setValue", toDateStr(data.boxInfo.expire_date));
                     }
                 });
             }
@@ -508,8 +528,36 @@
             endEditingBoxPo();
         });
 
+        //保质期有改变且有效期没有填写时，自动计算有效期,200毫秒时间给平台从后台带数据插入到有效期。
+        $("#safe_period").numberbox({
+            onChange: function (newValue, oldValue) {
+                setTimeout(function () {
+                    var expireDate = $("#expire_date").datebox("getValue");
+                    var produceDate = $("#produce_date").datebox("getValue");
+                    expireDateCal(produceDate, newValue,expireDate, function (result) {
+                        $("#expire_date").datebox("setValue", result);
+                    });
+                    
+                }, 200);
+            }
+        });
+        $("#produce_date").datebox({
+            onSelect: function (date) {
+                setTimeout(function () {
+                    var expireDate = $("#expire_date").datebox("getValue");
+                    var months = $("#safe_period").numberbox("getValue");
+                    var produceDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+                    expireDateCal(produceDate, months, expireDate, function (result) {
+                        $("#expire_date").datebox("setValue", result);
+                    });
+
+                }, 200);
+            }
+        });
+
         //保存外箱
         $("#btn_save_outer_box").on("click", function () {
+            if(!endEditingBoxPo()) return;
             if (!$("#fm_outer_box").form("validate")) return;
             var boxPoRows = $("#dg_select_box_po").datagrid("getRows");
             if (boxPoRows.length == 0) {
@@ -586,7 +634,7 @@
         });
 
     });
-
+        
     var editBoxPoIndex = undefined;
     function endEditingBoxPo() {
         if (editBoxPoIndex == undefined) { return true; }
@@ -1078,13 +1126,13 @@
                         保质期(月)：
                     </td>
                     <td>
-                        <input type="text" class="easyui-numberbox" name="safe_period" data-options="required:true,min:1,max:120,prompt:'单位是月，范围1~120'" />
+                        <input type="text" class="easyui-numberbox" name="safe_period" id="safe_period" data-options="required:true,min:1,max:120,prompt:'单位是月，范围1~120'" />
                     </td>
                     <td>
-                        包装日期：
+                        有效期：
                     </td>
                     <td>
-                        <input type="text" class="easyui-datebox" name="package_date" id="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input type="text" class="easyui-datebox" name="expire_date" id="expire_date" data-options="required:true,editable:false" />
                     </td>
                 </tr>
                 <tr>                    
@@ -1127,7 +1175,13 @@
                         <input type="text" class="easyui-numberbox points-4" name="every_gross_weight" id="every_gross_weight" />
                     </td>
                 </tr>
-                <tr>                                        
+                <tr>        
+                    <td>
+                        包装日期：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-datebox" name="package_date" id="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </td>                                
                     <td>
                         生产周期：
                     </td>
@@ -1140,7 +1194,6 @@
                     <td>
                         <input type="text" class="easyui-textbox" name="keep_condition" data-options="validType:{length:[1,50]}" />
                     </td>
-                    <td></td><td></td>
                 </tr>
             </table>  
         </div>
@@ -1174,7 +1227,7 @@
 </div>
 
 @*拆分外箱对话框*@
-<div id="dlg_split_box" class="easyui-dialog" style="width: 400px;padding:10px 20px;" closed="true" modal="true" buttons="#dlg_split_buttons" title="&lt;i class=&quot;fa fa-copy&quot;&gt;&lt;i&gt; 拆分内箱">
+<div id="dlg_split_box" class="easyui-dialog" style="width: 400px;padding:10px 20px;" closed="true" modal="true" buttons="#dlg_split_buttons" title="&lt;i class=&quot;fa fa-copy&quot;&gt;&lt;i&gt; 拆分外箱">
     <div class="fitem">
         <label>需拆分出件数:</label>
         <input type="text" class="easyui-numberbox" name="split_pack_num" id="split_pack_num" data-options="required:true" />

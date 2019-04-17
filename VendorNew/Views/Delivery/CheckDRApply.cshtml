@@ -101,7 +101,7 @@
                 { field: 'made_in', title: '原产地', width: 100, align: 'center' },
                 { field: 'trade_type_name', title: '贸易类型', width: 100, align: 'center' },
                 { field: 'brand', title: '品牌', width: 100, align: 'center' },
-                { field: 'batch', title: '批次号', width: 60, align: 'center' },
+                { field: 'batch', title: '批次号', width: 100, align: 'center' },
                 { field: 'rohs', title: 'ROHS', width: 120, align: 'center' },
                 {
                     field: 'produce_date', title: '生产日期', width: 100, align: 'center',
@@ -110,6 +110,12 @@
                     }
                 },
                 { field: 'safe_period', title: '保质期(月）', width: 100, align: 'center' },
+                {
+                    field: 'expire_date', title: '有效期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
                 {
                     field: 'package_date', title: '包装日期', width: 100, align: 'center',
                     formatter: function (value, row, index) {

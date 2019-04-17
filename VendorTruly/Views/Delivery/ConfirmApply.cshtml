@@ -1,0 +1,38 @@
+﻿
+<script>
+    $(function () {
+        $("#applyContent").load("CheckDRApply", { id: "@ViewData["billId"]" }, function () {
+            $("#waiting").remove();
+
+            var auditHtml = '<div class="easyui-panel" title="&lt;i class=&quot;fa fa-bookmark&quot;&gt;&lt;i&gt; 处理送货申请单" style="width:100%;padding:8px 12px;" data-options="collapsible:true">';
+            auditHtml += '<span id="optionText">处理意见：</span>';
+            auditHtml += '<input class="easyui-textbox" id="auditOption" style="width:40%;" />';
+            auditHtml += '<a href="#auditContent" class="easyui-linkbutton c1" onclick="beginAudit(true)" style="margin-left:6px;padding:0 4px;"><i class="fa fa-check-circle-o"></i> 同意申请</a>';
+            auditHtml += '<a href="#auditContent" class="easyui-linkbutton c5" onclick="beginAudit(false)" style="margin-left:6px;padding:0 4px;"><i class="fa fa-close"></i> 拒绝申请</a>';
+            auditHtml += '</div>';
+
+            $('#applyContent').before(auditHtml);
+            
+        });
+    });
+
+    function beginAudit(isOk) {
+        $.messager.confirm('操作确认', '确定要' + (isOk ? "同意" : "拒绝") + "此申请单吗", function (r) {
+            if (r) {
+                var option = $("#auditOption").textbox("getValue");
+                $.post("BeginHandleApply", { billId: "@ViewData["billId"]", opinion: option, isOk: isOk }, function (data) {
+                    if (data.suc) {
+                        parent.updateCurrentTab("<i class='fa fa-fw fa-search'></i>" + "@ViewData["billNo"]", "@Url.Content("~/Delivery/CheckDRApply?id=")" + "@ViewData["billId"]");
+                    } else {
+                        tip(data.msg);
+                    }
+                });
+            }
+        });
+    }
+
+</script>
+
+@*通过load获取申请单内容*@
+<div class="text-danger" id="waiting" style="margin:24px 0;text-align:center;" ><i class="fa fa-2x fa-spinner fa-pulse"></i></div>
+<div id="applyContent"></div>

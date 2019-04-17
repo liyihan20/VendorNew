@@ -1,0 +1,238 @@
+﻿
+<script type="text/javascript">
+
+    var currentGroupID = 0;
+    var currentGroupName = "";
+    var groupType = "audit";
+
+    $(function () {
+        $("#tb_group").datagrid({
+            url: "GetGroupAndAllMembers",
+            queryParams: { groupType: groupType },
+            fit: true,
+            fitColumns: true,
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            columns: [[
+                        { field: 'name', title: '组名', width: 100, align: "center" },
+                        { field: 'members', title: '组员', width: 300, align: "center" }
+            ]],
+            toolbar: '#toolbar_group',
+            onDblClickRow: function (rowIndex, rowData) {
+                currentGroupID = rowData.group_id;
+                currentGroupName = rowData.name;
+                $("#tb_groupUser").datagrid({ url: "GetGroupUsers", queryParams: { groupId: currentGroupID } });
+                $("#group_layout").layout("expand", "east");
+                $("#group_layout").layout("panel", "east").panel("setTitle", "组内用户【" + currentGroupName + "】");
+            }
+        });
+
+    });
+
+    function addGroup() {
+        $('#dlg_group').dialog('open').dialog('setTitle', '新增组别');
+        $('#fm_group').form('clear');
+        $("input[name='group_id']").val("0");
+    }
+    function editGroup() {
+        var row = $('#tb_group').datagrid('getSelected');
+        if (row) {
+            $('#dlg_group').dialog('open').dialog('setTitle', '编辑组别');
+            $('#fm_group').form('load', row);
+        }
+    }
+
+    function saveGroup() {
+        $.ajax({
+            type: 'post',
+            url: 'SaveGroup',
+            data: $("#fm_group").serialize() + "&group_type=" + groupType,
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data.suc) {
+                    tip("保存成功");
+                    $('#dlg_group').dialog('close');
+                    $('#tb_group').datagrid('reload');
+                } else {
+                    tip(data.msg);
+                }
+            }
+        });
+    }
+
+    function removeGroup() {
+        $.messager.confirm('删除确认', '确定要删除这一组别（包括所有组内用户）吗?', function (r) {
+            if (r) {
+                var row = $('#tb_group').datagrid('getSelected');
+                if (row) {
+                    $.post("RemoveGroup", { groupId: row.group_id }, function (result) {
+                        if (result.success) {
+                            $('#tb_group').datagrid('reload');
+                        } else {
+                            $.messager.show({
+                                title: '提示',
+                                msg: result.msg
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    function queryGroup(value, name) {
+        $('#tb_group').datagrid('load', {
+            groupType: groupType,
+            searchGroup: value
+        });
+    }
+
+</script>
+
+
+<script type="text/javascript">
+    $(function () {
+        $("#tb_groupUser").datagrid({
+            fit:true,
+            fitColumns: true,
+            rownumbers: true,
+            singleSelect: true,
+            pagination: true,
+            columns: [[
+                        { field: 'user_name', title: '登录名', width: 100, align: "center" },
+                        { field: 'real_name', title: '用户名', width: 200, align: "center" }
+            ]],
+            toolbar: '#toolbar_groupUser'
+        });
+    });
+
+    function addGroupUser() {
+        if (currentGroupID > 0) {
+            $('#dlg_groupUser').dialog('open').dialog('setTitle', '[' + currentGroupName + ']新增用户');
+        }
+    }
+
+    function removeGroupUser() {
+        var user_row = $('#tb_groupUser').datagrid('getSelected');
+        if (user_row) {
+            var group_user_id = user_row.group_user_id;
+            $.post("RemoveGroupUser", { groupUserId: group_user_id }, function (result) {
+                if (result.suc) {
+                    $('#tb_groupUser').datagrid('reload');
+                } else {
+                    tip(result.msg);
+                }
+            });
+        }
+    }
+
+    function saveGroupUser(){
+        if (currentGroupID > 0) {
+            var user_id = $("#group_user").combogrid("getValue");
+            $.post("SaveGroupUser", { groupId: currentGroupID, userId: user_id }, function (result) {
+                if (result.suc) {
+                    //$('#dlg_groupUser').dialog('close');
+                    $('#tb_groupUser').datagrid('reload');
+                } else {
+                    tip(result.msg);
+                }
+            });
+        }
+    }
+
+    function queryGroupUsers(value, name) {
+        $("#tb_groupUser").datagrid({ queryParams: { groupId: currentGroupID, searchGroupUser: value} });
+    }
+
+    function groupUserEnter(e) {
+        //搜索用户
+        var self = this;
+        var queryValue = $(self).combogrid("getText");
+        if (queryValue == "") return;
+        $.post("GetComboUsers", { searchValue: queryValue, maxCount: 30 }, function (data) {
+            $(self).combogrid('grid').datagrid('loadData', data);
+            $(self).combogrid("setText", queryValue);
+        });
+    }
+    function groupUserQuery(q,e) {
+
+    }
+
+</script>
+
+<div class="easyui-layout" data-options="fit:'true'" id="group_layout">
+
+    <div data-options="region:'east',title:'组内用户',split:true,collapsed:true" style="width: 40%;">
+        <table id="tb_groupUser"></table>
+        <div id="toolbar_groupUser">
+            <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="addGroupUser()"><i class="fa fa-fw fa-plus"></i> 加入用户</a>
+            <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="removeGroupUser()"><i class="fa fa-fw fa-close"></i> 移除用户</a>
+            <input class="easyui-searchbox" style="width: 160px" searcher="queryGroupUsers" />
+        </div>
+        <div id="dlg_groupUser" class="easyui-dialog" style="width: 400px; padding: 10px 20px" closed="true" buttons="#dlg_groupUser_buttons">
+            <div class="ftitle">
+                新增组别用户
+            </div>
+            <div class="fitem">
+                <label>用户:</label>
+                <select class="easyui-combogrid" id="group_user" name="group_user" style="width:240px;" data-options="
+                        prompt: '输入厂牌或者姓名然后按回车搜索',
+                        panelWidth: 400,
+                        idField: 'user_id',
+                        textField: 'real_name',
+                        columns: [[
+                            {field:'user_name',title:'登录名',width:140},
+                            {field:'real_name',title:'用户名',width:240}
+                        ]],
+                        fitColumns: true,
+                        keyHandler: {
+                            enter:groupUserEnter,
+                            query:groupUserQuery,
+                        }
+                    "></select>
+            </div>
+        </div>
+        <div id="dlg_groupUser_buttons">
+            <a href="#" class="easyui-linkbutton" iconcls="icon-ok" onclick="saveGroupUser()">保存</a>
+            <a href="#" class="easyui-linkbutton" iconcls="icon-cancel" onclick="javascript:$('#dlg_groupUser').dialog('close')">
+                取消
+            </a>
+        </div>
+    </div>
+
+
+    <div data-options="region:'center',title:'组别（双击分组查看组内用户）'">
+        <table id="tb_group"></table>
+        <div id="toolbar_group">
+            <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="addGroup()"><i class="fa fa-fw fa-plus"></i> 新建组别</a>
+            <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="editGroup()"><i class="fa fa-fw fa-edit"></i> 编辑组别</a>
+            <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="removeGroup()"><i class="fa fa-fw fa-close"></i> 删除组别</a>
+            <input class="easyui-searchbox" style="width: 160px" searcher="queryGroup" />
+        </div>
+        <div id="dlg_group" class="easyui-dialog" style="width: 360px; padding: 10px 20px"
+             closed="true" buttons="#dlg_group_buttons">
+            <div class="ftitle">
+                组别信息
+            </div>
+            <form id="fm_group" method="post">
+                <div class="fitem">
+                    <label>组名:</label>
+                    <input type="hidden" name="group_id" />
+                    <input name="name" class="easyui-textbox" />
+                </div>
+                <div class="fitem">
+                    <label>备注:</label>
+                    <input name="comment" class="easyui-textbox" />
+                </div>
+            </form>
+        </div>
+        <div id="dlg_group_buttons">
+            <a href="#" class="easyui-linkbutton" iconcls="icon-ok" onclick="saveGroup()">保存</a>
+            <a href="#" class="easyui-linkbutton" iconcls="icon-cancel" onclick="javascript:$('#dlg_group').dialog('close')">
+                取消
+            </a>
+        </div>
+    </div>
+</div>

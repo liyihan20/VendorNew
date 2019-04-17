@@ -12,13 +12,13 @@
 
     <style type="text/css">
         body {
-            font-family: '黑体','宋体','Microsoft YaHei';
+            font-family: 'Microsoft YaHei',Arial,'宋体','黑体';
             font-size: 12px;
         }
 
-        table {
+        /*table {
             font-size: 12px;
-        }
+        }*/
 
         .tb_items {
             border-top: 1px solid #666;
@@ -30,7 +30,7 @@
                 border-bottom: 1px solid #666;
                 word-break: break-all;
                 overflow: hidden;
-            }          
+            }
            
         .arial{            
             font-family:myNarrow;
@@ -122,52 +122,49 @@
                 </td>
             </tr>
         </table>
-        <table style="width:100%;margin-top:6px;border:1px solid;" cellspacing="0" cellpadding="4">
+        <table style="width:100%;margin-top:6px;border:1px solid;" cellspacing="0" cellpadding="2">
             <tr>
                 <td width="50%;" style="border-right:1px solid;">
-                    <div>购货单位</div>
-                    <div>@companyName</div>
+                    <div>购货单位：@companyName</div>
                     <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
-                    <div>电话：0660-336788-1234 @(string.IsNullOrEmpty(h.supplier_dr_number) ? "" : ",供应商送货单号：" + h.supplier_dr_number)</div>
-                    <div>@h.mat_order_name @(string.IsNullOrEmpty(h.supplier_invoice_number) ? "" : ",供应商发票：" + h.supplier_invoice_number)</div>
+                    <div>电话：0660-336788-1234 @(string.IsNullOrEmpty(h.supplier_dr_number) ? "" : ",供应商送货单号：" + h.supplier_dr_number) 
+                    @h.mat_order_name @(string.IsNullOrEmpty(h.supplier_invoice_number) ? "" : ",供应商发票：" + h.supplier_invoice_number)</div>
                 </td>
                 <td width="50%;">
-                    <div>收货单位</div>
-                    <div>@companyName</div>
-                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
-                    <div>电话：0660-336788-1234</div>
+                    <div>收货单位：@companyName</div>
+                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>                    
                     <div>收货部门：@h.department_name @(string.IsNullOrEmpty(h.comment)?"":"("+h.comment+")")</div>
                 </td>
             </tr>
         </table>
-        <table class="tb_items" style="width:100%;margin-top:8px;" cellspacing="0" cellpadding="4">
+        <table class="tb_items" style="width:100%;margin-top:6px;" cellspacing="0" cellpadding="2">
             <thead>
                 <tr>
                     <th style="width:5%;">
                         序号
                     </th>
-                    <th style="width:24%;">
+                    <th style="width:30%;">
                         物料信息
                     </th>
                     <th style="width:6%;">
                         单位
                     </th>
-                    <th style="width:12%;">
+                    <th style="width:14%;">
                         件数/箱号
                     </th>
-                    <th style="width:8%;">
+                    <th style="width:11%;">
                         送货数量
                     </th>
-                    <th style="width:6%;">
+                    @*<th style="width:6%;">
                         毛重(KG)
                     </th>
                     <th style="width:6%;">
                         净重(KG)
+                    </th>*@
+                    <th style="width:8%;">
+                        原产地
                     </th>
-                    <th style="width:10%;">
-                        尺寸(MM)/原产地
-                    </th>
-                    <th style="width:13%;">
+                    <th style="width:16%;">
                         信利P/O
                     </th>
                     <th style="width:10%;">
@@ -222,14 +219,14 @@
                                 @@@(string.Format("{0:0.####}", bp.box.every_qty))
                             </td>
                             @if (!isInSameBox) {
-                                <td rowspan="@currentRowSpan">
+                                @*<td rowspan="@currentRowSpan">
                                     @(string.Format("{0:0.0###}", bp.box.every_gross_weight))
                                 </td>
                                 <td rowspan="@currentRowSpan">
                                     @(string.Format("{0:0.0###}", bp.box.every_net_weight))
-                                </td>
+                                </td>*@
                                 <td rowspan="@currentRowSpan">
-                                    @bp.box.size <br />
+                                    @*@bp.box.size <br />*@
                                     @bp.box.made_in
                                 </td>
                             }
@@ -250,8 +247,8 @@
                         <td>@m.boxAndPos.Select(b => b.box).Distinct().Sum(b => b.pack_num)</td>
                         <td style="text-align:right">@(string.Format("{0:0.####}", m.es.Sum(e => e.send_qty)))</td>
                         <td></td>
-                        <td></td>
-                        <td></td>
+                        @*<td></td>
+                        <td></td>*@
                         <td></td>
                         <td></td>
                     </tr>
@@ -277,8 +274,8 @@
                                 @string.Format("{0:0.####}", e.send_qty)
                             </td>
                             <td></td>
-                            <td></td>
-                            <td></td>
+                            @*<td></td>
+                            <td></td>*@
                             <td class="arial">
                                 @string.Concat(e.po_number, "-", e.po_entry_id) <br />
                                 @string.Concat(e.pr_number,"-",e.pr_entry_id==null?"":e.pr_entry_id.ToString())
@@ -296,8 +293,8 @@
                         <td>0</td>
                         <td style="text-align:right">@(string.Format("{0:0.####}", m.es.Sum(e => e.send_qty)))</td>
                         <td></td>
-                        <td></td>
-                        <td></td>
+                        @*<td></td>
+                        <td></td>*@
                         <td></td>
                         <td></td>
                     </tr>
@@ -306,7 +303,7 @@
             </tbody>
         </table>
 
-        <table style="width:100%;margin:12px 8px 8px 0;font-size:14px;">
+        <table style="width:100%;margin:8px 8px 0 0;font-size:14px;">
             <tr>
                 <td style="width:60%;">
                     发货人：
@@ -318,10 +315,10 @@
                 </td>
             </tr>
             <tr>
-                <td style="padding-top:6px;">
+                <td style="padding-top:4px;">
                     @h.supplier_name (盖章)
                 </td>
-                <td style="padding-top:6px;">
+                <td style="padding-top:4px;">
                     @companyName (盖章)
                 </td>
             </tr>

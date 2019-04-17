@@ -51,7 +51,7 @@ namespace VendorNew.Services
                 var samePoAndQtyList = list.Where(li => li.po.po_id == l.po.po_id 
                     && li.po.po_entry_id == l.po.po_entry_id 
                     && li.po.send_num == l.po.send_num 
-                    && !sameBoxId.Contains(l.box.outer_box_id)
+                    && !sameBoxId.Contains(li.box.outer_box_id)
                     ).ToList();
                 if (samePoAndQtyList.Count() == 1) {
                     //不存在相同po可合并的行，直接输出
@@ -104,7 +104,7 @@ namespace VendorNew.Services
                         itemName = bp.box.item_name,
                         itemNumber = bp.box.item_number,
                         keepCondition = bp.box.keep_condition,
-                        expireDate = ((DateTime)bp.box.produce_date).AddMonths((int)bp.box.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                        expireDate = bp.box.expire_date == null ? ((DateTime)bp.box.produce_date).AddMonths((int)bp.box.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)bp.box.expire_date).ToString("yyyy-MM-dd"),
                         madeBy = bp.box.made_by,
                         madeIn = bp.box.made_in,
                         netWeight = string.Format("{0:0.####}", bp.box.every_net_weight),
@@ -166,7 +166,7 @@ namespace VendorNew.Services
                         itemName = bp.box.item_name,
                         itemNumber = bp.box.item_number,
                         keepCondition = bp.box.keep_condition,
-                        expireDate = ((DateTime)bp.box.produce_date).AddMonths((int)bp.box.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                        expireDate = bp.box.expire_date == null ? ((DateTime)bp.box.produce_date).AddMonths((int)bp.box.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)bp.box.expire_date).ToString("yyyy-MM-dd"),
                         madeBy = bp.box.made_by,
                         madeIn = bp.box.made_in,
                         netWeight = string.Format("{0:0.####}", bp.box.every_net_weight),
@@ -228,7 +228,7 @@ namespace VendorNew.Services
                             batchNo = b.o.batch,
                             boxNumber = innerBoxes[i],
                             brand = b.o.brand,
-                            expireDate = ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            expireDate = b.o.expire_date == null ? ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)b.o.expire_date).ToString("yyyy-MM-dd"),
                             itemModel = b.o.item_model,
                             itemName = b.o.item_name,
                             itemNumber = b.o.item_number,
@@ -252,7 +252,7 @@ namespace VendorNew.Services
                             batchNo = b.e.batch,
                             boxNumber = innerBoxes[i],
                             brand = b.e.brand,
-                            expireDate = ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            expireDate = b.e.expire_date == null ? ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)b.e.expire_date).ToString("yyyy-MM-dd"),
                             itemModel = b.e.item_model,
                             itemName = b.e.item_name,
                             itemNumber = b.e.item_number,
@@ -315,7 +315,7 @@ namespace VendorNew.Services
                             batchNo = b.o.batch,
                             boxNumber = innerBoxes[i],
                             brand = b.o.brand,
-                            expireDate = ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            expireDate = b.o.expire_date == null ? ((DateTime)b.o.produce_date).AddMonths((int)b.o.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)b.o.expire_date).ToString("yyyy-MM-dd"),
                             itemModel = b.o.item_model,
                             itemName = b.o.item_name,
                             itemNumber = b.o.item_number,
@@ -339,7 +339,7 @@ namespace VendorNew.Services
                             batchNo = b.e.batch,
                             boxNumber = innerBoxes[i],
                             brand = b.e.brand,
-                            expireDate = ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                            expireDate = b.e.expire_date == null ? ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)b.e.expire_date).ToString("yyyy-MM-dd"),
                             itemModel = b.e.item_model,
                             itemName = b.e.item_name,
                             itemNumber = b.e.item_number,
@@ -407,7 +407,7 @@ namespace VendorNew.Services
                         batchNo = b.e.batch,
                         boxNumber = innerBoxes[i],
                         brand = b.e.brand,
-                        expireDate = ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd"),
+                        expireDate = b.e.expire_date == null ? ((DateTime)b.e.produce_date).AddMonths((int)b.e.safe_period).AddDays(-1).ToString("yyyy-MM-dd") : ((DateTime)b.e.expire_date).ToString("yyyy-MM-dd"),
                         itemModel = b.e.item_model,
                         itemName = b.e.item_name,
                         itemNumber = b.e.item_number,
@@ -432,7 +432,7 @@ namespace VendorNew.Services
         }
 
 
-        public DayNumChartModel GetDayNumChartData()
+        public DayNumChartModel GetDayNumChartData(string currentAccount)
         {
             DateTime lastMonth = DateTime.Parse(DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd"));
             DateTime now = DateTime.Now;
@@ -441,17 +441,17 @@ namespace VendorNew.Services
             //送货申请
             var applys=(from d in db.DRBills
                    join e in db.DRBillDetails on d.bill_id equals e.bill_id
-                   where d.bill_date >= lastMonth && d.bill_date <= now
+                   where d.bill_date >= lastMonth && d.bill_date <= now && d.account==currentAccount
                    select d.bill_date).ToList();
 
             //外箱
-            var oBoxes = db.OuterBoxes.Where(o => o.create_date >= lastMonth && o.create_date <= now)
+            var oBoxes = db.OuterBoxes.Where(o => o.create_date >= lastMonth && o.create_date <= now && o.account==currentAccount)
                 .Select(o => new { createDay = o.create_date, packNum = o.pack_num }).ToList();
 
             //内箱
             var iBoxes = (from i in db.InneBoxes
                           join o in db.OuterBoxes on i.outer_box_id equals o.outer_box_id
-                          where o.create_date >= lastMonth && o.create_date <= now
+                          where o.create_date >= lastMonth && o.create_date <= now && o.account == currentAccount
                           select new
                           {
                               createDay = o.create_date,
@@ -464,6 +464,7 @@ namespace VendorNew.Services
                                where i.outer_box_id == null
                                && ie.create_date >= lastMonth
                                && ie.create_date <= now
+                               && ie.account==currentAccount
                                select new
                                {
                                    createDay = ie.create_date,
@@ -491,12 +492,12 @@ namespace VendorNew.Services
         /// 今天申请送货数量最多的前10个供应商
         /// </summary>
         /// <returns></returns>
-        public List<SupplierAndApplyNumModel> GetTopTenSupplierApplyNumToday()
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierApplyNumToday(string currentAccount)
         {
             DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
             var result = (from d in db.DRBills
                           join e in db.DRBillDetails on d.bill_id equals e.bill_id
-                          where d.bill_date >= today
+                          where d.bill_date >= today && d.account==currentAccount
                           group d by d.supplier_name into dg
                           orderby dg.Count() descending
                           select new SupplierAndApplyNumModel()
@@ -512,12 +513,12 @@ namespace VendorNew.Services
         /// 今天制作外箱数量最多的前10个供应商
         /// </summary>
         /// <returns></returns>
-        public List<SupplierAndApplyNumModel> GetTopTenSupplierOBoxNumToday()
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierOBoxNumToday(string currentAccount)
         {
             DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
             var result = (from o in db.OuterBoxes
                           join u in db.Users on o.user_name equals u.user_name
-                          where o.create_date >= today
+                          where o.create_date >= today && o.account== currentAccount
                           group o by u.real_name into dg
                           orderby dg.Sum(d => d.pack_num) descending
                           select new SupplierAndApplyNumModel()
@@ -533,7 +534,7 @@ namespace VendorNew.Services
         /// 今天制作内箱数量最多的前10个供应商，外箱流程
         /// </summary>
         /// <returns></returns>
-        public List<SupplierAndApplyNumModel> GetTopTenSupplierIBoxNumToday()
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierIBoxNumToday(string currentAccount)
         {
             DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
             var result = (from i in db.InneBoxes
@@ -543,6 +544,7 @@ namespace VendorNew.Services
                           from it in iet.DefaultIfEmpty()
                           where o.create_date >= today
                           && it == null
+                          && o.account==currentAccount
                           group i by u.real_name into ig
                           orderby ig.Sum(s => s.pack_num) descending
                           select new SupplierAndApplyNumModel()
@@ -557,13 +559,13 @@ namespace VendorNew.Services
         /// 今天制作内箱数量最多的前10个供应商，小标签流程
         /// </summary>
         /// <returns></returns>
-        public List<SupplierAndApplyNumModel> GetTopTenSupplierIBoxExtraNumToday()
+        public List<SupplierAndApplyNumModel> GetTopTenSupplierIBoxExtraNumToday(string currentAccount)
         {
             DateTime today = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
             var result = (from i in db.InneBoxes
                           join ie in db.InnerBoxesExtra on i.inner_box_id equals ie.inner_box_id
                           join u in db.Users on ie.user_name equals u.user_name
-                          where ie.create_date >= today
+                          where ie.create_date >= today && ie.account==currentAccount
                           group i by u.real_name into ig
                           orderby ig.Sum(s => s.pack_num) descending
                           select new SupplierAndApplyNumModel()

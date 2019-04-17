@@ -1,0 +1,129 @@
+﻿@{
+    Layout = null;
+}
+
+    <style type="text/css">
+        table{
+            font-size:9px;
+            border-top:1px solid #666;
+            border-right:1px solid #666;
+        }
+        td {
+            padding:0;
+            border-left:1px solid #666;
+            border-bottom:1px solid #666;
+            word-break:break-all;
+            overflow:hidden;
+            font-family:'宋体'
+        }
+        img {
+            margin:0 auto;
+        }
+
+    </style>
+
+<script src="@Url.Content("~/Scripts/jquery-1.12.4.min.js")"></script>
+<script src="@Url.Content("~/Scripts/JsBarcode.code128.min.js")"></script>
+<script type="text/javascript" src="@Url.Content("~/Scripts/qrcode.js")"></script>
+    <script type="text/javascript">        
+        $(function () {            
+            var qrcode = new QRCode(document.getElementById("q1"), {
+                text: $("#q1").attr("title"),
+                width: 96,
+                height: 96,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        })
+
+    </script>    
+<script>
+    $(function () {
+        //$("#bar").JsBarcode("CHDR181101002");
+        JsBarcode("#bar", "CHDR181101002", {            
+            width: 1,//设置条之间的宽度
+            margin: 4,
+            height: 32,//高度
+            text: "送货单号：CHDR181101002",
+            fontSize:12
+            //displayValue: false,//是否在条形码下方显示文字
+           
+        });
+    });
+</script>
+
+<img id="bar" />
+<div style="padding:6px;float:left;" class="wrapDiv">
+    <table style="width:350px;height:228px;border-spacing:0;" >        
+        <tr>
+            <td height="22" colspan="4">
+                <span style="margin-left:64px;font-size:16px;">信利光电股份有限公司</span>
+                <span style="margin-left:64px;font-size:14px;border:1px solid #666;padding:0 4px;">RoHS-B</span>
+            </td>
+        </tr>
+        <tr>
+            <td width="114" rowspan="6">
+                <div id="q1" title="CHDR181101002">
+
+                </div>
+            </td>
+            <td width="67">TRULY PO:</td>
+            <td colspan="2">MTAC1807401</td>
+        </tr>
+        <tr>
+            <td>编码No.:</td>
+            <td colspan="2">14.039.166661</td>
+        </tr>
+        <tr>
+            <td>数量QTY:</td>
+            <td colspan="2">120支</td>
+        </tr>
+        <tr>
+            <td>批次LOT:</td>
+            <td colspan="2">2018082401</td>
+        </tr>
+        <tr>
+            <td>材质:</td>
+            <td colspan="2"></td>
+        </tr>
+        <tr>
+            <td>贸易类型:</td>
+            <td>国内贸易</td>
+            <td>ID:GCK88240000</td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                名称Name:金刚石磨头
+            </td>
+            <td width="114">原产地: 中国</td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                型号Model: TFT KC0928 500#/1200#(G)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                生产日期:2018-08-24
+            </td>
+            <td colspan="2">有效期:2019-08-24</td>
+            <td>生产周期:</td>
+        </tr>
+        <tr>
+            <td>
+                品牌: 信利
+            </td>
+            <td colspan="2">毛重KG:</td>
+            <td>净重KG:</td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                存储条件:
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4" style="text-align:center;">
+                东莞市国钻实业有限公司
+            </td>
+        </tr>
+    </table>
+</div>

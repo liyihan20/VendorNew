@@ -1,0 +1,109 @@
+﻿
+<script>
+
+    $(function () {
+        $("#dg").datagrid({
+            fit: true,
+            rownumbers: true,
+            singleSelect: true,
+            url: "GetUpdateLog",
+            columns: [[
+                {
+                    field: 'update_date', title: '更新日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                { field: 'update_content', title: '更新内容', width: 800, align: 'center' }
+            ]],
+            toolbar: "#tb",
+            onDblClickRow: editLog
+        });
+
+    });
+
+    function doSearch(value) {
+        $('#dg').datagrid('load', {
+            searchValue: value
+        });
+    }
+
+    function addLog() {        
+        $("#dlg").dialog("open").dialog("setTitle", "新增日志");
+        $("#fm").form("reset");
+        $("input[name='id']").val("0");
+    }
+    function editLog() {
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $('#dlg').dialog('open').dialog('setTitle', '编辑日志');
+            $('#fm').form('load', row);
+            $('#update_date').datebox("setValue", toDateStr(row.update_date));
+        }
+    }
+    function saveLog() {
+        $.ajax({
+            type: 'post',
+            url: 'SaveUpdateLog',
+            data: $("#fm").serialize(),
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data.suc) {
+                    tip("保存成功");
+                    $('#dlg').dialog('close');
+                    $('#dg').datagrid('reload');
+                } else {
+                    tip(data.msg);                    
+                }
+            }
+        });
+    }
+    function removeLog() {
+        var row = $('#dg').datagrid('getCurrentRow');
+        if (row) {
+            $.messager.confirm('操作确认', '确定要删除此日志吗?', function (r) {
+                if (r) {
+                    $.post("RemoveUpdateLog", { LogId: row.id }, function (data) {
+                        if (data.suc) {
+                            tip("日志已删除");
+                            $('#dg').datagrid('reload');
+                        } else {
+                            tip(data.msg);
+                        }
+                    });
+                }
+            });            
+        }        
+    }
+
+</script>
+
+<table id="dg"></table>
+
+<div id="tb">
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="addLog()"><i class="fa fa-plus-circle"></i> 新增日志</a>
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="editLog()"><i class="fa fa-edit"></i> 编辑日志</a>
+    <a href="#" class="easyui-linkbutton" data-options="plain:true" onclick="removeLog()"><i class="fa fa-close"></i> 删除日志</a>
+    <input class="easyui-searchbox" data-options="prompt:'输入日志名称后按回车搜索',searcher:doSearch" style="width:240px">
+</div>
+
+<div id="dlg" class="easyui-dialog" style="width:460px;padding:10px 20px"
+     closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">日志信息</div>
+    <form id="fm" method="post">
+        <div class="fitem">
+            <label>更新日期:</label>
+            <input type="hidden" name="id" />
+            <input name="update_date" id="update_date" class="easyui-datebox" style="width:260px;" />
+        </div>
+        <div class="fitem">
+            <label>更新内容:</label>
+            <input name="update_content" class="easyui-textbox" data-options="multiline:true" style="height:80px;width:260px;" />
+        </div>
+    </form>
+</div>
+<div id="dlg-buttons">
+    <a href="#" class="easyui-linkbutton c1" onclick="saveLog()"><i class="fa fa-fw fa-check"></i> 保存</a>
+    <a href="#" class="easyui-linkbutton" onclick="javascript:$('#dlg').dialog('close')"><i class="fa fa-fw fa-close"></i> 取消</a>
+</div>

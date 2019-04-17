@@ -1,0 +1,317 @@
+﻿
+<script>
+    $(function () {
+        var _pageSize;
+
+        $("#dg_po").datagrid({
+            fit: true,
+            rownumbers: true,
+            checkOnSelect: true,
+            selectOnCheck: true,
+            pagination: true,
+            pageList: [20, 50, 100, 200, 500],
+            columns: [[
+                    { field: 'ck', checkbox: true },
+                    { field: 'poNo', title: '订单编号', width: 110 },
+                    { field: 'poEntryId', title: '分录号', width: 70, align: 'center' },
+                    { field: 'prNo', title: 'PR单号', width: 130 },
+                    { field: 'itemName', title: '物料名称', width: 120 },
+                    { field: 'itemModel', title: '规格型号', width: 220 },
+                    {
+                        field: 'orderQty', title: '订单数量', width: 90, align: 'right',
+                        formatter: function (value, row, index) {
+                            return toThousandValue(value);
+                        }
+                    },
+                    {
+                        field: 'realteQty', title: '入库数量 <a href="#" class="easyui-tooltip" title="在信利K3的入库数量总和（点击【查看入库记录】可查看详情）"><i class="fa fa-info-circle text-danger"></i></a>', width: 90, align: 'right',
+                        formatter: function (value, row, index) {
+                            return toThousandValue(value);
+                        }
+                    },
+                    {
+                        field: 'transitQty', title: '申请数量 <a href="#" class="easyui-tooltip" title="在此平台申请中的数量总和（不包括已入库的）"><i class="fa fa-info-circle text-danger"></i></a>', width: 90, align: 'right',
+                        formatter: function (value, row, index) {
+                            return toThousandValue(value);
+                        }
+                    },
+                    {
+                        field: 'leftQty', title: '可申请数量', width: 90, align: 'right',
+                        formatter: function (value, row, index) {
+                            return toThousandValue(value);
+                        }
+                    },
+                    { field: 'matOrderName', title: '订料员', width: 70 },
+                    { field: 'departmentName', title: '申购部门', width: 150 },
+                    { field: 'unitName', title: '单位', width: 60, align: 'center' },
+                    { field: 'itemNumber', title: '物料编码', width: 120 },
+                    { field: 'billType', title: '订单类型', width: 80 },
+                    { field: 'buyType', title: '采购方式', width: 80 },
+                    { field: 'supplierName', title: '供应商名称', width: 200 },
+                    {
+                        field: 'poDate', title: '订单日期', width: 100,
+                        formatter: function (value, row, index) {
+                            return toDateStr(value);
+                        }
+                    },
+                    { field: 'tradeTypeName', title: '贸易类型', width: 80 },
+                    { field: 'currencyName', title: '币别', width: 70 },
+                    { field: 'buyerName', title: '采购员', width: 80 }
+            ]],
+            toolbar: [{
+                id: 'add_btn',
+                text: '<i class="fa fa-plus-circle"></i> 新增申请单',
+                handler: function () {
+                    var checked = $("#dg_po").datagrid("getChecked");
+                    if (checked.length == 0) {
+                        tip("请先选择数据行");
+                        return;
+                    }
+                    var tradeTypeName = checked[0].tradeTypeName;
+                    var matOrderName = checked[0].matOrderName;
+                    var departmentName = checked[0].departmentName;
+                    var supplierName = checked[0].supplierName;
+                    if (matOrderName == "") {
+                        tip("没有关联订料员，请联系管理员");
+                        return;
+                    }
+                    for (var i = 1; i < checked.length; i++) {
+                        if (tradeTypeName != checked[i].tradeTypeName) {
+                            tip("同一张申请单，贸易类型必须一致");
+                            return;
+                        }
+                        if (matOrderName != checked[i].matOrderName) {
+                            tip("同一张申请单，订料员必须是同一人");
+                            return;
+                        }
+                        if (departmentName != checked[i].departmentName) {
+                            tip("同一张申请单，申购部门必须一致");
+                            return;
+                        }
+                        if (supplierName != checked[i].supplierName) {
+                            tip("同一张申请单，供应商必须一致");
+                            return;
+                        }
+                    }
+
+                    $.post("BeforeAddDRApply", { poJson: JSON.stringify(checked) }, function (data) {
+                        if (data.suc) {
+                            parent.addTab('<i class="fa fa-plus-circle"></i> 新增申请单', '@Url.Content("~/Delivery/AddDRApply?id=")' + data.extra);
+                        } else {
+                            tip(data.msg);
+                        }
+                    });
+
+
+                }
+            }, '-',
+            {
+                text: '<i class="fa fa-list"></i> 查看入库记录',
+                handler: function () {
+                    var checked = $("#dg_po").datagrid("getChecked");
+                    if (checked.length > 0) {
+                        if (checked.length > 1) {
+                            tip("只能选择一行再查看入库记录");
+                            return;
+                        }
+                        var r = checked[0];
+                        if (r.realteQty == 0) {
+                            tip("入库数量为0的没有入库记录");
+                            return;
+                        }
+                        $.messager.progress();
+                        $.post("GetPOInstockRecord", {
+                            billType: r.billType,
+                            poInterID: r.poId,
+                            poEntryID: r.poEntryId,
+                            contractEntryID: r.contractEntryId
+                        }, function (data) {
+                            if (!data.suc) {
+                                tip(data.msg);
+                            } else {
+                                $("#dlg_ck").dialog("open");
+                                $("#stockList").datagrid("loadData", data.rows);
+                                var totalQty = 0;
+                                for (var i = 0; i < data.rows.length; i++) {
+                                    totalQty += data.rows[i].inQty;
+                                }
+                                $("#stockList").datagrid("appendRow", {
+                                    entryId: "合计：",
+                                    inQty: totalQty
+                                });
+                            }
+                            $.messager.progress("close");
+                        });
+
+                    } else {
+                        tip("请先选择数据行");
+                    }
+                }
+            }, '-', {
+                text: '<i class="fa fa-fw fa-file-excel-o"></i> 导出excel报表',
+                handler: function () {
+                    tip("数据正在导出，请稍等......");
+                    var queryParams = {
+                        beginDate: $("#beginDate").datebox("getValue"),
+                        endDate: $("#endDate").datebox("getValue"),
+                        billType: $("#billType").combobox("getValue"),
+                        isFinished: $("#isFinished").combobox("getValue"),
+                        poNumbers: $("#poNumbers").textbox("getValue"),
+                        itemInfo: $("#itemInfo").textbox("getValue")
+                    };
+                    window.open("@Url.Content("~/Report/ExportPOData?queryJson=")" + encodeURIComponent(JSON.stringify(queryParams)));
+
+                }
+            }],
+            onBeforeLoad: function (data) {
+                if ('@ViewData["addDRPower"]' == '0') {
+                    $("#add_btn").hide(); //没有新增权限的用户，看不到这个按钮
+                }
+            },
+            onLoadSuccess: function (data) {
+                //加载成功后，再逐页读取在途数量
+                var currentPageRows = data.rows;
+
+                var interIdArr = [], entryIdArr = [], rowIndexArr = [];
+                for (var i = 0; i < currentPageRows.length; i++) {
+                    interIdArr.push(currentPageRows[i].poId);
+                    entryIdArr.push(currentPageRows[i].poEntryId);
+                    rowIndexArr[i] = $("#dg_po").datagrid("getRowIndex", currentPageRows[i]);
+                }
+                if (interIdArr.length == 0) return;
+                $.post("GetPOTransitQty", { interIds: interIdArr.join(","), entryIds: entryIdArr.join(",") }, function (result) {
+                    var transitQtyArr = result.split(",");
+                    for (var i = 0; i < currentPageRows.length; i++) {
+                        currentPageRows[i].transitQty = transitQtyArr[i];
+                        currentPageRows[i].leftQty = (parseFloat(currentPageRows[i].orderQty) - parseFloat(currentPageRows[i].realteQty) - parseFloat(transitQtyArr[i])).toFixed(4);
+
+                        $("#dg_po").datagrid("updateRow", {
+                            index: rowIndexArr[i],
+                            row:currentPageRows[i]
+                        });
+                        $("#dg_po").datagrid("refreshRow", rowIndexArr[i]);
+                    }
+                });
+            }
+        });
+
+        $("#search_btn").on("click", function () {
+            $("#dg_po").datagrid("loading");
+            $.ajax({
+                type: 'post',
+                url: 'GetPOs',
+                data: $("#fm").serialize(),
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.suc) {
+                        var rows = data.rows;
+
+                        var pager = $("#dg_po").datagrid("getPager");
+                        _pageSize = pager.pagination("options").pageSize;
+
+                        gridLoadDatas(rows.slice(0, _pageSize));
+
+                        //设置分页插件
+                        pager.pagination({
+                            total: rows.length,
+                            onSelectPage: function (pageNo, pageSize) {
+                                var start = (pageNo - 1) * pageSize;
+                                var end = start + pageSize;
+                                gridLoadDatas(rows.slice(start, end));
+                                pager.pagination('refresh', {
+                                    total: rows.length,
+                                    pageNumber: pageNo
+                                });
+                            },
+                            onChangePageSize:function(pageSize){
+                                gridLoadDatas(rows.slice(0, pageSize));
+                                pager.pagination('refresh', {
+                                    total: rows.length,
+                                    pageNumber: 1
+                                });
+                            }
+                        });
+                    } else {
+                        $("#dg_po").datagrid("loadData", []); //清空表格
+                        tip(data.msg);
+                    }
+                    $("#dg_po").datagrid("loaded");
+                }
+            });
+        });
+
+        $("#stockList").datagrid({
+            fit: true,
+            fitColumns: true,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[
+                        { field: 'inDate', title: '入库单日期', width: 120, align: 'center' },
+    					{ field: 'billNo', title: '入库单编号', width: 160, align: 'center' },
+    					{ field: 'entryId', title: '入库单行号', width: 70, align: 'center' },
+                        {
+                            field: 'inQty', title: '入库数量  <a href="#" class="easyui-tooltip" title="正值表示入库数量，负值表示退货数量"><i class="fa fa-info-circle text-danger"></i></a>', width: 80, align: 'center',
+                            formatter: function (value, row, index) {
+                                return toThousandValue(value);
+                            }
+                        },
+                        { field: 'unitName', title: '单位', width: 60, align: 'center' }
+            ]]
+        });
+
+        function gridLoadDatas(datas) {
+            $("#dg_po").datagrid("loadData", datas);
+        }
+
+    })
+</script>
+
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',title:'查询选项'" style="height:120px;padding:8px;">
+        <form id="fm" method="post" style="padding:0;margin:0;">
+            <div style="float:left;width:160px;margin-right:12px;">
+                订单类型：
+                <select class="easyui-combobox" name="billType" id="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
+                    <option value="普通采购">普通采购</option>
+                    @*<option value="委外PO">委外PO</option>
+                    <option value="VMI采购">VMI订单</option>
+                    <option value="VMI合同">VMI合同</option>*@
+                </select>
+            </div>
+            <div style="float:left;width:520px;margin-right:12px;">
+                订单编号：
+                <input type="text" class="easyui-textbox" name="poNumbers" id="poNumbers" data-options="prompt:'支持模糊搜索，多个单号可用空格隔开'" style="width:422px;" />
+                <a href="#" class="easyui-tooltip" title="例如需要搜索3张PO，可以这样输入：#PO1 #PO2 #PO3"><i class="fa fa-info-circle text-danger"></i> </a>
+            </div>
+            <div style="clear:both;margin-top:8px;"></div>
+            <div style="float:left;width:160px;margin-right:12px;">
+                关闭状态：
+                <select class="easyui-combobox" name="isFinished" id="isFinished" data-options="panelHeight:'auto',editable:false" style="width:90px;">
+                    <option value="false">未关闭</option>
+                    <option value="true">已关闭</option>
+                </select>
+            </div>
+            <div style="float:left;width:290px;margin-right:12px;">
+                订单日期：
+                <input type="text" class="easyui-datebox" name="beginDate" id="beginDate" data-options="prompt:'开始日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
+                ~
+                <input type="text" class="easyui-datebox" name="endDate" id="endDate" data-options="prompt:'结束日期',editable:false" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+            <div style="float:left;width:186px;margin-right:12px;">
+                 物料信息：
+                <input type="text" class="easyui-textbox" name="itemInfo" id="itemInfo" data-options="prompt:'物料名称或型号'" style="width:120px;" />
+            </div>
+            <div style="float:left;width:96px;">
+                <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>
+            </div>
+        </form>
+    </div>
+    <div data-options="region:'center'">
+        <table id="dg_po"></table>
+    </div>
+</div>
+
+<div id="dlg_ck" class="easyui-dialog" style="width: 680px; height:400px;" closed="true" modal="true" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 查看入库记录">
+    <table id="stockList"></table>
+</div>

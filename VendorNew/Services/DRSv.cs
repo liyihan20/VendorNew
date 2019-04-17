@@ -148,7 +148,6 @@ namespace VendorNew.Services
                         throw new Exception(string.Format("外箱箱号【{0}】的总数量【{1:0.####}】不等于内箱总数量【{2:0.####}】", box.box_number, box.every_qty * box.pack_num, innerBoxQty));
                     }
                 }
-
             }
 
         }
@@ -321,7 +320,7 @@ namespace VendorNew.Services
                          join e in db.DRBillDetails on d.bill_id equals e.bill_id
                          where d.send_date >= p.beginDate
                          && d.send_date <= p.endDate
-                         && d.bill_no.Contains(p.billNo)
+                         && (d.bill_no.Contains(p.billNo) || d.supplier_name.Contains(p.billNo))
                          && (p.pStatus == "所有" || d.p_status == p.pStatus)
                          && d.account == p.account
                          && (p.billType == "所有" || d.bill_type == p.billType)

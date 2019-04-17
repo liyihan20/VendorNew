@@ -1,0 +1,1017 @@
+﻿
+<script>
+    var firstSelectedPO; //第一个选择的po，在po combogrid
+    var currentSelectedBox; //当前选择外箱
+    $(function () {
+        $("#dg_box").treegrid({
+            fit: true,
+            singleSelect: false,
+            ctrlSelect:true,
+            rownumbers: true,
+            pagination: true,
+            idField: "box_number",
+            treeField: "box_number",
+            pageSize: 20,
+            columns: [[
+                { field: 'box_number', title: '箱号', width: 200, halign: 'center' },
+                { field: 'has_used', title: '使用状态', width: 80, align: 'center' },
+                { field: 'every_qty', title: '每件数量', width: 100, align: 'center' },
+                { field: 'unit_name', title: '单位', width: 70, align: 'center' },
+                { field: 'pack_num', title: '件数', width: 70, align: 'center' },
+                { field: 'po_info', title: '关联订单', width: 280, align: 'center' },
+                { field: 'bill_no',title:'关联申请单',width:120,align:'center' },
+                { field: 'backup_number', title: '备件数量', width: 100, align: 'center' },
+                { field: 'item_name', title: '物料名称', width: 140, align: 'center' },
+                { field: 'item_model', title: '规格型号', width: 200, align: 'center' },
+                { field: 'item_number', title: '物料编码', width: 120, align: 'center' },
+                { field: 'made_in', title: '原产地', width: 100, align: 'center' },
+                { field: 'trade_type_name', title: '贸易类型', width: 100, align: 'center' },
+                { field: 'brand', title: '品牌', width: 100, align: 'center' },
+                { field: 'batch', title: '批次号', width: 100, align: 'center' },
+                { field: 'rohs', title: 'ROHS', width: 120, align: 'center' },
+                {
+                    field: 'produce_date', title: '生产日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                { field: 'safe_period', title: '保质期(月）', width: 100, align: 'center' },
+                {
+                    field: 'expire_date', title: '有效期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                {
+                    field: 'package_date', title: '包装日期', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                { field: 'produce_circle', title: '生产周期', width: 100, align: 'center' },
+                { field: 'every_net_weight', title: '净重(KG)', width: 80, align: 'center' },
+                { field: 'every_gross_weight', title: '毛重(KG)', width: 80, align: 'center' },
+                { field: 'size', title: '尺寸', width: 100, align: 'center' },
+                { field: 'made_by', title: '材质', width: 120, align: 'center' },
+                { field: 'keep_condition', title: '储存条件', width: 160, align: 'center' },
+                {
+                    field: 'create_date', title: '创建日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value,true);
+                    }
+                },
+                { field: 'user_name', title: '供应商代码', width: 100, align: 'center' }
+            ]],
+            loadFilter: function (data, parentId) {
+                if (!data.suc) {
+                    tip("数据读取失败：" + data.msg);
+                    return { total: 0, rows: [] };
+                }
+                if (!parentId) {
+                    //加载外箱信息和总数量
+                    var result = {};
+                    result.total = data.total;
+                    result.rows = [];
+
+                    for (var i = 0; i < data.box.length; i++) {
+                        var b = data.box[i];
+                        var ps = _.filter(data.po, function (v) { return v.out_box_id == b.outer_box_id });
+
+                        b.state = (_.filter(data.boxIdHasInner, function (v) { return v.interId == b.outer_box_id })).length > 0 ? "closed" : "open";
+                        b.iconCls = "icon-obox";
+                        b.has_used = b.bill_id == null ? "未使用" : "已使用";
+                        if (b.bill_id != null) {
+                            b.bill_no = (_.filter(data.billNoInfo, function (v) { return v.id == b.bill_id }))[0].text;
+                        }
+                        var poInfo = "";
+                        for (var j = 0; j < ps.length; j++) {
+                            var p = ps[j];
+                            poInfo += p.po_number + "[" + p.po_entry_id + "]:" + p.send_num+";";
+                        }
+                        b.po_info = poInfo;
+
+                        result.rows.push(b);
+                    }
+                    return result;
+                } else {
+                    //加载内箱信息
+                    var result = [];
+                    for (var i = 0; i < data.box.length; i++) {
+                        var b = data.box[i];
+                        b.state = "open";
+                        b.iconCls = "icon-ibox";
+                        b.parentId = parentId;
+                        b.unit_name = $("#dg_box").treegrid("find", parentId).unit_name;
+
+                        result.push(b);
+                    }
+                    return result;
+                }
+            },
+            toolbar: [{
+                text: '<i class="fa fa-fw fa-plus-square"></i> 新增外箱',
+                handler: function () {
+                    $("#dlg_outer_box").dialog("open");
+                    $('#select_box_po').combogrid('grid').datagrid("loadData", []);                    
+                    $("#fm_outer_box").form("reset");
+                    $("#dg_select_box_po").datagrid("loadData", []);
+                    $("#dg_select_inner_box").datagrid("clearChecked"); //小标签
+                    $("#dg_select_inner_box").datagrid("loadData", []); //小标签
+                    $("#panel_select_inner_box_wrap").hide(); //小标签
+                    firstSelectedPO = undefined;
+                }
+            }, "-",
+            {
+                text: '<i class="fa fa-fw fa-plus-circle"></i> 新增内箱',
+                handler: function () {
+                    var selected = $("#dg_box").treegrid("getSelected");
+                    if (!selected || selected.inner_box_id) {
+                        tip("请先选择一行外箱再添加内箱");
+                        return;
+                    }
+                    if (selected.has_used == "已使用") {
+                        tip("已使用的外箱不能再添加内箱");
+                        return;
+                    }
+                    $("#dlg_inner_box").dialog("open");
+                    $("#fm_inner_box").form("reset");
+                    $("#fm_inner_box input[name='outer_box_id']").val(selected.outer_box_id);
+                    $("#fm_inner_box #outer_box_number").textbox("setValue", selected.box_number);
+                    $("#fm_inner_box #outer_box_info").html("当前外箱件数是：" + selected.pack_num + "；每件数量是：" + selected.every_qty + "；总数量是：" + selected.every_qty * selected.pack_num);
+                    currentSelectedBox = selected;
+                }
+            }, "-",
+            {
+                text: '<i class="fa fa-fw fa-window-close"></i> 删除外/内箱',
+                handler: function () {
+                    var selected = $("#dg_box").treegrid("getSelected");
+                    if (!selected) {
+                        tip("请先选择一行箱子再删除");
+                        return;
+                    }
+
+                    if (selected.inner_box_id) {
+                        //删除内箱
+                        var pNode = $("#dg_box").treegrid("getParent", selected.box_number);
+                        if (pNode.has_used == "已使用") {
+                            tip("已使用的内箱不能删除");
+                            return;
+                        }
+
+                        $.messager.confirm('操作确认', '确定要删除选中内箱吗（此操作不可恢复）？', function (r) {
+                            if (r) {
+                                $.post("@Url.Content("~/Delivery/RemoveInnerBox")", { innerBoxId: selected.inner_box_id }, function (data) {
+                                    if (data.suc) {
+                                        tip("此内箱已删除");
+                                        $("#dg_box").treegrid("remove", selected.box_number);
+                                    } else {
+                                        tip(data.msg);
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        //删除外箱
+                        if (selected.has_used == "已使用") {
+                            tip("已使用的外箱不能删除");
+                            return;
+                        }
+                        $.messager.confirm('操作确认', '确定要删除选中外箱吗（包含所有内箱，此操作不可恢复）？', function (r) {
+                            if (r) {
+                                $.post("@Url.Content("~/Delivery/RemoveOuterBox")", { outerBoxId: selected.outer_box_id }, function (data) {
+                                    if (data.suc) {
+                                        tip("此外箱已删除");
+                                        $("#dg_box").treegrid("remove", selected.box_number);
+                                    } else {
+                                        tip(data.msg);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+            }, '-', {
+                text: '<i class="fa fa-fw fa-search"></i> 查看关联申请单',
+                handler: function () {
+                    var selected = $("#dg_box").treegrid("getSelected");
+                    if (!selected || selected.inner_box_id) {
+                        tip("请先选择一行外箱再查看");
+                        return;
+                    }
+                    if (!selected.bill_id) {
+                        tip("此箱子没有关联申请单，状态是未使用");
+                        return;
+                    }
+                    parent.addTab("<i class='fa fa-fw fa-search'></i>" + selected.bill_no, "@Url.Content("~/Delivery/CheckDRApply?id=")" + selected.bill_id);
+                }
+            }, '-', {
+                text: '<i class="fa fa-fw fa-qrcode"></i> 打印外箱标签 <a href="#" class="easyui-tooltip" title="结合Ctrl和Shift按键可多选外箱，然后再批量打印"><i class="fa fa-info-circle text-danger"></i></a>',
+                handler: function () {
+                    var boxes = $("#dg_box").treegrid("getSelections");
+                    if (boxes.length == 0) {
+                        tip("请先选择需要打印的外箱");
+                        return;
+                    }
+                    var boxIdArr = [];
+                    for (var i = 0; i < boxes.length; i++) {
+                        if (!boxes[i].inner_box_id) {
+                            boxIdArr.push(boxes[i].outer_box_id);
+                        }
+                    }
+                    if (boxIdArr.length == 0) {
+                        tip("请至少选择一行外箱再打印");
+                        return;
+                    }
+                    var boxIds = boxIdArr.join(",");
+                    window.open("@Url.Content("~/Report/PrintSelectedOuterBox?boxIds=")" + boxIds);
+                }
+            }, '-', {
+                text: '<i class="fa fa-fw fa-qrcode"></i> 打印内箱标签 <a href="#" class="easyui-tooltip" title="不必选择内箱，结合Ctrl和Shift按键可多选外箱，然后再批量打印所选外箱里面的所有内箱"><i class="fa fa-info-circle text-danger"></i></a>',
+                handler: function () {
+                    var boxes = $("#dg_box").treegrid("getSelections");
+                    if (boxes.length == 0) {
+                        tip("请先选择需要打印内箱的外箱");
+                        return;
+                    }
+                    var boxIdArr = [];
+                    for (var i = 0; i < boxes.length; i++) {
+                        if (!boxes[i].inner_box_id) {
+                            boxIdArr.push(boxes[i].outer_box_id);
+                        }
+                    }                    
+                    if (boxIdArr.length == 0) {
+                        tip("请至少选择一行外箱再打印");
+                        return;
+                    }                    
+                    var boxIds = boxIdArr.join(",");
+                    window.open("@Url.Content("~/Report/PrintSelectedInnerBox?boxIds=")" + boxIds);
+                }
+            }]
+        });
+
+
+        $("#search_btn").on("click", function () {
+            $("#dg_box").treegrid({
+                url: 'GetBoxNodes',
+                queryParams: {
+                    beginDate: $("#beginDate").datebox("getValue"),
+                    endDate: $("#endDate").datebox("getValue"),
+                    hasUsed: $("#hasUsed").combobox("getValue"),
+                    billNo: $("#billNo").textbox("getValue"),
+                    poNo: $("#poNo").textbox("getValue"),
+                    itemInfo: $("#itemInfo").textbox("getValue"),
+                    boxNumber: $("#boxNumber").textbox("getValue")
+                }
+            });
+        });
+
+
+    });
+</script>
+
+@*关联小标签的script 2018-12-12*@
+<script>
+    $(function () {
+        $("#dg_select_inner_box").datagrid({
+            fit: true,
+            rownumbers: true,
+            checkOnSelect: true,
+            selectOnCheck: true,
+            showFooter: true,
+            idField: "inner_box_id",
+            columns: [[
+                { field: 'ck', checkbox: true },
+                { field: 'box_number', title: '内箱箱号', width: 130, align: 'center' },
+                {
+                    field: 'every_qty', title: '每件数量', width: 90, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toThousandValue(value);
+                    }
+                },                
+                { field: 'pack_num', title: '件数', width: 80, align: 'center' },
+                { field: 'batch', title: '批次号', width: 140, align: 'center' },
+                {
+                    field: 'produce_date', title: '生产日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                },
+                {
+                    field: 'package_date', title: '包装日期', width: 120, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toDateStr(value);
+                    }
+                }
+            ]],
+            onCheck: function (index, row) {
+                $("#fm_outer_box").form("load", row);
+                $("#fm_outer_box #package_date").datebox("setValue", toDateStr(row.package_date));
+                $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(row.produce_date));
+                $("#fm_outer_box #expire_date").datebox("setValue", toDateStr(row.expire_date));
+                $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                updateInnerBoxDgFooter();
+            },
+            onUncheck: function (index, row) {
+                updateInnerBoxDgFooter();
+            },
+            onCheckAll: function (rows) {
+                updateInnerBoxDgFooter();
+            },
+            onUncheckAll: function (rows) {
+                updateInnerBoxDgFooter();
+            }
+        });
+
+    });
+
+    function updateInnerBoxDgFooter() {
+        var rows = $("#dg_select_inner_box").datagrid("getChecked");
+
+        var totalQty = 0, totalPackNum = 0;
+        for (var i = 0; i < rows.length; i++) {
+            totalQty += parseFloat(rows[i].every_qty * rows[i].pack_num);
+            totalPackNum += parseFloat(rows[i].pack_num);
+        }
+
+        $('#dg_select_inner_box').datagrid('reloadFooter', [
+	        { box_number: "合计:", every_qty: totalQty,pack_num:totalPackNum }
+        ]);
+    }
+
+</script>
+
+<script>    
+    $(function () {
+        $("#dg_select_box_po").datagrid({
+            fit: true,
+            rownumbers: true,
+            singleSelect: true,
+            idField: "id_field",
+            columns: [[
+                { field: 'po_number', title: '订单编号', width: 120, align: 'center' },
+                { field: 'po_entry_id', title: '分录号', width: 70, align: 'center' },
+                {
+                    field: 'can_make_box_qty', title: '可做外箱数量', width: 100, align: 'center',
+                    formatter: function (value, row, index) {
+                        return toThousandValue(value);
+                    }
+                },
+                {
+                    field: 'send_num', title: '每件数量 <a href="#" class="easyui-tooltip" title="表示每个箱子中此PO行物料的数量"><i class="fa fa-info-circle text-danger"></i></a>',
+                    width: 100, align: 'center', editor: { type: 'numberbox', options: { precision: NUMBER_PRECISION } },
+                    formatter: function (value, row, index) {
+                        if (!value) return "";
+                        var v = parseFloat(value);
+                        if (v < 0) {
+                            v = 0;
+                            row.send_num = 0;
+                        }
+                        if (v > row.send_qty) {
+                            v = row.send_qty;
+                            row.send_num = row.send_qty;
+                        }
+                        return toThousandValue(v);
+                    }
+                },
+                { field: 'item_name', title: '物料名称', width: 120, align: 'center' },
+                { field: 'item_model', title: '规格型号', width: 220, align: 'center' }
+            ]],
+            toolbar: [{
+                text: '<i class="fa fa-fw fa-remove"></i> 删除行',
+                handler: function () {
+                    var removedRow = $('#dg_select_box_po').datagrid('getCurrentRow');
+                    if (!removedRow) {
+                        tip("请先选择需要删除的行");
+                        return;
+                    }
+                    var rowIndex = $('#dg_select_box_po').datagrid('getRowIndex', removedRow);
+                    $('#dg_select_box_po').datagrid('deleteRow', rowIndex);
+                    
+                }
+            }],
+            onClickRow: onClickBoxPoRow
+        });
+
+        //确认选择po按钮单击事件
+        $("#btn_select_box_po").on("click", function () {
+            var selectedPo = $('#select_box_po').combogrid('grid').datagrid('getCurrentRow');
+            var formHasFilled = false; //表单是否已被填充
+
+            if (!selectedPo) return;
+
+            if (selectedPo.can_make_box_qty <= 0) {
+                tip("此PO可做外箱数量小于0，不能选择");
+                return;
+            }
+
+            if ($('#dg_select_box_po').datagrid('getRows').length == 0) {
+                //如果关联订单列表没有数据行，即直接插入行，并且将规格型号等信息保存
+                $("input[name='item_number']").val(selectedPo.item_number);
+                $("input[name='item_name']").val(selectedPo.item_name);
+                $("input[name='item_model']").val(selectedPo.item_model);
+                $("input[name='unit_name']").val(selectedPo.unit_name);
+                $("input[name='unit_number']").val(selectedPo.unit_number);
+                $("input[name='trade_type_name']").val(selectedPo.trade_type_name);
+                $("input[name='user_name']").val(selectedPo.supplier_number);
+                $('#dg_select_box_po').datagrid('appendRow', selectedPo);
+                firstSelectedPO = selectedPo;
+
+                //查看是否有未关联小标签 2018-12-12
+                $.post("GetNoRelatedInnerBoxes", { itemNumber: selectedPo.item_number, tradeTypeName: selectedPo.trade_type_name }, function (data) {
+                    if (data.suc) {
+                        var boxInfo = data.boxInfo;
+                        if (boxInfo.length > 0) {
+                            $("#panel_select_inner_box_wrap").show();
+                            $("#dg_select_inner_box").datagrid("loadData", boxInfo);
+                            //延迟到勾选时候再加载信息到表单
+                            //$("#fm_outer_box").form("load", boxInfo[0]);
+                            //$("#fm_outer_box #package_date").datebox("setValue", toDateStr(boxInfo[0].package_date));
+                            //$("#fm_outer_box #produce_date").datebox("setValue", toDateStr(boxInfo[0].produce_date));
+                            //$("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                            formHasFilled = true;
+                        }
+                    } else {
+                        tip(data.msg);
+                    }
+                });
+
+            } else {
+                var existedIndex = $("#dg_select_box_po").datagrid('getRowIndex', selectedPo);
+                if (existedIndex < 0) {
+                    if (selectedPo.item_number != firstSelectedPO.item_number) {
+                        tip("只有相同型号的物料才能放在同一外箱里面");
+                        return;
+                    }
+                    if (selectedPo.department_name != firstSelectedPO.department_name) {
+                        tip("只有同一申购部门的物料才能放在同一外箱里面");
+                        return;
+                    }
+                    if (selectedPo.mat_order_name != firstSelectedPO.mat_order_name) {
+                        tip("只有订料员相同的PO行才能放在同一外箱里面");
+                        return;
+                    }
+                    if (selectedPo.trade_type_name != firstSelectedPO.trade_type_name) {
+                        tip("只有贸易类型相同的PO才能放在同一外箱里面");
+                        return;
+                    }
+                    if (selectedPo.supplier_name != firstSelectedPO.supplier_name) {
+                        tip("只有供应商相同的PO才能放在同一外箱里面");
+                        return;
+                    }
+                    if (selectedPo.bill_type != firstSelectedPO.bill_type) {
+                        tip("只有订单类型相同的PO才能放在同一外箱里面");
+                        return;
+                    }
+                    $('#dg_select_box_po').datagrid('appendRow', selectedPo);
+                } else {
+                    $('#dg_select_box_po').datagrid('scrollTo', existedIndex);
+                    $('#dg_select_box_po').datagrid('highlightRow', existedIndex);
+                    tip("此订单行[" + selectedPo.po_number + ":" + selectedPo.po_entry_id + "]已存在于列表中");
+                    return;
+                }
+            }
+
+            //如果已做了同型号的箱子，将箱子信息带过来
+            if (!formHasFilled) {
+                $.post("GetBoxBySupplierAndItem", { supplierNumber: selectedPo.supplier_number, itemNumber: selectedPo.item_number }, function (data) {
+                    if (data.suc) {
+                        $("#fm_outer_box").form("load", data.boxInfo);
+                        $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
+                        $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
+                        $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+                        $("#fm_outer_box #package_date").datebox("setValue", toDateStr(data.boxInfo.package_date));
+                        $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(data.boxInfo.produce_date));
+                        $("#fm_outer_box #expire_date").datebox("setValue", toDateStr(data.boxInfo.expire_date));
+                    }
+                });
+            }
+            
+        });
+
+        $("#dlg_outer_box").on("click", function () {
+            endEditingBoxPo();
+        });
+
+        //保质期有改变，自动计算有效期,200毫秒时间给平台从后台带数据插入到有效期。
+        $("#safe_period").numberbox({
+            onChange: function (newValue, oldValue) {
+                setTimeout(function () {
+                    var expireDate = $("#expire_date").datebox("getValue");
+                    var produceDate = $("#produce_date").datebox("getValue");
+                    expireDateCal(produceDate, newValue,expireDate, function (result) {
+                        $("#expire_date").datebox("setValue", result);
+                    });
+                    
+                }, 200);
+            }
+        });
+        $("#produce_date").datebox({
+            onSelect: function (date) {
+                setTimeout(function () {
+                    var expireDate = $("#expire_date").datebox("getValue");
+                    var months = $("#safe_period").numberbox("getValue");
+                    var produceDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+                    expireDateCal(produceDate, months, expireDate, function (result) {
+                        $("#expire_date").datebox("setValue", result);
+                    });
+
+                }, 200);
+            }
+        });
+
+
+        //保存外箱
+        $("#btn_save_outer_box").on("click", function () {
+            if (!endEditingBoxPo()) return;
+            if (!$("#fm_outer_box").form("validate")) return;
+            var boxPoRows = $("#dg_select_box_po").datagrid("getRows");            
+            if (boxPoRows.length == 0) {
+                tip("关联订单信息不能为空，请先选择订单行");
+                return;
+            }
+            var packNum = $("#pack_num").numberbox("getValue");
+            var totalPoNums = 0;
+            //以下规则取消，因为送货汕尾的不需要导入包装信息到k3，所以箱子关联的PO多做也没关系
+            //if (packNum > 1 && boxPoRows.length > 1) {
+            //    tip("合并订单送货的，箱子数量必须是1件");
+            //    return;
+            //}
+            
+            //if (firstSelectedPO.trade_type_name != '国内贸易') {
+            //    var size = $("#fm_outer_box #size").textbox("getValue");
+            //    var netWeight = $("#fm_outer_box #every_net_weight").numberbox("getValue");
+            //    var grossWeight = $("#fm_outer_box #every_gross_weight").numberbox("getValue");
+
+            //    if (!size) {
+            //        tip("非国内贸易的申请，必须填写【尺寸】");
+            //        return;
+            //    }
+            //    if (!netWeight) {
+            //        tip("非国内贸易的申请，必须填写【净重】");
+            //        return;
+            //    }
+            //    if (!grossWeight) {
+            //        tip("非国内贸易的申请，必须填写【毛重】");
+            //        return;
+            //    }
+            //}
+            for (var i = 0; i < boxPoRows.length; i++) {
+                if (!boxPoRows[i].send_num || parseFloat(boxPoRows[i].send_num) == 0) {
+                    tip("订单号[" + boxPoRows[i].po_number + "]分录号[" + boxPoRows[i].po_entry_id + "]的每件数量必须大于0");
+                    return;
+                }
+                if (parseFloat(boxPoRows[i].send_num) * packNum > parseFloat(boxPoRows[i].can_make_box_qty)) {
+                    tip("订单号[" + boxPoRows[i].po_number + "]分录号[" + boxPoRows[i].po_entry_id + "]的每件数量*箱子数量不能大于可做外箱数量");
+                    return;
+                }
+                totalPoNums += parseFloat(boxPoRows[i].send_num);
+            }
+
+            var brand = $("#brand").textbox("getValue");
+            if (countCharNum(brand) > 8) {
+                tip("品牌的长度限定为8个字节，即最多可输入4个中文或者8个英文，请精简");
+                return;
+            }
+
+            var selectedInnerboxes = [];
+            var checkedInnerBoxRow = $("#dg_select_inner_box").datagrid("getChecked");
+            var totalInnerBoxesQty = 0;
+
+            for (var i = 0; i < checkedInnerBoxRow.length; i++) {
+                selectedInnerboxes.push(checkedInnerBoxRow[i].inner_box_id);
+                totalInnerBoxesQty += parseFloat(checkedInnerBoxRow[i].every_qty * checkedInnerBoxRow[i].pack_num);
+            }
+            if (totalInnerBoxesQty > 0) {
+                if ($("#pack_num").numberbox("getValue") > 1) {
+                    tip("如果选择了未关联的小标签，外箱制作件数只能是1件，不能批量新增外箱");
+                    return;
+                }                
+                if (Math.abs(totalInnerBoxesQty - totalPoNums) > 0.0001) {
+                    tip("所选择的小标签总数量[" + totalInnerBoxesQty + "]必须等于关联订单的每件数量之和[" + totalPoNums + "]");
+                    return;
+                }
+            }
+
+            $.ajax({
+                type: 'post',
+                url: '@Url.Content("~/Delivery/SaveOuterBoxes")',
+                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows).replace(/\&/g, "%26") + "&innerBoxIds=" + selectedInnerboxes.join(","),
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.suc) {
+                        tip("外箱保存成功");
+                        $('#dlg_outer_box').dialog('close');
+                        $("#dg_box").treegrid("reload");
+                    } else {
+                        tip(data.msg);
+                    }
+                }
+            });
+
+        });
+
+    });
+
+    //保存内箱
+    function saveInnerBox() {
+        if (!$("#fm_inner_box").form("validate")) return;
+
+        var outerQty = currentSelectedBox.every_qty * currentSelectedBox.pack_num; //当前外箱总数量 
+        var innerPackNum = parseInt($("#fm_inner_box #pack_num").numberbox("getValue"));
+        var innerEveryQty = parseFloat($("#fm_inner_box #every_qty").numberbox("getValue"));
+
+        if (innerEveryQty > currentSelectedBox.every_qty) {
+            tip("内箱每件数量不能大于外箱每件数量");
+            return;
+        }
+
+        if (innerPackNum % currentSelectedBox.pack_num != 0) {
+            tip("内箱件数必须是外箱件数的整数倍，否则不能被平均分摊到每个外箱中");
+            return;
+        }
+
+        if (innerEveryQty * innerPackNum - outerQty > 0.0001) {
+            tip("内箱每件数量*内箱件数不能大于外箱总数量");
+            return;
+        }
+
+        $.ajax({
+            type: 'post',
+            url: '@Url.Content("~/Delivery/SaveInnerBox")',
+            data: $("#fm_inner_box").serialize(),
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data.suc) {
+                    $('#dlg_inner_box').dialog('close');
+                    $("#dg_box").treegrid("reload");
+                }
+                tip(data.msg);
+            }
+        });
+    }
+
+    var editBoxPoIndex = undefined;
+    function endEditingBoxPo() {
+        if (editBoxPoIndex == undefined) { return true; }
+        if ($('#dg_select_box_po').datagrid('validateRow', editBoxPoIndex)) {
+            $('#dg_select_box_po').datagrid('endEdit', editBoxPoIndex);
+            editBoxPoIndex = undefined;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function onClickBoxPoRow(index) {
+        if (editBoxPoIndex != index) {
+            if (endEditingBoxPo()) {
+                $('#dg_select_box_po').datagrid('selectRow', index)
+                        .datagrid('beginEdit', index);
+                editBoxPoIndex = index;
+            } else {
+                $('#dg_select_box_po').datagrid('selectRow', editBoxPoIndex);
+            }
+        }
+        preventBubble();
+    }
+
+    function boxPOEnter(e) {
+        //搜索PO
+        //var self = this;
+        //var queryValue = $(self).combogrid("getText");
+        //if (queryValue == "") return;
+
+        //$(self).combogrid('grid').datagrid({
+        //    url: 'GetPO4Box',
+        //    queryParams: {
+        //        billType: $("#billType").combobox("getValue"),
+        //        searchValue: $.trim(queryValue)
+        //    },
+        //    onLoadSuccess: function (data) {
+        //        $(self).combogrid("setText", queryValue);
+        //    }
+        //});
+        debounceQuery($("#select_box_po").combogrid("getText"));
+                
+    }
+    function boxPOQuery(q, e) {        
+        //debounceQuery(q);
+    }
+
+    var debounceQuery = _.debounce(function (q) {
+        loadBoxPOData(q);
+    }, 200, { leading: true, trailing: false });
+
+    function loadBoxPOData(q) {
+        q = $.trim(q);
+        if (q == "") return;
+        
+        $("#select_box_po").combogrid('grid').datagrid({
+            url: 'GetPO4Box',
+            queryParams: {
+                billType: $("#billType").combobox("getValue"),
+                searchValue: q
+            },
+            onLoadSuccess: function (data) {
+                $("#select_box_po").combogrid("setText", q);
+            }
+        });
+    }
+    
+
+</script>
+
+<script>
+    //阻止冒泡事件
+    function preventBubble() {
+        //if (navigator.userAgent.indexOf("Firefox") > 0) {
+        //    var $E = function () { var c = $E.caller; while (c.caller) c = c.caller; return c.arguments[0] };
+        //    __defineGetter__("event", $E);
+        //}
+        //if (window.event) {
+        //    event.cancelBubble = true;
+        //} else if (evt) {
+        //    event.stopPropagation();
+        //}
+        cancelBubble();
+    }
+
+    function getEvent() {
+        if (window.event) { return window.event; }
+        var func = getEvent.caller;
+        while (func != null) {
+            var arg0 = func.arguments[0];
+            if (arg0) {
+                if ((arg0.constructor == Event || arg0.constructor == MouseEvent
+                    || arg0.constructor == KeyboardEvent)
+                    || (typeof (arg0) == "object" && arg0.preventDefault
+                    && arg0.stopPropagation)) {
+                    return arg0;
+                }
+            }
+            func = func.caller;
+        }
+        return null;
+    }
+    //阻止冒泡
+    function cancelBubble() {
+        var e = getEvent();
+        if (window.event) {
+            e.cancelBubble = true;//阻止冒泡
+        } else if (e.preventDefault) {
+            e.stopPropagation();//阻止冒泡
+        }
+    }
+
+    function countCharNum(str) {
+        return str.replace(/[^\u0000-\u00ff]/g, "aa").length;
+    }
+
+    $(function () {
+        $('.points-4').numberbox({ precision: NUMBER_PRECISION });
+    });
+
+</script>
+
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',title:'查询选项'" style="height:120px;padding:8px;">
+        <form id="fm" method="post" style="padding:0;margin:0;">
+            <div style="float:left;width:200px;margin-right:12px;">
+                使用状态：
+                <select class="easyui-combobox" id="hasUsed" name="hasUsed" data-options="panelHeight:'auto',editable:false" style="width:130px;">
+                    <option value="所有">所有</option>
+                    <option value="已使用">已使用</option>
+                    <option value="未使用">未使用</option>
+                </select>
+            </div>
+            <div style="float:left;width:290px;margin-right:12px;">
+                创建日期：
+                <input type="text" class="easyui-datebox" id="beginDate" name="beginDate" data-options="prompt:'开始日期',editable:false" style="width:100px;" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" />
+                ~
+                <input type="text" class="easyui-datebox" id="endDate" name="endDate" data-options="prompt:'结束日期',editable:false" style="width:100px;" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+            <div style="float:left;width:200px;margin-right:12px;">
+                内外箱号：
+                <input type="text" class="easyui-textbox" id="boxNumber" name="boxNumber" data-options="prompt:'外箱/内箱箱号'" style="width:130px;" />
+            </div>
+            <div style="clear:both;margin-top:8px;"></div>
+            <div style="float:left;width:200px;margin-right:12px;">
+                申请单号：
+                <input type="text" class="easyui-textbox" id="billNo" name="billNo" data-options="prompt:'箱子关联的送货申请单号'" style="width:130px;" />
+            </div>
+            <div style="float:left;width:290px;margin-right:12px;">
+                物料信息：
+                <input type="text" class="easyui-textbox" id="itemInfo" name="itemInfo" data-options="prompt:'物料名称或规格型号'" style="width:216px;" />
+            </div>
+            <div style="float:left;width:200px;margin-right:12px;">
+                订单编号：
+                <input type="text" class="easyui-textbox" id="poNo" name="poNo" data-options="prompt:'箱子关联的订单编号'" style="width:130px;" />
+            </div>
+            <div style="float:left;width:96px;">
+                <a class="easyui-linkbutton c5" href="#" id="search_btn"><i class="fa fa-search"></i> 开始查询</a>
+            </div>
+        </form>
+    </div>
+    <div data-options="region:'center'">
+        <table id="dg_box"></table>
+    </div>
+</div>
+
+@*新增外箱对话框*@
+<div id="dlg_outer_box" class="easyui-dialog" style="width: 800px; height:550px;" closed="true" modal="true" title="&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;i&gt; 新增外箱">
+    <div style="text-align:center;padding:12px;">
+        
+        <i class="fa fa-file-o"></i> 订单类型：
+        <select class="easyui-combobox" id="billType" name="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">            
+            <option value="普通采购">普通采购</option>
+            @*<option value="委外PO">委外PO</option>
+            <option value="VMI采购">VMI订单</option>
+            <option value="VMI合同">VMI合同</option>*@
+        </select>
+        &nbsp;
+        <i class="fa fa-search"></i> 选择订单： 
+        <select id="select_box_po" class="easyui-combogrid" name="box_po_select" style="width:280px;"
+        data-options="
+            panelWidth:630,
+            idField:'id_field',
+            textField:'po_number',            
+            pagination: true,
+            pageSize:20,
+            prompt:'可输入订单编号或规格型号然后按回车键查询',
+            columns:[[
+                { field:'po_number',title:'订单编号',width:110,align:'center' },
+                { field:'po_entry_id',title:'分录号',width:60,align:'center' },
+                { field:'can_make_box_qty',title:'可做外箱数量',width:90,align:'center' },
+                { field:'item_name',title:'物料名称',width:120,align:'center' },
+                { field:'item_model',title:'规格型号',width:200,align:'center' },
+                { field:'department_name',title:'申购部门',width:120,align:'center' },
+                { field:'mat_order_name',title:'订料员',width:100,align:'center' },
+                { field:'trade_type_name',title:'贸易类型',width:80,align:'center' },
+                { field:'supplier_name',title:'供应商',width:200,align:'center' }
+            ]],
+            keyHandler: {
+                enter:boxPOEnter,
+                query:boxPOQuery,    
+            }
+        "></select>
+        <a href="#select_box_po" class="easyui-linkbutton" id="btn_select_box_po"><i class="fa fa-check-circle"></i> 确认选择</a>
+        <a href="#" class="easyui-tooltip" title="同一外箱的物料必须符合以下条件：同一规格型号、订单类型、供应商、订料员、申购部门、贸易类型"><i class="fa fa-info-circle text-danger"></i></a>
+    </div>
+
+    <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联订单信息" style="width:769px;height:168px;" data-options="collapsible:true">
+        <table id="dg_select_box_po"></table>
+    </div>
+
+    <div id="panel_select_inner_box_wrap" style="display:none;">
+        <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联小标签(自动加载同型号的未关联小标签信息)" style="width:769px;height:280px;" data-options="collapsible:true">
+            <table id="dg_select_inner_box"></table>
+        </div>
+    </div>
+
+    <form id="fm_outer_box" method="post">
+        <input type="hidden" name="user_name" />
+        <input type="hidden" name="trade_type_name" />
+        <input type="hidden" name="account" value="@ViewData["account"]" />
+        <input type="hidden" name="item_number" />
+        <input type="hidden" name="item_name" />
+        <input type="hidden" name="item_model" />
+        <input type="hidden" name="unit_name" />
+        <input type="hidden" name="unit_number" />
+        <div class="easyui-panel" title="&lt;i class=&quot;fa fa-th-large&quot;&gt;&lt;i&gt; 标签信息" style="width:769px;padding:6px 0;" data-options="collapsible:true">
+            <table cellspacing="4" style="width:100%;">
+                <tr>
+                    <td>
+                        品牌：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="brand" id="brand" data-options="required:true,validType:{length:[1,8]}" />
+                    </td>
+                    <td>
+                        批次号：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="batch" data-options="required:true,validType:{length:[1,50]}" />
+                    </td>
+                    <td>
+                        ROHS：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-combobox" name="rohs" data-options="required:true,editable:false,valueField:'v',textField:'v',data:[{v:'RoHS-A'},{v:'RoHS-B'},{v:'RoHS-C'},{v:'无'}],panelHeight:'auto'" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        生产日期：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-datebox" name="produce_date" id="produce_date" data-options="required:true,editable:false" />
+                    </td>
+                    <td>
+                        保质期(月)：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-numberbox" name="safe_period" id="safe_period" data-options="required:true,min:1,max:120,prompt:'单位是月，范围1~120'" />
+                    </td>
+                    <td>
+                        有效期：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-datebox" name="expire_date" id="expire_date" data-options="required:true,editable:false" />
+                    </td>
+                </tr>
+                <tr>                    
+                    <td>
+                        原产地：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="made_in" data-options="required:true,validType:{length:[1,50]}" />
+                    </td>                    
+                    <td>
+                        尺寸：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="size" id="size" data-options="validType:{length:[1,50]}" />
+                    </td>                    
+                    <td>
+                        材质：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="made_by" data-options="validType:{length:[1,50]}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        备件数量：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-numberbox points-4" name="backup_number" value="0" />
+                    </td>
+                    <td>
+                        净重(KG)：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-numberbox points-4" name="every_net_weight" id="every_net_weight" />
+                    </td>
+                    <td>
+                        毛重(KG)：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-numberbox points-4" name="every_gross_weight" id="every_gross_weight" />
+                    </td>
+                </tr>
+                <tr>      
+                    <td>
+                        包装日期：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-datebox" name="package_date" id="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                    </td>                                  
+                    <td>
+                        生产周期：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="produce_circle" data-options="validType:{length:[1,50]}" />
+                    </td>                    
+                    <td>
+                        存储条件：
+                    </td>
+                    <td>
+                        <input type="text" class="easyui-textbox" name="keep_condition" data-options="validType:{length:[1,50]}" />
+                    </td>
+                </tr>
+            </table>  
+        </div>
+        <div style="text-align:right;padding:12px;">
+            外箱制作件数：
+            <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" style="width:80px;margin-right:12px;" data-options="required:true,min:1,max:1000" value="1" />
+            <a href="#dg_box" class="easyui-linkbutton c5" id="btn_save_outer_box"><i class="fa fa-check"></i> 保存外箱</a>
+        </div>        
+    </form>
+</div>
+
+@*新增内箱对话框*@
+<div id="dlg_inner_box" class="easyui-dialog" style="width: 400px;padding:10px 20px;" closed="true" modal="true" buttons="#dlg_inner_buttons" title="&lt;i class=&quot;fa fa-plus-circle&quot;&gt;&lt;i&gt; 新增内箱">
+    <div class="ftitle">内箱信息</div>
+    <form id="fm_inner_box" method="post">
+        <input type="hidden" name="outer_box_id" />
+        <div class="fitem">
+            <label>外箱箱号:</label>
+            <input type="text" class="easyui-textbox" id="outer_box_number" readonly />
+        </div>
+        <div class="fitem">
+            <label>内箱件数:</label>
+            <input type="text" class="easyui-numberbox" name="pack_num" id="pack_num" data-options="required:true,min:1,max:1000" />
+        </div>
+        <div class="fitem">
+            <label>内箱每件数量:</label>
+            <input type="text" class="easyui-numberbox points-4" name="every_qty" id="every_qty" data-options="required:true" />
+        </div>    
+        <div class="small text-danger"><i class="fa fa-question-circle"></i> <span id="outer_box_info"></span></div>
+    </form>
+</div>
+<div id="dlg_inner_buttons">
+    <a href="#dg_box" class="easyui-linkbutton c1" onclick="saveInnerBox()"><i class="fa fa-fw fa-check"></i> 保存</a>
+    <a href="#dg_box" class="easyui-linkbutton" onclick="javascript: $('#dlg_inner_box').dialog('close')"><i class="fa fa-fw fa-close"></i> 取消</a>
+</div>

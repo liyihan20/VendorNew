@@ -1,0 +1,66 @@
+﻿@using VendorTruly.Models;
+@{
+    supplierInfo i = ViewData["info"] as supplierInfo;
+}
+
+<script>
+    $(function () {
+        $("#bt_save").on("click", function () {
+            if ($.trim($("#supplierAttn").val()) == "") {
+                tip("联系人不能为空");
+                return;
+            }
+            if ($.trim($("#supplierPhone").val()) == "") {
+                tip("联系电话不能为空");
+                return;
+            }
+            if ($.trim($("#supplierAddr").val()) == "") {
+                tip("地址不能为空");
+                return;
+            }
+
+            $.ajax({
+                type: 'post',
+                url: 'SaveSupplierInfo',
+                data: $("#fm").serialize(),
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.suc) {
+                        tip("保存资料成功");
+                    } else {
+                        tip(data.msg);
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<div class="easyui-panel" style="padding:12px;text-align:center;width:480px;" title="&lt;i class='fa fa-info-circle'&gt;&lt/i&gt; 供应商基础资料设置：">
+    <form id="fm" method="post" style="padding:0;">
+        <div class="fitem">
+            <label>供应商代码:</label>
+            <input class="easyui-textbox" name="supplierNumber" id="supplierNumber" value="@i.supplierNumber" style="width:240px;" readonly />
+        </div>
+        <div class="fitem">
+            <label>供应商名称:</label>
+            <input class="easyui-textbox" name="supplierName" id="supplierName" value="@i.supplierName" style="width:240px;" readonly />
+        </div>
+        <div class="fitem">
+            <label>联系人:</label>
+            <input class="easyui-textbox" name="supplierAttn" id="supplierAttn" value="@i.supplierAttn" style="width:240px;" />
+        </div>
+        <div class="fitem">
+            <label>联系电话:</label>
+            <input class="easyui-textbox" name="supplierPhone" id="supplierPhone" value="@i.supplierPhone" style="width:240px;" />
+        </div>
+        <div class="fitem">
+            <label>地址:</label>
+            <input class="easyui-textbox" name="supplierAddr" id="supplierAddr" value="@i.supplierAddr" data-options="multiline:true" style="height:60px;width:240px;" />
+        </div>
+    </form>
+    <div style="margin-top:8px;">
+        <a href="#" class="easyui-linkbutton c8" id="bt_save"><i class="fa fa-check-circle"></i> 保存资料</a>
+    </div>
+</div>

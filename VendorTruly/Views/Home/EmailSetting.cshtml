@@ -1,0 +1,80 @@
+﻿
+<script>
+    $(function () {
+        initEmail();
+    });
+
+    var inputEmails = [];
+
+    function initEmail() {
+        var es = $("#hiddenEmail").val();
+        if (es) {
+            var arr = es.split(",");
+            for (var i = 0; i < arr.length; i++) {
+                $("#email" + i).textbox("setValue", arr[i]);
+            }
+        }
+    }
+
+    function sendCode(btn, index) {
+        var email = $("#email" + index).textbox("getValue");
+        if (email == "") {
+            tip("请先输入邮箱地址再发送验证码");
+            return;
+        }
+
+        $.post("SendValidateCode", { emailAddr: email, index: index }, function (data) {
+            if (data.suc) {
+                inputEmails[index] = email;
+                var textBefore = $(btn).linkbutton("options").text;
+                $(btn).linkbutton("disable");
+                var sec = 30;
+                var inter = setInterval(function () {
+                    if (sec <= 0) {
+                        $(btn).linkbutton({ text: textBefore });
+                        $(btn).linkbutton("enable");
+                        clearInterval(inter);
+                    } else {
+                        $(btn).linkbutton({ text: (sec--) + "秒后可重新发送" });
+                    }
+                }, 1000);
+                tip("验证码已成功发送，请到邮箱中收取");
+            } else {
+                tip(data.msg);
+            }
+        });
+    }
+
+    function save(index) {
+        if (!inputEmails[index]) {
+            tip("请先输入邮箱地址然后验证后再保存");
+            return;
+        }
+        var code = $("#code" + index).textbox("getValue");
+        $.post("UpdateEmailAddr", { emailAddr: inputEmails[index], index: index, code: code }, function (data) {
+            if (data.suc) {
+                tip("新邮箱【" + (index + 1) + "】已设置成功");
+            } else {
+                tip(data.msg);
+            }
+        });
+    }
+</script>
+
+<input type="hidden" value="@ViewData["email"]" id="hiddenEmail"/>
+@for (var i = 0; i < 3; i++) {
+    <div style="float:left;width:300px;margin-right:4px;">
+        <div class="easyui-panel" data-options="fit:true" style="padding:12px;text-align:center;" title="&lt;i class='fa fa-envelope-o'&gt;&lt/i&gt; 邮箱【@(i+1)】：">
+            <div><input type="email" class="easyui-textbox" id="@string.Concat("email",i)" data-options="prompt:'请输入正确的邮箱地址'" /></div>
+            <div style="margin-top:8px;"><a class="easyui-linkbutton" href="#" onclick="sendCode(this,@i)"><i class="fa fa-send"></i> 发送邮箱验证码</a></div>
+            <div style="margin-top:8px;"><input type="email" class="easyui-textbox" id="@string.Concat("code",i)" data-options="prompt:'请输入收到的邮箱验证码'" /></div>
+            <div style="margin-top:8px;"><a class="easyui-linkbutton" href="#" onclick="save(@i)"><i class="fa fa-check"></i> 开始验证并保存</a></div>
+        </div>
+    </div>
+}
+<div style="clear:both;"></div>
+<div style="margin-top:4px"></div>
+<div class="easyui-panel" style="width:908px;padding:16px;" title="&lt;i class='fa fa-info-circle'&gt;&lt/i&gt; 操作说明">
+    <div>1. 可以设置1~3个邮箱，用于接收本平台发出的通知邮件。</div>
+    <div>2. 输入邮箱地址后，点击【发送邮箱验证码】按钮，然后到邮箱中收取此验证码，复制到验证码文本框中，最后点击【开始验证并保存】按钮保存邮箱。</div>
+</div>

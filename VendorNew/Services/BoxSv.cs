@@ -688,7 +688,7 @@ namespace VendorNew.Services
             return (from e in db.InnerBoxesExtra
                     join i in db.InneBoxes on e.inner_box_id equals i.inner_box_id
                     where i.outer_box_id == null
-                    && ((e.user_name + "A").Contains(userName) || canCheckAll)
+                    && ((e.user_name + "A").StartsWith(userName) || canCheckAll)
                     && e.item_number == itemNumber
                     && e.account == account
                     && e.trade_type_name == tradeTypeName
@@ -711,7 +711,8 @@ namespace VendorNew.Services
                         produce_circle = e.produce_circle,
                         produce_date = e.produce_date,
                         safe_period = e.safe_period,
-                        rohs = e.rohs
+                        rohs = e.rohs,
+                        expire_date = e.expire_date
                     }).ToList();
         }
 
