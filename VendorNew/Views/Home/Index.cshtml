@@ -1,4 +1,8 @@
-﻿@section CSS{
+﻿@using VendorNew.Models
+@{
+    List<CompanyModel> cm = ViewBag.accountList as List<CompanyModel>;
+}
+@section CSS{
     <style type="text/css">
         iframe{
             width:100%;
@@ -13,10 +17,15 @@
     <div region="north" border="false" style="overflow: hidden; height: 40px;">
         <div style="float: left; width: 200px; margin: 4px 4px;">
                 <img alt="logo" src="@Url.Content("~/Content/images/truly.png")" style="border:0;"/></div>
-        <div style="float: left; width: 300px; font-size: 28px; font-family: Arial;letter-spacing:12px;">
-            供应商协同平台</div>
-        <div style="float: right; width: 200px; padding-top: 4px;">
-            <a href="@Url.Content("~/Home/ChangeAccount")" class="easyui-linkbutton c1"><i class="fa fa-exchange"></i> @string.Concat("切换到",ViewBag.account=="O"?"半导体":"光电")</a>
+        <div style="float: left; width: 300px; font-size: 28px; font-family: Arial;letter-spacing:12px;">供应商协同平台</div>
+        <div style="float: right; width: 250px; padding-top: 4px;">
+            @*<a href="@Url.Content("~/Home/ChangeAccount")" class="easyui-linkbutton c1"><i class="fa fa-exchange"></i> @string.Concat("切换到",ViewBag.account=="O"?"半导体":"光电")</a>*@
+            <span style="font-weight:bold;"><i class="fa fa-location-arrow"></i> 当前公司：</span>
+            <select class="easyui-combobox" id="switchAccountBt" data-options="panelHeight:'auto',editable:false,value:'@ViewBag.account'" style="width:90px;">
+                @foreach (var c in cm) {
+                    <option value="@c.account">@c.shortName</option>
+                }
+            </select>
             <a href="@Url.Content("~/Account/LogOut")" class="easyui-linkbutton c6"><i class="fa fa-sign-out"></i> 退出系统</a>
         </div>
     </div>
@@ -24,7 +33,7 @@
         <div>
             <span style="margin: 0 0 0 30px;">登录名: @ViewBag.userName</span> 
             <span style="margin: 0 0 0 30px;">用户名: @ViewBag.realName</span>
-            <span style="margin: 0 0 0 30px;">公司: @(ViewBag.account=="O"?"信利光电股份有限公司":"信利半导体有限公司")</span>
+            <span style="margin: 0 0 0 30px;">公司: @ViewBag.accountName</span>
             <span style="margin: 0 0 0 30px;">日期: @DateTime.Now.ToString("yyyy-MM-dd")</span>
         </div>
     </div>
@@ -84,6 +93,12 @@
             addTab('密码设置', '/VendorNew/Home/PasswordSetting');
             $.messager.alert('系统提示', '检测到您的密码是初始密码，为了安全性，请立即修改密码！', 'warning');
         }
+
+        $("#switchAccountBt").combobox({
+            onChange: function (newValue, oldValue) {
+                window.location.href = "ChangeAccount?account=" + newValue;
+            }
+        });
 
     });
 

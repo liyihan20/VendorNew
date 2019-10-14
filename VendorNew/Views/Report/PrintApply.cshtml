@@ -1,11 +1,10 @@
 ﻿@using VendorNew.Models
 @{
-
+    var company = ViewData["currentCompany"] as CompanyModel; //当前公司（光电、半导体、仁寿）
     var m = ViewData["reportData"] as PrintApplyModels;
     var pageList = ViewData["pageNumArr"] as List<int>;
     int hasPrinted = 0;
-    var h = m.h;
-    var companyName = h.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司";
+    var h = m.h;    
     ViewBag.Title = h.bill_no;
 }
 @section CSS{   
@@ -125,14 +124,14 @@
         <table style="width:100%;margin-top:6px;border:1px solid;" cellspacing="0" cellpadding="2">
             <tr>
                 <td width="50%;" style="border-right:1px solid;">
-                    <div>购货单位：@companyName</div>
-                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
-                    <div>电话：0660-336788-1234 @(string.IsNullOrEmpty(h.supplier_dr_number) ? "" : ",供应商送货单号：" + h.supplier_dr_number) 
+                    <div>购货单位：@company.accountName</div>
+                    <div>@company.addr</div>
+                    <div>电话：@company.phone @(string.IsNullOrEmpty(h.supplier_dr_number) ? "" : ",供应商送货单号：" + h.supplier_dr_number) 
                     @h.mat_order_name @(string.IsNullOrEmpty(h.supplier_invoice_number) ? "" : ",供应商发票：" + h.supplier_invoice_number)</div>
                 </td>
                 <td width="50%;">
-                    <div>收货单位：@companyName</div>
-                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>                    
+                    <div>收货单位：@company.accountName</div>
+                    <div>@company.addr</div>                    
                     <div>收货部门：@h.department_name @(string.IsNullOrEmpty(h.comment)?"":"("+h.comment+")")</div>
                 </td>
             </tr>
@@ -230,9 +229,11 @@
                                     @bp.box.made_in
                                 </td>
                             }
-                            <td class="arial">
+                            <td>
                                 @string.Concat(bp.po.po_number, "-", bp.po.po_entry_id) <br />
-                                @string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())
+                                @if (!string.IsNullOrEmpty(drEntry.pr_number)) {
+                                    <text>@string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())</text>
+                                }                                
                             </td>
                             <td>
                                 @drEntry.comment
@@ -276,7 +277,7 @@
                             <td></td>
                             @*<td></td>
                             <td></td>*@
-                            <td class="arial">
+                            <td>
                                 @string.Concat(e.po_number, "-", e.po_entry_id) <br />
                                 @string.Concat(e.pr_number,"-",e.pr_entry_id==null?"":e.pr_entry_id.ToString())
                             </td>
@@ -319,7 +320,7 @@
                     @h.supplier_name (盖章)
                 </td>
                 <td style="padding-top:4px;">
-                    @companyName (盖章)
+                    @company.accountName (盖章)
                 </td>
             </tr>
         </table>

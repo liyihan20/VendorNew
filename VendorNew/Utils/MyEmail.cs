@@ -16,6 +16,7 @@
 
         public static bool SendEmail(string subject, string emailAddrs, string content, string ccEmailAddrs = "")
         {
+            if (!bool.Parse(MyUtils.GetAppSetting("sendEmail"))) return true; 
             if (!string.IsNullOrEmpty(emailAddrs)) {
                 return TrulyEmail.EmailUtil.SemiSend("信利供应商协同平台", subject, content, emailAddrs, ccEmailAddrs,false);
             }

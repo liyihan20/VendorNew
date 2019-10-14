@@ -49,6 +49,8 @@ namespace VendorNew.Controllers
             ViewData["pageNumList"] = pageNumList;
             ViewData["pageNumArr"] = pageNumArr;
 
+            ViewData["currentCompany"] = MyUtils.GetCurrentCompany(currentAccount);
+
             WLog("打印送货申请单", "进入打印界面", m.h.bill_no);
 
             return View();
@@ -182,11 +184,11 @@ namespace VendorNew.Controllers
             }
 
             ushort[] colWidth = new ushort[] { 16, 18, 12, 16, 10, 24,
-                                               32, 16, 16, 12, 18,18, 16,
+                                               32, 16, 16, 12, 18, 24, 18, 16,
                                                16, 16, 16, 16, 18, 16, 18, 16 };
 
             string[] colName = new string[] { "发货日期", "送货单号", "申请状态", "订单编号", "分录号", "物料名称", 
-                                              "规格型号", "订单数量", "申请数量", "单位", "物料编码","备注","订单类型",
+                                              "规格型号", "订单数量", "申请数量", "单位", "物料编码", "供应商", "备注", "订单类型",
                                               "采购方式","订料员","采购员","贸易类型","PR单号","采购日期","入库单号","入库日期" };
 
             //設置excel文件名和sheet名
@@ -226,7 +228,7 @@ namespace VendorNew.Controllers
                 colIndex = 1;
 
                 //"发货日期", "送货单号", "申请状态", "订单编号", "分录号", "物料名称", 
-                //"规格型号", "订单数量", "申请数量", "单位", "物料编码","订单类型",
+                //"规格型号", "订单数量", "申请数量", "单位", "物料编码", "供应商", "备注", "订单类型",
                 //"采购方式","订料员","采购员","贸易类型","PR单号","采购日期","入库单号","入库日期"
                 cells.Add(++rowIndex, colIndex, ((DateTime)d.sendDate).ToString("yyyy-MM-dd"));
                 cells.Add(rowIndex, ++colIndex, d.billNo);
@@ -240,6 +242,7 @@ namespace VendorNew.Controllers
                 cells.Add(rowIndex, ++colIndex, string.Format("{0:0.####}",d.sendQty));
                 cells.Add(rowIndex, ++colIndex, d.unitName);
                 cells.Add(rowIndex, ++colIndex, d.itemNumber);
+                cells.Add(rowIndex, ++colIndex, d.supplierName);
                 cells.Add(rowIndex, ++colIndex, d.comment);
                 cells.Add(rowIndex, ++colIndex, d.billType);
 
@@ -287,11 +290,11 @@ namespace VendorNew.Controllers
 
             ushort[] colWidth = new ushort[] { 18, 10, 20, 24, 32, 16,
                                                16, 16, 16, 12, 24, 12, 16,
-                                               12, 12, 16, 12, 12, 16 };
+                                               12, 12, 16, 12, 12, 16, 24 };
 
             string[] colName = new string[] { "订单编号", "分录号", "PR单号", "物料名称", "规格型号", "订单数量", 
                                               "入库数量", "申请数量", "可申请数量", "订料员", "申购部门","单位","物料编码",
-                                              "订单类型","采购方式","订单日期","贸易类型","币别","采购员" };
+                                              "订单类型","采购方式","订单日期","贸易类型","币别","采购员","供应商" };
 
             //設置excel文件名和sheet名
             XlsDocument xls = new XlsDocument();
@@ -353,8 +356,9 @@ namespace VendorNew.Controllers
                 cells.Add(rowIndex, ++colIndex, d.buyType);
                 cells.Add(rowIndex, ++colIndex, ((DateTime)d.poDate).ToString("yyyy-MM-dd"));
                 cells.Add(rowIndex, ++colIndex, d.tradeTypeName);
-                cells.Add(rowIndex, ++colIndex, d.unitName);
+                cells.Add(rowIndex, ++colIndex, d.currencyName);
                 cells.Add(rowIndex, ++colIndex, d.buyerName);
+                cells.Add(rowIndex, ++colIndex, d.supplierName);
             }
 
             xls.Send();

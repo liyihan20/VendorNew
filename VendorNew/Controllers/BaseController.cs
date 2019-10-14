@@ -35,7 +35,7 @@ namespace VendorNew.Controllers
         }
 
         /// <summary>
-        /// 当前登录账套，O表示光电，S表示半导体
+        /// 当前登录账套，O表示光电，S表示半导体，R是仁寿
         /// </summary>
         public string currentAccount
         {

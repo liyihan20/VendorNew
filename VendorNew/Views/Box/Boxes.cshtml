@@ -475,6 +475,9 @@
             if (!formHasFilled) {
                 $.post("GetBoxBySupplierAndItem", { supplierNumber: selectedPo.supplier_number, itemNumber: selectedPo.item_number }, function (data) {
                     if (data.suc) {
+                        //单位不取上个箱子的，以订单的为准
+                        delete data.boxInfo.unit_name;
+                        delete data.boxInfo.unit_number;
                         $("#fm_outer_box").form("load", data.boxInfo);
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
@@ -560,7 +563,7 @@
                     tip("订单号[" + boxPoRows[i].po_number + "]分录号[" + boxPoRows[i].po_entry_id + "]的每件数量必须大于0");
                     return;
                 }
-                if (parseFloat(boxPoRows[i].send_num) * packNum > parseFloat(boxPoRows[i].can_make_box_qty)) {
+                if (parseFloat(boxPoRows[i].send_num) * packNum - parseFloat(boxPoRows[i].can_make_box_qty) > 0.000001) {
                     tip("订单号[" + boxPoRows[i].po_number + "]分录号[" + boxPoRows[i].po_entry_id + "]的每件数量*箱子数量不能大于可做外箱数量");
                     return;
                 }
@@ -612,6 +615,11 @@
         });
 
     });
+
+    //搜索PO的combogrid某项点击事件
+    function boxPOOnClick(index, row) {
+        //$("#btn_select_box_po").trigger("click");
+    }
 
     //保存内箱
     function saveInnerBox() {
@@ -796,7 +804,8 @@
                 内外箱号：
                 <input type="text" class="easyui-textbox" id="boxNumber" name="boxNumber" data-options="prompt:'外箱/内箱箱号'" style="width:130px;" />
             </div>
-            <div style="clear:both;margin-top:8px;"></div>
+            <div style="clear:both;"></div>
+            <div style="margin-top:8px;"></div>
             <div style="float:left;width:200px;margin-right:12px;">
                 申请单号：
                 <input type="text" class="easyui-textbox" id="billNo" name="billNo" data-options="prompt:'箱子关联的送货申请单号'" style="width:130px;" />
@@ -854,7 +863,8 @@
             keyHandler: {
                 enter:boxPOEnter,
                 query:boxPOQuery,    
-            }
+            },
+            onClickRow:boxPOOnClick
         "></select>
         <a href="#select_box_po" class="easyui-linkbutton" id="btn_select_box_po"><i class="fa fa-check-circle"></i> 确认选择</a>
         <a href="#" class="easyui-tooltip" title="同一外箱的物料必须符合以下条件：同一规格型号、订单类型、供应商、订料员、申购部门、贸易类型"><i class="fa fa-info-circle text-danger"></i></a>
@@ -921,13 +931,13 @@
                         <input type="text" class="easyui-datebox" name="expire_date" id="expire_date" data-options="required:true,editable:false" />
                     </td>
                 </tr>
-                <tr>                    
+                <tr>
                     <td>
                         原产地：
                     </td>
                     <td>
                         <input type="text" class="easyui-textbox" name="made_in" data-options="required:true,validType:{length:[1,50]}" />
-                    </td>                    
+                    </td>
                     <td>
                         尺寸：
                     </td>
@@ -967,13 +977,13 @@
                     </td>
                     <td>
                         <input type="text" class="easyui-datebox" name="package_date" id="package_date" data-options="required:true,editable:false" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                    </td>                                  
+                    </td>
                     <td>
                         生产周期：
                     </td>
                     <td>
                         <input type="text" class="easyui-textbox" name="produce_circle" data-options="validType:{length:[1,50]}" />
-                    </td>                    
+                    </td>
                     <td>
                         存储条件：
                     </td>

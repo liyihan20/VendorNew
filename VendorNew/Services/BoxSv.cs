@@ -464,12 +464,17 @@ namespace VendorNew.Services
         public IQueryable<OuterBoxes> GetOuterBoxes(SearchBoxParams p,bool canCheckAll)
         {
             var result = from b in db.OuterBoxes
-                         where b.create_date >= p.beginDate && b.create_date <= p.endDate
+                         where b.create_date >= p.beginDate 
+                         && b.create_date <= p.endDate
                          && b.account == p.account
-                         && (b.item_name.Contains(p.itemInfo) || b.item_model.Contains(p.itemInfo))
+                         //&& (b.item_name.Contains(p.itemInfo) || b.item_model.Contains(p.itemInfo))
                          && (p.hasUsed == "所有" || (p.hasUsed == "已使用" && b.bill_id != null) || (p.hasUsed == "未使用" && b.bill_id == null))
                          && (canCheckAll || (b.user_name + "A").Contains(p.userName))                         
                          select b;
+
+            if (!string.IsNullOrEmpty(p.itemInfo)) {
+                result = result.Where(r => r.item_name.Contains(p.itemInfo) || r.item_model.Contains(p.itemInfo));
+            }
 
             if (!string.IsNullOrWhiteSpace(p.boxNumber)) {
                 result = from b in result

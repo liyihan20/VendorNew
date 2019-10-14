@@ -13,7 +13,7 @@
     <div region="north" border="false" style="overflow: hidden; height: 40px;">
         <div style="float: left; width: 200px; margin: 4px 4px;">
                 <img alt="logo" src="@Url.Content("~/Content/images/truly.png")" style="border:0;"/></div>
-        <div style="float: left; width: 300px; font-size: 28px; font-family: Arial;letter-spacing:12px;">
+        <div style="float: left; width: 340px; font-size: 28px; font-family: Arial;letter-spacing:8px;">
             事业部送货管理平台</div>
         <div style="float: right; width: 200px; padding-top: 4px;padding-right:20px;text-align:right;">
             @*<a href="@Url.Content("~/Home/ChangeAccount")" class="easyui-linkbutton c1"><i class="fa fa-exchange"></i> @string.Concat("切换到",ViewBag.account=="O"?"半导体":"光电")</a>*@
@@ -81,7 +81,7 @@
 
         //如果密码和用户名一致，则提示需要修改密码
         if ('1' == '@ViewBag.needToChangePassword') {
-            addTab('密码设置', '/VendorNew/Home/PasswordSetting');
+            addTab('密码设置', '/VendorTruly/Home/PasswordSetting');
             $.messager.alert('系统提示', '检测到您的密码是初始密码，为了安全性，请立即修改密码！', 'warning');
         }
 

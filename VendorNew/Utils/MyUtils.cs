@@ -5,10 +5,9 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
+using VendorNew.Models;
 
 namespace VendorNew.Utils
 {
@@ -62,12 +61,12 @@ namespace VendorNew.Utils
                     int y2 = random.Next(image.Height);
                     g.DrawLine(new Pen(Color.Silver), x1, y1, x2, y2);
                 }
-                
-                
+
+
                 Font font = new Font("Arial", 16, (FontStyle.Bold | FontStyle.Italic));
                 LinearGradientBrush brush = new LinearGradientBrush(new Rectangle(0, 0, image.Width, image.Height),
                  Color.Green, Color.DarkRed, 1.2f, true);
-                g.DrawString(validateCode, font, brush, random.Next(width/2 - 10), random.Next(height/2-8));
+                g.DrawString(validateCode, font, brush, random.Next(width / 2 - 10), random.Next(height / 2 - 8));
                 //画图片的前景干扰点
                 for (int i = 0; i < 200; i++) {
                     int x = random.Next(image.Width);
@@ -222,7 +221,7 @@ namespace VendorNew.Utils
         /// <param name="totalNum">总页数</param>
         /// <returns></returns>
         public static List<int> GetPageNumberList(int defaultNumber, string pageNumStr, int totalNum)
-        { 
+        {
             List<int> result = new List<int>();
             var numArr = pageNumStr.Split(new char[] { ',', '，' }); //页码字符串数组
             int lastNumber = defaultNumber; //最后一页，页码字符串数字不够用的话，后面的都按照最后一页的页数设定
@@ -256,6 +255,39 @@ namespace VendorNew.Utils
 
             return result;
 
+        }
+
+        public static CompanyModel GetCurrentCompany(string account)
+        {
+            return GetAllCompany().Find(c => c.account == account);
+        }
+
+        public static List<CompanyModel> GetAllCompany()
+        {
+            return new List<CompanyModel>()
+            {
+                new CompanyModel(){
+                    account="S",
+                    accountName = "信利半导体有限公司",
+                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+                    phone = "0660-336788-1234",
+                    shortName = "半导体"
+                },
+                new CompanyModel(){
+                    account="O",
+                    accountName = "信利光电股份有限公司",
+                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+                    phone = "0660-336788-1234",
+                    shortName = "光电"
+                },
+                new CompanyModel(){
+                    account="R",
+                    accountName = "信利光电仁寿有限公司",
+                    addr = "四川省眉山市仁寿县文林工业园陵州大道信利厂区仓运部",
+                    phone = "15023771749",
+                    shortName = "光电仁寿",
+                }
+            };
         }
 
     }

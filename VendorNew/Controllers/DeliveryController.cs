@@ -72,7 +72,7 @@ namespace VendorNew.Controllers
                 return Json(new SRM(false, "查询不到任何符合条件的记录"));
             }
 
-            return Json(new { suc = true, rows = result.OrderBy(r => r.poDate) });
+            return Json(new { suc = true, rows = result.OrderBy(r => r.poDate).ThenBy(r => r.poId).ThenBy(r => r.poEntryId) });
 
         }
 
@@ -181,6 +181,11 @@ namespace VendorNew.Controllers
             var poList = JsonConvert.DeserializeObject<List<K3POs>>(poJsonStr);
             var poHead=poList.First();
 
+            if (!poHead.account.Equals(currentAccount)) {
+                ViewBag.tip = "当前系统登录公司与此订单所在公司不一致，请重新登录系统";
+                return View("Error");
+            }
+
             string billNo = new ItemSv().GetDRBillNo(poHead.account, "C");
             var drHead = new DRBills();
             drHead.account = poHead.account;
@@ -238,6 +243,10 @@ namespace VendorNew.Controllers
         {
             OuterBoxes box = new OuterBoxes();
             MyUtils.SetFieldValueToModel(fc, box);
+
+            if (!box.account.Equals(currentAccount)) {
+                return Json(new SRM(false, "当前登录公司与此外箱所在公司不一致，请刷新页面后再制作箱子"));
+            }
 
             if (box.package_date == DateTime.MinValue) {
                 return Json(new SRM(false, "请填写正确的包装日期"));

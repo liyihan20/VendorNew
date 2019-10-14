@@ -29,6 +29,9 @@
             clear: both;
             page-break-after: always;
         }
+        .arial{
+            font-family:myNarrow, Arial, sans-serif;            
+        }
     </style>
     <style type="text/css" media="print">
         .noPrint {
@@ -112,11 +115,12 @@
                     </div>
                 </td>
                 <td style="width:0.9cm;">编码:</td>
-                <td style="width:2.9cm;font-family:myNarrow">@b.itemNumber</td>
+                <td style="width:2.9cm;" class="arial">@b.itemNumber</td>
             </tr>
             <tr>
                 <td>名称:</td>
-                <td><span class="sub_string" data-bit="17">@b.itemName</span></td>
+                @*<td><span class="sub_string" data-bit="17">@b.itemName</span></td>*@
+                <td><span>@b.itemName</span></td>
             </tr>
             <tr>
                 <td>数量:</td>
@@ -124,7 +128,7 @@
             </tr>
             <tr>
                 <td>批次:</td>
-                <td><span style="font-family:myNarrow;">@b.batchNo</span></td>
+                <td><span class="arial">@b.batchNo</span></td>
             </tr>
             <tr>
                 <td>@(string.IsNullOrEmpty(b.outerBoxNumber) ? "材质:" : "外箱:") </td>
@@ -144,9 +148,9 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    生产日期:<span style="font-family:myNarrow">@b.produceDate</span>
+                    生产日期:<span class="arial">@b.produceDate</span>
                 </td>
-                <td>有效期:<span style="font-family:myNarrow">@b.expireDate</span></td>
+                <td>有效期:<span class="arial">@b.expireDate</span></td>
             </tr>
             <tr>
                 <td colspan="3">

@@ -79,6 +79,17 @@ namespace VendorNew.Services
                 us.email = user.email;
                 us.comment = user.comment;
                 us.user_role = user.user_role;
+
+                //如果供应商在基础资料里面保存了的，也要跟着修改
+                if (user.user_role == "供应商") {
+                    var info = db.SupplierInfo.Where(s => s.supplier_number == us.user_name).ToList();
+                    if (info.Count() > 0) {
+                        foreach (var i in info) {
+                            i.name = user.real_name;
+                        }
+                    }
+                }
+
             }
             else {
                 //新增
@@ -96,9 +107,7 @@ namespace VendorNew.Services
                 if (groupId > 0) {
                     new UASv().SaveGroupUser(groupId, user.user_id);
                 }
-
             }
-            
             db.SubmitChanges();
         }
 
@@ -183,8 +192,10 @@ namespace VendorNew.Services
                 throw new Exception("贵司未在此平台登记过邮箱，不能处理；请联系管理员处理");
             }
             var emailArr = user.email.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            if (emailArr.Contains(emailAddr)) {
-                return true;
+            foreach (var e in emailArr) {
+                if (e.ToUpper() == emailAddr.ToUpper()) {
+                    return true;
+                }
             }
             return false;
             

@@ -5,7 +5,7 @@
     var pageList = ViewData["pageNumArr"] as List<int>;
     int hasPrinted = 0;
     var h = m.h;
-    var companyName = h.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司";
+    var companyName = h.account == "TDD" ? "信利光电股份有限公司TDD事业部" : "";
     ViewBag.Title = h.bill_no;
 }
 @section CSS{   
@@ -232,7 +232,9 @@
                             }
                             <td class="arial">
                                 @string.Concat(bp.po.po_number, "-", bp.po.po_entry_id) <br />
-                                @string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())
+                                @if (!string.IsNullOrEmpty(drEntry.pr_number)) {
+                                    <text>@string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())</text>
+                                }                                
                             </td>
                             <td>
                                 @drEntry.comment

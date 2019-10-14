@@ -214,9 +214,12 @@ namespace VendorNew.Services
                     d.send_qty = es.Where(e => e.bill_detail_id == d.bill_detail_id).Select(e => e.send_qty).FirstOrDefault();
                     d.comment = es.Where(e => e.bill_detail_id == d.bill_detail_id).Select(e => e.comment).FirstOrDefault();
                 }
-
-                db.SubmitChanges();
-
+                try {
+                    db.SubmitChanges();
+                }
+                catch (Exception ex) {
+                    throw new Exception("保存失败，请稍后再试，原因："+ex.Message);
+                }
                 return bill.bill_id;
             }
         }
@@ -241,7 +244,7 @@ namespace VendorNew.Services
                 account = bill.account,
                 bill_no = bill.bill_no,
                 do_what = "提交申请单"
-            });            
+            });
 
             db.SubmitChanges();
         }
@@ -312,20 +315,16 @@ namespace VendorNew.Services
         /// <returns></returns>
         private IQueryable<CheckApplyListModel> SearchApplyListBase(SearchMyApplyParams p)
         {
-            p.poNo = p.poNo ?? "";
-            p.billNo = p.billNo ?? "";
-            p.itemInfo = p.itemInfo ?? "";
-
             var result = from d in db.DRBills
                          join e in db.DRBillDetails on d.bill_id equals e.bill_id
                          where d.send_date >= p.beginDate
                          && d.send_date <= p.endDate
-                         && (d.bill_no.Contains(p.billNo) || d.supplier_name.Contains(p.billNo))
-                         && (p.pStatus == "所有" || d.p_status == p.pStatus)
+                         //&& (d.bill_no.Contains(p.billNo) || d.supplier_name.Contains(p.billNo))
+                         //&& (p.pStatus == "所有" || d.p_status == p.pStatus)
                          && d.account == p.account
-                         && (p.billType == "所有" || d.bill_type == p.billType)
-                         && e.po_number.Contains(p.poNo)
-                         && (e.item_model.Contains(p.itemInfo) || e.item_name.Contains(p.itemInfo))
+                         //&& (p.billType == "所有" || d.bill_type == p.billType)
+                         //&& e.po_number.Contains(p.poNo)
+                         //&& (e.item_model.Contains(p.itemInfo) || e.item_name.Contains(p.itemInfo))
                          select new CheckApplyListModel()
                          {
                              billId = d.bill_id,
@@ -356,6 +355,21 @@ namespace VendorNew.Services
                              supplierNumber = d.supplier_number,
                              comment = e.comment
                          };
+            if (!string.IsNullOrWhiteSpace(p.billNo)) {
+                result = result.Where(r => r.billNo.Contains(p.billNo) || r.supplierName.Contains(p.billNo));
+            }
+            if (!"所有".Equals(p.pStatus)) {
+                result = result.Where(r => r.pStatus == p.pStatus);
+            }
+            if (!"所有".Equals(p.billType)) {
+                result = result.Where(r => r.billType == p.billType);
+            }
+            if (!string.IsNullOrWhiteSpace(p.poNo)) {
+                result = result.Where(r => r.poNo.Contains(p.poNo));
+            }
+            if (!string.IsNullOrWhiteSpace(p.itemInfo)) {
+                result = result.Where(r => r.itemModel.Contains(p.itemInfo) || r.itemName.Contains(p.itemInfo));
+            }
             return result;
         }
 

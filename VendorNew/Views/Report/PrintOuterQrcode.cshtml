@@ -27,9 +27,9 @@
             page-break-after: always;
             clear:both;
         }
-        /*.arial{
-            font-family:'Arial Narrow', Arial, sans-serif;            
-        }*/
+        .arial{
+            font-family:myNarrow, Arial, sans-serif;            
+        }
     </style>
     <style type="text/css" media="print">
         .noPrint {
@@ -131,16 +131,16 @@
         </tr>
         <tr>
             <td>批次:</td>
-            <td colspan="2">@b.batchNo</td>
+            <td colspan="2" class="arial">@b.batchNo</td>
         </tr>
         <tr>
             <td>材质:</td>
-            <td colspan="2">@b.madeBy</td>
+            <td colspan="2" class="arial">@b.madeBy</td>
         </tr>
         <tr>
             <td>贸易类型:</td>
             <td>@b.tradeTypeName</td>
-            <td>箱号:<span class="arial">@b.boxNumber</span></td>
+            <td>箱号:<span>@b.boxNumber</span></td>
         </tr>
         <tr>
             <td colspan="3">

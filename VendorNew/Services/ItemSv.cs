@@ -140,16 +140,17 @@ namespace VendorNew.Services
         /// <returns></returns>
         public string GetSupplierNameByNumber(string supplierNumber)
         {
-            if (supplierNumber.EndsWith("A")) {
-                supplierNumber = supplierNumber.Replace("A", "");
+            var supplierName = db.Users.Where(u => u.user_name == supplierNumber).Select(u => u.real_name).FirstOrDefault();
+            if (supplierName == null) {
+                if (supplierNumber.EndsWith("A")) {
+                    supplierNumber = supplierNumber.Replace("A", "");
+                }
+                var supplier = db.GetSupplierNameByNumber(supplierNumber).FirstOrDefault();
+                if (supplier != null) {
+                    supplierName = supplier.FName;
+                }
             }
-            var supplier = db.GetSupplierNameByNumber(supplierNumber).FirstOrDefault();
-            if (supplier == null) {
-                return "";
-            }
-            else {
-                return supplier.FName;
-            }
+            return supplierName ?? "";
         }
 
         /// <summary>
@@ -159,13 +160,7 @@ namespace VendorNew.Services
         /// <returns></returns>
         public string GetEmpNameByNumber(string empNumber)
         {
-            var emp = db.GetEmpNameByNumber(empNumber).FirstOrDefault();
-            if (emp == null) {
-                return "";
-            }
-            else {
-                return emp.FName;
-            }
+            return db.GetEmpNameByNumber(empNumber).ToList().Select(e => e.FName).FirstOrDefault() ?? "";            
         }
 
         public supplierInfo GetSupplierInfo(string supplierNumber,string account)
@@ -194,7 +189,7 @@ namespace VendorNew.Services
                 inf = new SupplierInfo();
                 inf.supplier_number = info.supplierNumber;
                 inf.name = info.supplierName;
-                inf.account=account;
+                inf.account = account;
                 db.SupplierInfo.InsertOnSubmit(inf);
             }
             inf.attn_name = info.supplierAttn;

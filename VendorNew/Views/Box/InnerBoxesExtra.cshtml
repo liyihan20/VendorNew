@@ -282,6 +282,11 @@
 
     });
 
+    //查询出的规格型号点击事件
+    function itemOnClick() {
+        $("#btn_select_box_item").trigger("click");
+    }
+
     function splitInnerBox() {
         var splitNum = $("#split_pack_num").numberbox("getValue");
         if (!splitNum) {
@@ -315,7 +320,10 @@
                 searchValue: $.trim(queryValue)
             },
             onLoadSuccess: function (data) {
-                $(self).combogrid("setText", queryValue);
+                $(self).combogrid("setText", queryValue);                
+                if (data.rows.length == 1) {                    
+                    $("#btn_select_box_item").trigger("click");
+                }
             }
         });
 
@@ -358,7 +366,8 @@
                 内箱箱号：
                 <input type="text" class="easyui-textbox" id="innerBoxNumber" name="innerBoxNumber" data-options="prompt:'内箱箱号'" style="width:130px;" />
             </div>
-            <div style="clear:both;margin-top:8px;"></div>
+            <div style="clear:both;"></div>
+            <div style="margin-top:8px;"></div>
             <div style="float:left;width:200px;margin-right:12px;">
                 关联状态：
                 <select class="easyui-combobox" id="hasRelated" name="hasRelated" data-options="panelHeight:'auto',editable:false" style="width:130px;">
@@ -404,9 +413,10 @@
             keyHandler: {
                 enter:boxItemEnter,
                 query:boxItemQuery,    
-            }
+            },
+            onClickRow:itemOnClick
         "></select>
-        <a href="#select_item" class="easyui-linkbutton" id="btn_select_box_item"><i class="fa fa-check-circle"></i> 确认选择</a>
+        <a href="#select_item" class="easyui-linkbutton" id="btn_select_box_item" style="visibility:hidden;"><i class="fa fa-check-circle"></i> 确认选择</a>
     </div>
     <form id="fm_inner_box" method="post">
         <input type="hidden" name="account" value="@ViewData["account"]" />        

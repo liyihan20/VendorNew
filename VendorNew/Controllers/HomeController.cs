@@ -16,25 +16,31 @@ namespace VendorNew.Controllers
         [SessionTimeOutFilter]
         public ActionResult Index(string url)
         {
-            ViewBag.userName = currentUser.userName;
-            ViewBag.realName = currentUser.realName;
-            ViewBag.account = currentAccount;
-            ViewBag.url = url;
+            try {
+                ViewBag.userName = currentUser.userName;
+                ViewBag.realName = currentUser.realName;
+                ViewBag.account = currentAccount;
+                ViewBag.accountName = MyUtils.GetCurrentCompany(currentAccount).accountName;
+                ViewBag.url = url;
+                ViewBag.accountList = MyUtils.GetAllCompany();
 
-            if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
-                ViewBag.needToChangePassword = 1;
+                if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
+                    ViewBag.needToChangePassword = 1;
+                }
             }
-            
+            catch {
+                return RedirectToAction("LogOut", "Account");
+            }
             return View();
         }
         
         [SessionTimeOutFilter]
-        public ActionResult ChangeAccount()
+        public ActionResult ChangeAccount(string account)
         {
             var cookie = Request.Cookies[MyUtils.GetCookieName()];
             if (cookie != null) {
                 //cookie.Values.Remove("account");
-                cookie.Values.Set("account", currentAccount == "O" ? "S" : "O");
+                cookie.Values.Set("account", account);
                 cookie.Expires = DateTime.Now.AddDays(1);
                 Response.AppendCookie(cookie);
                 Session.Clear();

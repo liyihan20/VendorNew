@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using VendorNew.Models;
+using VendorNew.Utils;
 
 namespace VendorNew.Services
 {
@@ -98,7 +99,7 @@ namespace VendorNew.Services
                         batchNo = bp.box.batch,
                         boxNumber = boxNumber,
                         brand = bp.box.brand,
-                        companyName = bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
+                        companyName = MyUtils.GetCurrentCompany(bp.box.account).accountName, //bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
                         grossWeight = string.Format("{0:0.####}", bp.box.every_gross_weight),
                         itemModel = bp.box.item_model,
                         itemName = bp.box.item_name,
@@ -160,7 +161,7 @@ namespace VendorNew.Services
                         batchNo = bp.box.batch,
                         boxNumber = boxNumber,
                         brand = bp.box.brand,
-                        companyName = bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
+                        companyName = MyUtils.GetCurrentCompany(bp.box.account).accountName,//bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
                         grossWeight = string.Format("{0:0.####}", bp.box.every_gross_weight),
                         itemModel = bp.box.item_model,
                         itemName = bp.box.item_name,
