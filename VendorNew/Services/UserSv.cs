@@ -127,6 +127,7 @@ namespace VendorNew.Services
             if (user == null) {
                 throw new Exception("用户id不存在");
             }
+            
             if (user.is_forbit) {
                 user.is_forbit = false;
                 user.forbit_reason = null;
@@ -199,6 +200,17 @@ namespace VendorNew.Services
             }
             return false;
             
+        }
+
+        public string GetPassNotChangedUser()
+        {
+            string result = "";
+            foreach (var u in db.Users.Where(u => u.is_forbit == false && u.user_role == "供应商").Select(u => new { u.user_name, u.password }).ToList()) {
+                if (u.password == MyUtils.getMD5(u.user_name)) {
+                    result += "'" + u.user_name + "',";
+                }
+            }
+            return result;
         }
 
     }

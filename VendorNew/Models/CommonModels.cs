@@ -55,13 +55,13 @@ namespace VendorNew.Models
         public string text { get; set; }
     }
 
-    public class CompanyModel
-    {
-        public string account { get; set; }
-        public string accountName { get; set; }
-        public string shortName { get; set; }
-        public string addr { get; set; }
-        public string phone { get; set; }
-    }
+    //public class CompanyModel
+    //{
+    //    public string account { get; set; }
+    //    public string accountName { get; set; }
+    //    public string shortName { get; set; }
+    //    public string addr { get; set; }
+    //    public string phone { get; set; }
+    //}
 
 }

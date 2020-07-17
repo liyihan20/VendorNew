@@ -1,6 +1,6 @@
 ﻿@using VendorNew.Models
 @{
-    var company = ViewData["currentCompany"] as CompanyModel; //当前公司（光电、半导体、仁寿）
+    var company = ViewData["currentCompany"] as Companies; //当前公司（光电、半导体、仁寿、电子）
     var m = ViewData["reportData"] as PrintApplyModels;
     var pageList = ViewData["pageNumArr"] as List<int>;
     int hasPrinted = 0;

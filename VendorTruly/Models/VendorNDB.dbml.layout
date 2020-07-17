@@ -40,7 +40,7 @@
         <elementListCompartment Id="89cbb53b-e77e-40b0-b08e-04002fe765e6" absoluteBounds="6.2650000000000006, 2.71, 1.9700000000000002, 2.7307230631510415" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <associationConnector edgePoints="[(7.25 : 2.25); (7.25 : 1.825)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(7.25 : 2.25); (7.25 : 1.825)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/VendorNDBDataContext/Users/Users_GroupUsers" />
       <nodes>
         <classShapeMoniker Id="5e785b28-7dc0-4d85-842b-31af66aa2c57" />

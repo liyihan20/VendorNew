@@ -385,6 +385,8 @@ namespace VendorNew.Services
                 throw new Exception("当前申请单状态是：" + dr.p_status + ",不能删除");
             }
 
+            string deleteInfo = dr.bill_no+":";
+
             //先备份
             var backup = new BackupData();
             backup.account = dr.account;
@@ -403,16 +405,20 @@ namespace VendorNew.Services
             //删除关联箱子
             foreach (var box in db.OuterBoxes.Where(o => o.bill_id == billId)) {
                 if (alsoDeleteBox) {
-                    db.OuterBoxPOs.DeleteAllOnSubmit(db.OuterBoxPOs.Where(p => p.out_box_id == box.outer_box_id));
-                    db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.outer_box_id == box.outer_box_id));
-                    db.OuterBoxes.DeleteOnSubmit(box);
+                    deleteInfo += new BoxSv().RemoveOuterBox(box.outer_box_id) + ";";
+                    //int outerBoxId = box.outer_box_id;
+                    //db.OuterBoxes.DeleteOnSubmit(box);
+                    //db.OuterBoxPOs.DeleteAllOnSubmit(db.OuterBoxPOs.Where(p => p.out_box_id == outerBoxId));
+                    //db.OuterBoxesDetail.DeleteAllOnSubmit(db.OuterBoxesDetail.Where(d => d.outer_box_id == outerBoxId));
+                    //db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.outer_box_id == outerBoxId));
+                    //db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.outer_box_id == outerBoxId));
                 }
                 else {
                     box.bill_id = null;
                 }
             }
             db.SubmitChanges();
-            return dr.bill_no;
+            return deleteInfo;
         }
 
         public void UpdatePStatus(int billId, string userName, string beforeStatus, string afterStatus,string doWhat=null, string comment=null)

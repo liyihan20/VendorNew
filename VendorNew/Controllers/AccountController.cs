@@ -4,6 +4,7 @@ using System.Web.Mvc;
 using VendorNew.Models;
 using VendorNew.Services;
 using VendorNew.Utils;
+using System.Linq;
 
 namespace VendorNew.Controllers
 {
@@ -22,7 +23,15 @@ namespace VendorNew.Controllers
                 ViewBag.user_name = MyUtils.DecodeToUTF8(cookie.Values.Get("user_name"));
                 ViewBag.account = cookie.Values.Get("account");
             }
-            ViewBag.accountList = MyUtils.GetAllCompany();
+            var isTesting = bool.Parse(MyUtils.GetAppSetting("isTesting"));
+            if (!isTesting) {
+                //不是测试的，只能登录没有测试标志的账套
+                ViewBag.accountList = new ItemSv().GetAllCompanies().Where(a => a.is_testing == false).ToList();
+            }
+            else {
+                //测试的，可以登录所有账套
+                ViewBag.accountList = new ItemSv().GetAllCompanies();
+            }
             return View();
         }
 

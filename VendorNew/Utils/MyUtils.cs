@@ -257,38 +257,39 @@ namespace VendorNew.Utils
 
         }
 
-        public static CompanyModel GetCurrentCompany(string account)
-        {
-            return GetAllCompany().Find(c => c.account == account);
-        }
+        //将公司信息存入数据库中 2020-3-3
+        //public static CompanyModel GetCurrentCompany(string account)
+        //{
+        //    return GetAllCompany().Find(c => c.account == account);
+        //}
 
-        public static List<CompanyModel> GetAllCompany()
-        {
-            return new List<CompanyModel>()
-            {
-                new CompanyModel(){
-                    account="S",
-                    accountName = "信利半导体有限公司",
-                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
-                    phone = "0660-336788-1234",
-                    shortName = "半导体"
-                },
-                new CompanyModel(){
-                    account="O",
-                    accountName = "信利光电股份有限公司",
-                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
-                    phone = "0660-336788-1234",
-                    shortName = "光电"
-                },
-                new CompanyModel(){
-                    account="R",
-                    accountName = "信利光电仁寿有限公司",
-                    addr = "四川省眉山市仁寿县文林工业园陵州大道信利厂区仓运部",
-                    phone = "15023771749",
-                    shortName = "光电仁寿",
-                }
-            };
-        }
+        //public static List<CompanyModel> GetAllCompany()
+        //{
+        //    return new List<CompanyModel>()
+        //    {
+        //        new CompanyModel(){
+        //            account="S",
+        //            accountName = "信利半导体有限公司",
+        //            addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+        //            phone = "0660-336788-1234",
+        //            shortName = "半导体"
+        //        },
+        //        new CompanyModel(){
+        //            account="O",
+        //            accountName = "信利光电股份有限公司",
+        //            addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+        //            phone = "0660-336788-1234",
+        //            shortName = "光电"
+        //        },
+        //        new CompanyModel(){
+        //            account="R",
+        //            accountName = "信利光电仁寿有限公司",
+        //            addr = "四川省眉山市仁寿县文林工业园陵州大道信利厂区仓运部",
+        //            phone = "15023771749",
+        //            shortName = "光电仁寿",
+        //        }
+        //    };
+        //}
 
     }
 }

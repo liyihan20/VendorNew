@@ -1,4 +1,7 @@
-﻿
+﻿@using VendorTruly.Models
+@{
+    List<CompanyModel> cm = ViewBag.accountList as List<CompanyModel>;
+}
 @section CSS{
     <style type="text/css">        
         #bgDiv{            
@@ -184,7 +187,10 @@
             <form id="loginForm">
                 <div style="margin-bottom:6px;">
                     <select class="easyui-combobox" name="account" id="account" data-options="prompt:'请选择公司名',label:'公司:',labelPosition:'top',panelHeight:'auto',editable:false,value:'@ViewBag.account'" style="width:100%;height:72px;padding-left:30px;">
-                        <option value="TDD">信利光电股份有限公司TDD事业部</option>
+                        <option value=""></option>
+                        @foreach (var c in cm) {
+                            <option value="@c.account">@c.accountName</option>
+                        }
                     </select>
                 </div>
                 <div style="margin-bottom:6px;">

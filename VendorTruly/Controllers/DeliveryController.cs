@@ -291,7 +291,7 @@ namespace VendorTruly.Controllers
 
         [SessionTimeOutJsonFilter]
         public JsonResult RemoveOuterBox(int outerBoxId)
-        {
+        {            
             try {
                 string boxNumber = new BoxSv().RemoveOuterBox(outerBoxId);
                 WLog("删除外箱", "箱号是：" + boxNumber);
@@ -688,14 +688,16 @@ namespace VendorTruly.Controllers
             var dr = new DRSv().GetDRBill(billId);
             if (dr == null) return;
 
-            string subject, content,emailAddr;
+            string subject, content, emailAddr, accountName;
+            var currentCompany = MyUtils.GetCurrentCompany(dr.account);
+            accountName = currentCompany == null ? "" : currentCompany.accountName;
             switch (opType) {
                 case "提交":
                     emailAddr = GetMatOrderEmail(dr);
                     subject="你有一张待审核的供应商送货申请单";
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += string.Format("你有一张待处理的单号为【{0}】的送货申请单，来自【{3}】，供应商【{1}({2})】。请尽快登录平台处理。", dr.bill_no, dr.supplier_name, dr.supplier_number, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += string.Format("你有一张待处理的单号为【{0}】的送货申请单，来自【{3}】，供应商【{1}({2})】。请尽快登录平台处理。", dr.bill_no, dr.supplier_name, dr.supplier_number, accountName);
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台处理这张申请单：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/ConfirmApply?billId=", billId);
@@ -709,7 +711,7 @@ namespace VendorTruly.Controllers
                     subject = "你有一张送货申请单已被订料员" + opType;
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += string.Format("你有一张单号为【{0}】的送货申请单已被{1}{2},来自【{3}】", dr.bill_no, dr.mat_order_name, opType, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += string.Format("你有一张单号为【{0}】的送货申请单已被{1}{2},来自【{3}】", dr.bill_no, dr.mat_order_name, opType, accountName);
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>请点击此链接查看详情</a></div>", outerWebSite, "Delivery/CheckDRApply?id=", billId);
@@ -720,7 +722,7 @@ namespace VendorTruly.Controllers
                     subject = "供应商撤销了一张送货申请单";
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += string.Format("单号为【{0}】的送货申请单已被供应商撤销，来自【{3}】，供应商【{1}({2})】。", dr.bill_no, dr.supplier_name, dr.supplier_number, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += string.Format("单号为【{0}】的送货申请单已被供应商撤销，来自【{3}】，供应商【{1}({2})】。", dr.bill_no, dr.supplier_name, dr.supplier_number, accountName);
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/CheckDRApply?id=", billId);

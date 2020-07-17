@@ -1,4 +1,6 @@
-﻿
+﻿@{
+    string[] billTypes = ViewData["billTypes"] as string[];
+}
 <script>
     $(function () {
         $("#dg_dr").datagrid({
@@ -129,9 +131,9 @@
                         beginDate: $("#beginDate").datebox("getValue"),
                         endDate: $("#endDate").datebox("getValue"),
                         billType: $("#billType").combobox("getValue"),
-                        billNo: $("#billNo").textbox("getValue"),
-                        poNo: $("#poNo").textbox("getValue"),
-                        itemInfo: $("#itemInfo").textbox("getValue"),
+                        billNo: $.trim($("#billNo").textbox("getValue")),
+                        poNo: $.trim($("#poNo").textbox("getValue")),
+                        itemInfo: $.trim($("#itemInfo").textbox("getValue")),
                         pStatus: $("#pStatus").combobox("getValue")                            
                     };
                     window.open("@Url.Content("~/Report/ExporDRData?queryJson=")" + JSON.stringify(queryParams) + "&pageType=apply");
@@ -177,9 +179,9 @@
                     beginDate: $("#beginDate").datebox("getValue"),
                     endDate: $("#endDate").datebox("getValue"),
                     billType: $("#billType").combobox("getValue"),
-                    billNo: $("#billNo").textbox("getValue"),
-                    poNo: $("#poNo").textbox("getValue"),
-                    itemInfo: $("#itemInfo").textbox("getValue"),
+                    billNo: $.trim($("#billNo").textbox("getValue")),
+                    poNo: $.trim($("#poNo").textbox("getValue")),
+                    itemInfo: $.trim($("#itemInfo").textbox("getValue")),
                     pStatus:$("#pStatus").combobox("getValue")
                 }
             });
@@ -224,10 +226,9 @@
                 订单类型：
                 <select class="easyui-combobox" id="billType" name="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
                     <option value="所有">所有</option>
-                    <option value="普通采购">普通采购</option>
-                    <option value="委外PO">委外PO</option>
-                    <option value="VMI订单">VMI订单</option>
-                    <option value="VMI合同">VMI合同</option>
+                    @foreach (var b in billTypes) {
+                        <option value="@b">@b</option>
+                    }                    
                 </select>
             </div>
             <div style="float:left;width:290px;margin-right:12px;">

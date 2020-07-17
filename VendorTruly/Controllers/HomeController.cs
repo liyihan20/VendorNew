@@ -16,15 +16,20 @@ namespace VendorTruly.Controllers
         [SessionTimeOutFilter]
         public ActionResult Index(string url)
         {
-            ViewBag.userName = currentUser.userName;
-            ViewBag.realName = currentUser.realName;
-            ViewBag.account = currentAccount;
-            ViewBag.url = url;
+            try {
+                ViewBag.userName = currentUser.userName;
+                ViewBag.realName = currentUser.realName;
+                ViewBag.account = currentAccount;
+                ViewBag.accountName = MyUtils.GetCurrentCompany(currentAccount).accountName;
+                ViewBag.url = url;
 
-            if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
-                ViewBag.needToChangePassword = 1;
+                if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
+                    ViewBag.needToChangePassword = 1;
+                }
             }
-            
+            catch {
+                return RedirectToAction("LogOut", "Account");
+            }
             return View();
         }
         

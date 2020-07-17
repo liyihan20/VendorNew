@@ -49,7 +49,8 @@ namespace VendorNew.Controllers
             ViewData["pageNumList"] = pageNumList;
             ViewData["pageNumArr"] = pageNumArr;
 
-            ViewData["currentCompany"] = MyUtils.GetCurrentCompany(currentAccount);
+            //ViewData["currentCompany"] = currentCompany;//不能获取当前登录账套的，因为可以在光电账套打开半导体送货单
+            ViewData["currentCompany"] = new ItemSv().GetCertainCompany(m.h.bill_no.Substring(0, 1));
 
             WLog("打印送货申请单", "进入打印界面", m.h.bill_no);
 

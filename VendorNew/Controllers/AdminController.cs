@@ -62,13 +62,13 @@ namespace VendorNew.Controllers
         [SessionTimeOutJsonFilter]
         public JsonResult GetSupplierNameByNumber(string number)
         {
-            return Json(new SRM(true, "", new ItemSv().GetSupplierNameByNumber(number)));
+            return Json(new SRM(true, "", new ItemSv().GetSupplierNameByNumber(number,currentAccount)));
         }
 
         [SessionTimeOutJsonFilter]
         public JsonResult GetEmpNameByNumber(string number)
         {
-            return Json(new SRM(true, "", new ItemSv().GetEmpNameByNumber(number)));
+            return Json(new SRM(true, "", new ItemSv().GetEmpNameByNumber(number,currentAccount)));
         }
 
         [SessionTimeOutJsonFilter]
@@ -118,6 +118,9 @@ namespace VendorNew.Controllers
         [SessionTimeOutJsonFilter]
         public JsonResult ToggleUser(int userId)
         {
+            if (userId == currentUser.userId) {
+                return Json(new SRM(false, "不能禁用自己的用户"));
+            }
             try {
                 new UserSv().ToggleUser(userId);
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using VendorTruly.Models;
+using VendorTruly.Utils;
 
 namespace VendorTruly.Services
 {
@@ -98,7 +99,7 @@ namespace VendorTruly.Services
                         batchNo = bp.box.batch,
                         boxNumber = boxNumber,
                         brand = bp.box.brand,
-                        companyName = bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
+                        companyName = MyUtils.GetCurrentCompany(bp.box.account).accountName,
                         grossWeight = string.Format("{0:0.####}", bp.box.every_gross_weight),
                         itemModel = bp.box.item_model,
                         itemName = bp.box.item_name,
@@ -115,9 +116,9 @@ namespace VendorTruly.Services
                         rohs = bp.box.rohs,
                         supplierName = supplierName,
                         tradeTypeName = bp.box.trade_type_name,
-                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};",
+                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};{12};",
                         boxNumber, bp.po.po_number, bp.po.po_entry_id, bp.box.item_number, bp.po.send_num,
-                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account == "S" ? "zb" : "gd", bp.box.outer_box_id
+                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account, bp.box.outer_box_id,bp.po.out_box_po_id
                         )
                         //qrcodeContent = bp.box.outer_box_id + ";" + boxNumber
                     });
@@ -160,7 +161,7 @@ namespace VendorTruly.Services
                         batchNo = bp.box.batch,
                         boxNumber = boxNumber,
                         brand = bp.box.brand,
-                        companyName = bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
+                        companyName = MyUtils.GetCurrentCompany(bp.box.account).accountName,
                         grossWeight = string.Format("{0:0.####}", bp.box.every_gross_weight),
                         itemModel = bp.box.item_model,
                         itemName = bp.box.item_name,
@@ -177,9 +178,9 @@ namespace VendorTruly.Services
                         rohs = bp.box.rohs,
                         supplierName = supplierName,
                         tradeTypeName = bp.box.trade_type_name,
-                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};",
+                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};{12};",
                         boxNumber, bp.po.po_number, bp.po.po_entry_id, bp.box.item_number, bp.po.send_num,
-                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account == "S" ? "zb" : "gd",bp.box.outer_box_id
+                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account,bp.box.outer_box_id,bp.po.out_box_po_id
                         )
                         //qrcodeContent = bp.box.outer_box_id + ";" + boxNumber
                     });

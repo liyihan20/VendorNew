@@ -82,10 +82,14 @@ namespace VendorTruly.Controllers
             }
             var result = pos.OrderByDescending(p => p.po_date).Skip((page - 1) * rows).Take(rows).ToList();
 
-            var noFinishBox = boxSv.GetNotFinishedBoxQty(result.Select(r => new IDModel() { interId = r.po_id, entryId = r.po_entry_id }).ToList());
+            //var noFinishBox = boxSv.GetNotFinishedBoxQty(result.Select(r => new IDModel() { interId = r.po_id, entryId = r.po_entry_id }).ToList());
             foreach (var p in result) {
                 p.id_field = p.po_id + "-" + p.po_entry_id;
-                p.can_make_box_qty = p.po_qty - p.realte_qty - (noFinishBox.Where(f => f.poId == p.po_id && f.poEntryId == p.po_entry_id).Sum(r => r.qty) ?? 0m);
+                //2019-10-24 因为TDD送货平台只用来打印标签，不做送货单，所以此规则改为：可做外箱数量=po数量-平台未关联外箱数量（不记k3关联数量）
+                //p.can_make_box_qty = p.po_qty - (noFinishBox.Where(f => f.poId == p.po_id && f.poEntryId == p.po_entry_id).Sum(r => r.qty) ?? 0m);
+                //p.can_make_box_qty = p.po_qty - p.realte_qty - (noFinishBox.Where(f => f.poId == p.po_id && f.poEntryId == p.po_entry_id).Sum(r => r.qty) ?? 0m);
+                //2019-11-19 因为有退补货的存在，所以此规则再次修改为：可做外箱数量=po数量-k3关联数量
+                p.can_make_box_qty = p.po_qty - p.realte_qty;
             }
 
             return Json(new { suc = true, total = pos.Count(), rows = result });            

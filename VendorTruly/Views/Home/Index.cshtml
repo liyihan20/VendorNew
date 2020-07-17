@@ -24,7 +24,7 @@
         <div>
             <span style="margin: 0 0 0 30px;">登录名: @ViewBag.userName</span> 
             <span style="margin: 0 0 0 30px;">用户名: @ViewBag.realName</span>
-            <span style="margin: 0 0 0 30px;">公司: @(ViewBag.account == "TDD" ? "信利光电股份有限公司TDD事业部" : "")</span>
+            <span style="margin: 0 0 0 30px;">公司: @ViewBag.accountName</span>
             <span style="margin: 0 0 0 30px;">日期: @DateTime.Now.ToString("yyyy-MM-dd")</span>
         </div>
     </div>

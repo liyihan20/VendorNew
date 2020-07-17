@@ -53,7 +53,7 @@
             var number = $("#user_name").textbox("getValue");
             if (role == "供应商") {
                 //输入供应商编码，自动取得供应商名称                
-                if (number.indexOf("11.") == 0 || number.indexOf("15.") == 0) {
+                if (number.indexOf("11.") == 0 || number.indexOf("15.") || number.indexOf("2.") == 0) {
                     $.post("GetSupplierNameByNumber", { number: number }, function (data) {
                         if (data.suc) {
                             $("#real_name").textbox("setValue", data.extra);

@@ -1,4 +1,6 @@
-﻿
+﻿@{
+    string[] billTypes = ViewData["billTypes"] as string[];
+}
 <script>
     var firstSelectedPO; //第一个选择的po，在po combogrid
     var currentSelectedBox; //当前选择外箱
@@ -478,6 +480,7 @@
                         //单位不取上个箱子的，以订单的为准
                         delete data.boxInfo.unit_name;
                         delete data.boxInfo.unit_number;
+                        delete data.boxInfo.item_model; //2020-5-28 规格型号有可能会变更，取订单的
                         $("#fm_outer_box").form("load", data.boxInfo);
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");
@@ -720,6 +723,7 @@
             url: 'GetPO4Box',
             queryParams: {
                 billType: $("#billType").combobox("getValue"),
+                searchType: $("#searchType").combobox("getValue"),
                 searchValue: q
             },
             onLoadSuccess: function (data) {
@@ -832,23 +836,27 @@
 <div id="dlg_outer_box" class="easyui-dialog" style="width: 800px; height:550px;" closed="true" modal="true" title="&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;i&gt; 新增外箱">
     <div style="text-align:center;padding:12px;">
         
-        <i class="fa fa-file-o"></i> 订单类型：
+        订单类型：
         <select class="easyui-combobox" id="billType" name="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">            
-            <option value="普通采购">普通采购</option>
-            <option value="委外PO">委外PO</option>
-            <option value="VMI采购">VMI订单</option>
-            <option value="VMI合同">VMI合同</option>
+            @foreach (var b in billTypes) {
+                <option value="@b">@b</option>
+            }
         </select>
         &nbsp;
-        <i class="fa fa-search"></i> 选择订单： 
-        <select id="select_box_po" class="easyui-combogrid" name="box_po_select" style="width:280px;"
+        筛选条件：
+        <select class="easyui-combobox" id="searchType" name="searchType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
+            <option value="model">规格型号</option>
+            <option value="po_no">订单号</option>
+        </select>
+        ：
+        <select id="select_box_po" class="easyui-combogrid" name="box_po_select" style="width:250px;"
         data-options="
             panelWidth:630,
             idField:'id_field',
-            textField:'po_number',            
+            textField:'po_number',
             pagination: true,
             pageSize:20,
-            prompt:'可输入订单编号或规格型号然后按回车键查询',
+            prompt:'在此输入后按回车键查询',
             columns:[[
                 { field:'po_number',title:'订单编号',width:110,align:'center' },
                 { field:'po_entry_id',title:'分录号',width:60,align:'center' },
@@ -862,7 +870,7 @@
             ]],
             keyHandler: {
                 enter:boxPOEnter,
-                query:boxPOQuery,    
+                query:boxPOQuery,
             },
             onClickRow:boxPOOnClick
         "></select>

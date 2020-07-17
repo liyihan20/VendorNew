@@ -14,6 +14,7 @@ namespace VendorNew.Controllers
         private UserInfoModel _currentUser;
         private string _currentAccount;
         private bool? _canCheckAll, _canAuditAll;
+        private Companies _currentCompany;
 
         public UserInfoModel currentUser
         {
@@ -82,6 +83,19 @@ namespace VendorNew.Controllers
                     Session["canAuditAll"] = _canAuditAll;
                 }
                 return (bool)_canAuditAll;
+            }
+        }
+
+        public Companies currentCompany
+        {
+            get
+            {
+                _currentCompany = (Companies)Session["currentcompany"];
+                if (_currentCompany == null) {
+                    _currentCompany = new ItemSv().GetCertainCompany(currentAccount);
+                    Session["currentcompany"] = _currentCompany;
+                }
+                return _currentCompany;
             }
         }
 

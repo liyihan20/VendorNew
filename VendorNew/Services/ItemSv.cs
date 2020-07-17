@@ -138,14 +138,14 @@ namespace VendorNew.Services
         /// </summary>
         /// <param name="supplierNumber">供应商编码</param>
         /// <returns></returns>
-        public string GetSupplierNameByNumber(string supplierNumber)
+        public string GetSupplierNameByNumber(string supplierNumber,string account)
         {
             var supplierName = db.Users.Where(u => u.user_name == supplierNumber).Select(u => u.real_name).FirstOrDefault();
             if (supplierName == null) {
                 if (supplierNumber.EndsWith("A")) {
                     supplierNumber = supplierNumber.Replace("A", "");
                 }
-                var supplier = db.GetSupplierNameByNumber(supplierNumber).FirstOrDefault();
+                var supplier = db.ExecuteQuery<K3NameModel>("exec GetSupplierNameByNumber @supplierNumber = {0},@account = {1}", supplierNumber, account).FirstOrDefault();
                 if (supplier != null) {
                     supplierName = supplier.FName;
                 }
@@ -158,9 +158,9 @@ namespace VendorNew.Services
         /// </summary>
         /// <param name="empNumber">职员厂牌</param>
         /// <returns></returns>
-        public string GetEmpNameByNumber(string empNumber)
+        public string GetEmpNameByNumber(string empNumber,string account)
         {
-            return db.GetEmpNameByNumber(empNumber).ToList().Select(e => e.FName).FirstOrDefault() ?? "";            
+            return db.ExecuteQuery<K3NameModel>("exec GetEmpNameByNumber @empNumber = {0},@account = {1}", empNumber, account).ToList().Select(e => e.FName).FirstOrDefault() ?? "";            
         }
 
         public supplierInfo GetSupplierInfo(string supplierNumber,string account)
@@ -226,9 +226,20 @@ namespace VendorNew.Services
             db.SubmitChanges();
         }
 
-        public List<Vw_K3_Item> SearchK3Item(string itemModel,string account)
+        public List<K3ItemModel> SearchK3Item(string itemModel, string account)
         {
-            return db.Vw_K3_Item.Where(v => v.item_model == itemModel && v.account == account).ToList();
+            return db.ExecuteQuery<K3ItemModel>("exec GetK3Item @item_model = {0},@account = {1}", itemModel, account).ToList();
+        }
+
+        public List<Companies> GetAllCompanies()
+        {
+            return db.Companies.ToList();
+        }
+        
+
+        public Companies GetCertainCompany(string account)
+        {
+            return GetAllCompanies().Where(a => a.account == account).FirstOrDefault();
         }
 
     }

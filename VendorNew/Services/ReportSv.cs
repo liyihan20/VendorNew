@@ -99,7 +99,7 @@ namespace VendorNew.Services
                         batchNo = bp.box.batch,
                         boxNumber = boxNumber,
                         brand = bp.box.brand,
-                        companyName = MyUtils.GetCurrentCompany(bp.box.account).accountName, //bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
+                        companyName = new ItemSv().GetCertainCompany(bp.box.account).accountName, 
                         grossWeight = string.Format("{0:0.####}", bp.box.every_gross_weight),
                         itemModel = bp.box.item_model,
                         itemName = bp.box.item_name,
@@ -116,9 +116,9 @@ namespace VendorNew.Services
                         rohs = bp.box.rohs,
                         supplierName = supplierName,
                         tradeTypeName = bp.box.trade_type_name,
-                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};",
+                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};{12};",
                         boxNumber, bp.po.po_number, bp.po.po_entry_id, bp.box.item_number, bp.po.send_num,
-                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account == "S" ? "zb" : "gd", bp.box.outer_box_id
+                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account == "S" ? "zb" : "gd", bp.box.outer_box_id,bp.po.out_box_po_id
                         )
                         //qrcodeContent = bp.box.outer_box_id + ";" + boxNumber
                     });
@@ -153,7 +153,7 @@ namespace VendorNew.Services
             }
 
             string supplierNumber = selectedboxes.First().box.user_name;
-            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber);
+            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber,selectedboxes.First().box.account);
             foreach (var bp in selectedboxes) {
                 foreach (var boxNumber in bp.box.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)) {
                     boxes.Add(new PrintOuterBoxModels()
@@ -161,7 +161,7 @@ namespace VendorNew.Services
                         batchNo = bp.box.batch,
                         boxNumber = boxNumber,
                         brand = bp.box.brand,
-                        companyName = MyUtils.GetCurrentCompany(bp.box.account).accountName,//bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
+                        companyName = new ItemSv().GetCertainCompany(bp.box.account).accountName,//bp.box.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司",
                         grossWeight = string.Format("{0:0.####}", bp.box.every_gross_weight),
                         itemModel = bp.box.item_model,
                         itemName = bp.box.item_name,
@@ -178,9 +178,9 @@ namespace VendorNew.Services
                         rohs = bp.box.rohs,
                         supplierName = supplierName,
                         tradeTypeName = bp.box.trade_type_name,
-                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};",
+                        qrcodeContent = string.Format("{11};{0};{1};{2};{3};{4:0.####};{5:0.####};{6};{7};{8};{9:yyyy-MM-dd};{10};{12};",
                         boxNumber, bp.po.po_number, bp.po.po_entry_id, bp.box.item_number, bp.po.send_num,
-                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account == "S" ? "zb" : "gd",bp.box.outer_box_id
+                        bp.box.backup_number, bp.box.unit_number, supplierNumber, "", "", bp.box.account == "S" ? "zb" : "gd",bp.box.outer_box_id,bp.po.out_box_po_id
                         )
                         //qrcodeContent = bp.box.outer_box_id + ";" + boxNumber
                     });
@@ -303,7 +303,7 @@ namespace VendorNew.Services
             }
 
             string supplierNumber = m.First().o.user_name;
-            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber);            
+            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber,m.First().o.account);            
 
             foreach (var b in m) {
                 var outerBoxes = b.o.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
@@ -388,7 +388,7 @@ namespace VendorNew.Services
             }
 
             string supplierNumber = m.First().e.user_name;
-            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber);
+            string supplierName = new ItemSv().GetSupplierNameByNumber(supplierNumber,m.First().e.account);
             if (string.IsNullOrEmpty(supplierName)) {
                 supplierName = "测试供应商名";
             }

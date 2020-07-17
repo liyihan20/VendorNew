@@ -11,4 +11,10 @@ namespace VendorNew.Models
         public string userName { get; set; }
         public string realName { get; set; }
     }
+
+    public class K3NameModel
+    {
+        public string FName { get; set; }
+    }
+
 }

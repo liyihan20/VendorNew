@@ -514,6 +514,7 @@
                         //单位不取上个箱子的，以订单的为准
                         delete data.boxInfo.unit_name;
                         delete data.boxInfo.unit_number;
+                        delete data.boxInfo.item_model; //2020-5-28 规格型号有可能会变更，取订单的
                         $("#fm_outer_box").form("load", data.boxInfo);
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");

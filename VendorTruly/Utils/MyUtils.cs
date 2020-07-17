@@ -5,10 +5,9 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
+using VendorTruly.Models;
 
 namespace VendorTruly.Utils
 {
@@ -256,6 +255,34 @@ namespace VendorTruly.Utils
 
             return result;
 
+        }
+
+
+        public static CompanyModel GetCurrentCompany(string account)
+        {
+            return GetAllCompany().Find(c => c.account == account);
+        }
+
+        public static List<CompanyModel> GetAllCompany()
+        {
+            return new List<CompanyModel>()
+            {
+                
+                new CompanyModel(){
+                    account="TDD",
+                    accountName = "信利光电股份有限公司TDD事业部",
+                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+                    phone = "0660-336788-1234",
+                    shortName = "光电TDD"
+                },
+                new CompanyModel(){
+                    account="AUTO",
+                    accountName = "信利半导体有限公司AUTO事业部",
+                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+                    phone = "0660-336788-1234",
+                    shortName = "半导体AUTO"
+                }
+            };
         }
 
     }

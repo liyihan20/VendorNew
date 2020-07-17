@@ -33,6 +33,14 @@ namespace VendorTruly.Services
                 everyBoxQty += (decimal)po.send_num;
             }
 
+            //如果有关联小标签，验证小标签是否已被关联，因为偶有出现小标签被外箱重复关联的情况 2019-11-19
+            if (innerBoxIds.Count() > 0) {
+                var relatedInnerBoxes = db.InneBoxes.Where(i => innerBoxIds.Contains(i.inner_box_id) && i.outer_box_id != null).ToList();
+                if (relatedInnerBoxes.Count() > 0) {
+                    throw new Exception("已选择的小标签[" + relatedInnerBoxes.First().box_number + "]已被其它外箱关联，不能重复关联，请重新加载最新小标签后再选择");
+                }
+            }
+
             //数量没问题之后，就保存
             var boxNumber = new ItemSv().GetBoxNumber("O", (int)box.pack_num);
             box.box_number = boxNumber[0];
@@ -253,6 +261,10 @@ namespace VendorTruly.Services
         {
             string boxNumber = "";
             var box = db.OuterBoxes.Where(o => o.outer_box_id == outerBoxId).FirstOrDefault();
+            if (db.IsBoxHasBeenScaned(box.account, box.box_number_long).First().result == true) {
+                throw new Exception("此外箱标签已被扫描，不能删除");
+            }
+            
             if (box != null) {
                 boxNumber = box.box_number;
             }
@@ -273,7 +285,7 @@ namespace VendorTruly.Services
         public string RemoveInnerBox(int innerBoxId)
         {
             var box = db.InneBoxes.Where(i => i.inner_box_id == innerBoxId).FirstOrDefault();
-            if (box == null) return "";
+            if (box == null) return "";            
             string boxNumber = box.box_number;
 
             db.InneBoxes.DeleteAllOnSubmit(db.InneBoxes.Where(i => i.inner_box_id == innerBoxId));
@@ -410,7 +422,7 @@ namespace VendorTruly.Services
                 db.SubmitChanges();
 
                 //更新箱子明细
-                UpdateBoxDetaiId(b2.outer_box_id);
+                UpdateBoxDetaiId(outerBoxId,b2.outer_box_id);
 
                 return new string[] { boxNumberBefore, b1.box_number, b2.box_number };
             }
@@ -432,7 +444,7 @@ namespace VendorTruly.Services
         /// 拆分箱子后，在同步修改一下箱子明细
         /// </summary>
         /// <param name="newOuterBoxNumber"></param>
-        private void UpdateBoxDetaiId(int newOuterBoxId)
+        private void UpdateBoxDetaiId(int oldOuterBoxId,int newOuterBoxId)
         {
             var outerBox = db.OuterBoxes.Where(o => o.outer_box_id == newOuterBoxId).FirstOrDefault();
             if (outerBox == null) return;
@@ -441,7 +453,7 @@ namespace VendorTruly.Services
             //更新外箱明细
             var outerNumberArr = outerBox.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var oNum in outerNumberArr) {
-                foreach (var od in db.OuterBoxesDetail.Where(o => o.box_number == oNum)) {
+                foreach (var od in db.OuterBoxesDetail.Where(o => o.box_number == oNum && o.outer_box_id == oldOuterBoxId)) {
                     od.outer_box_id = outerBox.outer_box_id;
                 }
             }
@@ -450,7 +462,7 @@ namespace VendorTruly.Services
             foreach (var ib in innerboxes) {
                 var innerBoxNumberArr = ib.box_number_long.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var iNum in innerBoxNumberArr) {
-                    foreach (var id in db.InnerBoxesDetail.Where(i => i.inner_box_number == iNum)) {
+                    foreach (var id in db.InnerBoxesDetail.Where(i => i.inner_box_number == iNum && i.outer_box_id == oldOuterBoxId)) {
                         id.outer_box_id = newOuterBoxId;
                         id.inner_box_id = ib.inner_box_id;
                     }
@@ -483,6 +495,7 @@ namespace VendorTruly.Services
                 result = from b in result
                          join po in db.OuterBoxPOs on b.outer_box_id equals po.out_box_id
                          where po.po_number.Contains(p.poNo)
+                         //where po.po_number == p.poNo
                          select b;
             }
             if (!string.IsNullOrWhiteSpace(p.billNo)) {

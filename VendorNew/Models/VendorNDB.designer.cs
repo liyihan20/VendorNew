@@ -90,6 +90,9 @@ namespace VendorNew.Models
     partial void InsertInnerBoxesExtra(InnerBoxesExtra instance);
     partial void UpdateInnerBoxesExtra(InnerBoxesExtra instance);
     partial void DeleteInnerBoxesExtra(InnerBoxesExtra instance);
+    partial void InsertCompanies(Companies instance);
+    partial void UpdateCompanies(Companies instance);
+    partial void DeleteCompanies(Companies instance);
     #endregion
 		
 		public VendorNDBDataContext() : 
@@ -266,14 +269,6 @@ namespace VendorNew.Models
 			}
 		}
 		
-		public System.Data.Linq.Table<Vw_K3_Item> Vw_K3_Item
-		{
-			get
-			{
-				return this.GetTable<Vw_K3_Item>();
-			}
-		}
-		
 		public System.Data.Linq.Table<OuterBoxes> OuterBoxes
 		{
 			get
@@ -290,11 +285,12 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.GetSupplierNameByNumber")]
-		public ISingleResult<GetSupplierNameByNumberResult> GetSupplierNameByNumber([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string supplierNumber)
+		public System.Data.Linq.Table<Companies> Companies
 		{
-			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), supplierNumber);
-			return ((ISingleResult<GetSupplierNameByNumberResult>)(result.ReturnValue));
+			get
+			{
+				return this.GetTable<Companies>();
+			}
 		}
 		
 		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.GetSupplierInfo")]
@@ -304,17 +300,24 @@ namespace VendorNew.Models
 			return ((ISingleResult<GetSupplierInfoResult>)(result.ReturnValue));
 		}
 		
-		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.GetEmpNameByNumber")]
-		public ISingleResult<GetEmpNameByNumberResult> GetEmpNameByNumber([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string empNumber)
-		{
-			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), empNumber);
-			return ((ISingleResult<GetEmpNameByNumberResult>)(result.ReturnValue));
-		}
-		
 		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.UpdateStatusToFinish")]
 		public int UpdateStatusToFinish([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string bill_no)
 		{
 			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), bill_no);
+			return ((int)(result.ReturnValue));
+		}
+		
+		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.GetSupplierNameByNumber")]
+		public int GetSupplierNameByNumber([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string supplierNumber, [global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(10)")] string account)
+		{
+			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), supplierNumber, account);
+			return ((int)(result.ReturnValue));
+		}
+		
+		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.GetEmpNameByNumber")]
+		public int GetEmpNameByNumber([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(50)")] string empNumber, [global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(10)")] string account)
+		{
+			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), empNumber, account);
 			return ((int)(result.ReturnValue));
 		}
 	}
@@ -1384,7 +1387,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_sys_num", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_sys_num", DbType="VarChar(max)")]
 		public string sys_num
 		{
 			get
@@ -2094,7 +2097,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_user_id", DbType="Int")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_user_id", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> user_id
 		{
 			get
@@ -2114,7 +2117,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_account", DbType="VarChar(10)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_account", DbType="VarChar(10)", UpdateCheck=UpdateCheck.Never)]
 		public string account
 		{
 			get
@@ -2134,7 +2137,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_bill_no", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_bill_no", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string bill_no
 		{
 			get
@@ -2154,7 +2157,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_bill_date", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_bill_date", DbType="DateTime", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<System.DateTime> bill_date
 		{
 			get
@@ -2174,7 +2177,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_send_date", DbType="SmallDateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_send_date", DbType="SmallDateTime", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<System.DateTime> send_date
 		{
 			get
@@ -2194,7 +2197,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_bill_type", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_bill_type", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string bill_type
 		{
 			get
@@ -2214,7 +2217,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string supplier_number
 		{
 			get
@@ -2234,7 +2237,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_name", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_name", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string supplier_name
 		{
 			get
@@ -2254,7 +2257,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_currency_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_currency_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string currency_number
 		{
 			get
@@ -2274,7 +2277,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_currency_name", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_currency_name", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string currency_name
 		{
 			get
@@ -2294,7 +2297,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_buy_type", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_buy_type", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string buy_type
 		{
 			get
@@ -2314,7 +2317,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trade_type_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trade_type_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string trade_type_number
 		{
 			get
@@ -2334,7 +2337,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trade_type_name", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_trade_type_name", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string trade_type_name
 		{
 			get
@@ -2354,7 +2357,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_department_name", DbType="VarChar(500)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_department_name", DbType="VarChar(500)", UpdateCheck=UpdateCheck.Never)]
 		public string department_name
 		{
 			get
@@ -2374,7 +2377,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_mat_order_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_mat_order_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string mat_order_number
 		{
 			get
@@ -2394,7 +2397,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_mat_order_name", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_mat_order_name", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string mat_order_name
 		{
 			get
@@ -2434,7 +2437,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_in_stock_bill_number", DbType="VarChar(100)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_in_stock_bill_number", DbType="VarChar(100)", UpdateCheck=UpdateCheck.Never)]
 		public string in_stock_bill_number
 		{
 			get
@@ -2454,7 +2457,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_in_stock_bill_date", DbType="DateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_in_stock_bill_date", DbType="DateTime", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<System.DateTime> in_stock_bill_date
 		{
 			get
@@ -2474,7 +2477,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_invoice_number", DbType="VarChar(500)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_invoice_number", DbType="VarChar(500)", UpdateCheck=UpdateCheck.Never)]
 		public string supplier_invoice_number
 		{
 			get
@@ -2494,7 +2497,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_dr_number", DbType="VarChar(500)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_supplier_dr_number", DbType="VarChar(500)", UpdateCheck=UpdateCheck.Never)]
 		public string supplier_dr_number
 		{
 			get
@@ -2514,7 +2517,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_comment", DbType="VarChar(500)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_comment", DbType="VarChar(500)", UpdateCheck=UpdateCheck.Never)]
 		public string comment
 		{
 			get
@@ -4066,7 +4069,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string item_number
 		{
 			get
@@ -4086,7 +4089,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_name", DbType="VarChar(200)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_name", DbType="VarChar(200)", UpdateCheck=UpdateCheck.Never)]
 		public string item_name
 		{
 			get
@@ -4106,7 +4109,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_model", DbType="VarChar(500)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_model", DbType="VarChar(500)", UpdateCheck=UpdateCheck.Never)]
 		public string item_model
 		{
 			get
@@ -4126,7 +4129,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_unit_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_unit_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string unit_number
 		{
 			get
@@ -4146,7 +4149,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_unit_name", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_unit_name", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string unit_name
 		{
 			get
@@ -4166,7 +4169,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_qty", DbType="Decimal(18,4)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_qty", DbType="Decimal(18,4)", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<decimal> po_qty
 		{
 			get
@@ -4186,7 +4189,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_send_qty", DbType="Decimal(18,4)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_send_qty", DbType="Decimal(18,4)", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<decimal> send_qty
 		{
 			get
@@ -4206,7 +4209,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string po_number
 		{
 			get
@@ -4226,7 +4229,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_id", DbType="Int")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_id", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> po_id
 		{
 			get
@@ -4246,7 +4249,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_entry_id", DbType="Int")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_entry_id", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> po_entry_id
 		{
 			get
@@ -4266,7 +4269,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_date", DbType="SmallDateTime")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_po_date", DbType="SmallDateTime", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<System.DateTime> po_date
 		{
 			get
@@ -4286,7 +4289,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_pr_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_pr_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string pr_number
 		{
 			get
@@ -4306,7 +4309,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_buyer_number", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_buyer_number", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string buyer_number
 		{
 			get
@@ -4326,7 +4329,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_buyer_name", DbType="VarChar(50)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_buyer_name", DbType="VarChar(50)", UpdateCheck=UpdateCheck.Never)]
 		public string buyer_name
 		{
 			get
@@ -4346,7 +4349,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_comment", DbType="VarChar(500)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_comment", DbType="VarChar(500)", UpdateCheck=UpdateCheck.Never)]
 		public string comment
 		{
 			get
@@ -4366,7 +4369,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_contract_entry_id", DbType="Int")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_contract_entry_id", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> contract_entry_id
 		{
 			get
@@ -4386,7 +4389,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_can_send_qty", DbType="Decimal(18,4)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_can_send_qty", DbType="Decimal(18,4)", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<decimal> can_send_qty
 		{
 			get
@@ -4406,7 +4409,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_pr_entry_id", DbType="Int")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_pr_entry_id", DbType="Int", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<int> pr_entry_id
 		{
 			get
@@ -4426,7 +4429,7 @@ namespace VendorNew.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_tax_price", DbType="Decimal(14,6)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_tax_price", DbType="Decimal(14,6)", UpdateCheck=UpdateCheck.Never)]
 		public System.Nullable<decimal> tax_price
 		{
 			get
@@ -4731,123 +4734,6 @@ namespace VendorNew.Models
 			if ((this.PropertyChanged != null))
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Vw_K3_Item")]
-	public partial class Vw_K3_Item
-	{
-		
-		private string _account;
-		
-		private string _item_number;
-		
-		private string _item_name;
-		
-		private string _item_model;
-		
-		private string _unit_number;
-		
-		private string _unit_name;
-		
-		public Vw_K3_Item()
-		{
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_account", DbType="VarChar(1) NOT NULL", CanBeNull=false)]
-		public string account
-		{
-			get
-			{
-				return this._account;
-			}
-			set
-			{
-				if ((this._account != value))
-				{
-					this._account = value;
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_number", DbType="VarChar(80)")]
-		public string item_number
-		{
-			get
-			{
-				return this._item_number;
-			}
-			set
-			{
-				if ((this._item_number != value))
-				{
-					this._item_number = value;
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_name", DbType="VarChar(80) NOT NULL", CanBeNull=false)]
-		public string item_name
-		{
-			get
-			{
-				return this._item_name;
-			}
-			set
-			{
-				if ((this._item_name != value))
-				{
-					this._item_name = value;
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_item_model", DbType="VarChar(255)")]
-		public string item_model
-		{
-			get
-			{
-				return this._item_model;
-			}
-			set
-			{
-				if ((this._item_model != value))
-				{
-					this._item_model = value;
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_unit_number", DbType="VarChar(30) NOT NULL", CanBeNull=false)]
-		public string unit_number
-		{
-			get
-			{
-				return this._unit_number;
-			}
-			set
-			{
-				if ((this._unit_number != value))
-				{
-					this._unit_number = value;
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_unit_name", DbType="VarChar(80) NOT NULL", CanBeNull=false)]
-		public string unit_name
-		{
-			get
-			{
-				return this._unit_name;
-			}
-			set
-			{
-				if ((this._unit_name != value))
-				{
-					this._unit_name = value;
-				}
 			}
 		}
 	}
@@ -6248,28 +6134,304 @@ namespace VendorNew.Models
 		}
 	}
 	
-	public partial class GetSupplierNameByNumberResult
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.Companies")]
+	public partial class Companies : INotifyPropertyChanging, INotifyPropertyChanged
 	{
 		
-		private string _FName;
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
 		
-		public GetSupplierNameByNumberResult()
+		private int _id;
+		
+		private string _account;
+		
+		private string _databaseName;
+		
+		private string _accountName;
+		
+		private string _addr;
+		
+		private string _phone;
+		
+		private string _shortName;
+		
+		private string _billTypes;
+		
+		private string _plugin_key;
+		
+		private string _vmi_key;
+		
+		private bool _is_testing;
+		
+    #region 可扩展性方法定义
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnidChanging(int value);
+    partial void OnidChanged();
+    partial void OnaccountChanging(string value);
+    partial void OnaccountChanged();
+    partial void OndatabaseNameChanging(string value);
+    partial void OndatabaseNameChanged();
+    partial void OnaccountNameChanging(string value);
+    partial void OnaccountNameChanged();
+    partial void OnaddrChanging(string value);
+    partial void OnaddrChanged();
+    partial void OnphoneChanging(string value);
+    partial void OnphoneChanged();
+    partial void OnshortNameChanging(string value);
+    partial void OnshortNameChanged();
+    partial void OnbillTypesChanging(string value);
+    partial void OnbillTypesChanged();
+    partial void Onplugin_keyChanging(string value);
+    partial void Onplugin_keyChanged();
+    partial void Onvmi_keyChanging(string value);
+    partial void Onvmi_keyChanged();
+    partial void Onis_testingChanging(bool value);
+    partial void Onis_testingChanged();
+    #endregion
+		
+		public Companies()
 		{
+			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FName", DbType="VarChar(80)")]
-		public string FName
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_id", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int id
 		{
 			get
 			{
-				return this._FName;
+				return this._id;
 			}
 			set
 			{
-				if ((this._FName != value))
+				if ((this._id != value))
 				{
-					this._FName = value;
+					this.OnidChanging(value);
+					this.SendPropertyChanging();
+					this._id = value;
+					this.SendPropertyChanged("id");
+					this.OnidChanged();
 				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_account", DbType="VarChar(10)")]
+		public string account
+		{
+			get
+			{
+				return this._account;
+			}
+			set
+			{
+				if ((this._account != value))
+				{
+					this.OnaccountChanging(value);
+					this.SendPropertyChanging();
+					this._account = value;
+					this.SendPropertyChanged("account");
+					this.OnaccountChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_databaseName", DbType="VarChar(100)")]
+		public string databaseName
+		{
+			get
+			{
+				return this._databaseName;
+			}
+			set
+			{
+				if ((this._databaseName != value))
+				{
+					this.OndatabaseNameChanging(value);
+					this.SendPropertyChanging();
+					this._databaseName = value;
+					this.SendPropertyChanged("databaseName");
+					this.OndatabaseNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_accountName", DbType="NVarChar(50)")]
+		public string accountName
+		{
+			get
+			{
+				return this._accountName;
+			}
+			set
+			{
+				if ((this._accountName != value))
+				{
+					this.OnaccountNameChanging(value);
+					this.SendPropertyChanging();
+					this._accountName = value;
+					this.SendPropertyChanged("accountName");
+					this.OnaccountNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_addr", DbType="NVarChar(200)")]
+		public string addr
+		{
+			get
+			{
+				return this._addr;
+			}
+			set
+			{
+				if ((this._addr != value))
+				{
+					this.OnaddrChanging(value);
+					this.SendPropertyChanging();
+					this._addr = value;
+					this.SendPropertyChanged("addr");
+					this.OnaddrChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_phone", DbType="VarChar(50)")]
+		public string phone
+		{
+			get
+			{
+				return this._phone;
+			}
+			set
+			{
+				if ((this._phone != value))
+				{
+					this.OnphoneChanging(value);
+					this.SendPropertyChanging();
+					this._phone = value;
+					this.SendPropertyChanged("phone");
+					this.OnphoneChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_shortName", DbType="NVarChar(50)")]
+		public string shortName
+		{
+			get
+			{
+				return this._shortName;
+			}
+			set
+			{
+				if ((this._shortName != value))
+				{
+					this.OnshortNameChanging(value);
+					this.SendPropertyChanging();
+					this._shortName = value;
+					this.SendPropertyChanged("shortName");
+					this.OnshortNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_billTypes", DbType="NVarChar(50)")]
+		public string billTypes
+		{
+			get
+			{
+				return this._billTypes;
+			}
+			set
+			{
+				if ((this._billTypes != value))
+				{
+					this.OnbillTypesChanging(value);
+					this.SendPropertyChanging();
+					this._billTypes = value;
+					this.SendPropertyChanged("billTypes");
+					this.OnbillTypesChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_plugin_key", DbType="VarChar(50)")]
+		public string plugin_key
+		{
+			get
+			{
+				return this._plugin_key;
+			}
+			set
+			{
+				if ((this._plugin_key != value))
+				{
+					this.Onplugin_keyChanging(value);
+					this.SendPropertyChanging();
+					this._plugin_key = value;
+					this.SendPropertyChanged("plugin_key");
+					this.Onplugin_keyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_vmi_key", DbType="VarChar(50)")]
+		public string vmi_key
+		{
+			get
+			{
+				return this._vmi_key;
+			}
+			set
+			{
+				if ((this._vmi_key != value))
+				{
+					this.Onvmi_keyChanging(value);
+					this.SendPropertyChanging();
+					this._vmi_key = value;
+					this.SendPropertyChanged("vmi_key");
+					this.Onvmi_keyChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_is_testing", DbType="Bit NOT NULL")]
+		public bool is_testing
+		{
+			get
+			{
+				return this._is_testing;
+			}
+			set
+			{
+				if ((this._is_testing != value))
+				{
+					this.Onis_testingChanging(value);
+					this.SendPropertyChanging();
+					this._is_testing = value;
+					this.SendPropertyChanged("is_testing");
+					this.Onis_testingChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
 	}
@@ -6385,32 +6547,6 @@ namespace VendorNew.Models
 				if ((this._supplier_addr != value))
 				{
 					this._supplier_addr = value;
-				}
-			}
-		}
-	}
-	
-	public partial class GetEmpNameByNumberResult
-	{
-		
-		private string _FName;
-		
-		public GetEmpNameByNumberResult()
-		{
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_FName", DbType="VarChar(255) NOT NULL", CanBeNull=false)]
-		public string FName
-		{
-			get
-			{
-				return this._FName;
-			}
-			set
-			{
-				if ((this._FName != value))
-				{
-					this._FName = value;
 				}
 			}
 		}

@@ -24,7 +24,7 @@ namespace VendorNew.Controllers
         public ActionResult CheckPosForApply()
         {
             ViewData["addDRPower"] = new UASv().hasGotPower(currentUser.userId, "add_dr_apply") ? 1 : 0;
-
+            ViewData["billTypes"] = currentCompany.billTypes.Split(',');
             return View();
         }
 
@@ -136,11 +136,14 @@ namespace VendorNew.Controllers
                         
             decimal transitQty;
             foreach (var l in list) {
-                if (l.billType.Equals("普通采购") && (l.poNo.StartsWith("MVAC") || l.poNo.StartsWith("VMAC"))) {
-                    return Json(new SRM(false, "订单单号是MVAC或者VMAC开头的，订单类型必须是VMI订单而不是普通采购。请联系我司对应采购员修改后再申请。"));
-                }
-                if (l.billType.Equals("VMI订单") && !l.poNo.StartsWith("MVAC") && !l.poNo.StartsWith("VMAC")) {
-                    return Json(new SRM(false, "订单类型是VMI订单的，订单单号必须是MVAC或者VMAC开头，此单的订单类型下错。请联系我司对应采购员修改后再申请。"));
+                if (l.account == "S" || l.account == "O") {
+                    //光电和半导体账套需要对单号进行验证，因为单号有规则，采购订单单号和vmi订单单号规则不一样
+                    if (l.billType.Equals("普通采购") && (l.poNo.StartsWith("MVAC") || l.poNo.StartsWith("VMAC"))) {
+                        return Json(new SRM(false, "订单单号是MVAC或者VMAC开头的，订单类型必须是VMI订单而不是普通采购。请联系我司对应采购员修改后再申请。"));
+                    }
+                    if (l.billType.Equals("VMI订单") && !l.poNo.StartsWith("MVAC") && !l.poNo.StartsWith("VMAC")) {
+                        return Json(new SRM(false, "订单类型是VMI订单的，订单单号必须是MVAC或者VMAC开头，此单的订单类型下错。请联系我司对应采购员修改后再申请。"));
+                    }
                 }
                 transitQty = new DRSv().GetPOTransitQty(l.poId, l.poEntryId);
                 if (l.orderQty - l.realteQty - transitQty <= 0) {
@@ -316,7 +319,7 @@ namespace VendorNew.Controllers
         {
             try {
                 string boxNumber = new BoxSv().RemoveInnerBox(innerBoxId);
-                WLog("删除内箱", "箱号：" + boxNumber);
+                WLog("删除内箱", "箱号：" + boxNumber + ";ID:" + innerBoxId);
             }
             catch (Exception ex) {
                 return Json(new SRM(ex));
@@ -513,6 +516,7 @@ namespace VendorNew.Controllers
             ViewData["modifyPower"] = sv.hasGotPower(currentUser.userId, "modify_apply") ? "1" : "0";
             ViewData["undoPower"] = sv.hasGotPower(currentUser.userId, "undo_apply") ? "1" : "0";
             ViewData["deletePower"] = sv.hasGotPower(currentUser.userId, "delete_apply") ? "1" : "0";
+            ViewData["billTypes"] = currentCompany.billTypes.Split(',');
             return View();
         }
 
@@ -551,6 +555,7 @@ namespace VendorNew.Controllers
             ViewData["printInnerBoxPower"] = sv.hasGotPower(currentUser.userId, "print_inner_qrcode") ? "1" : "0";
             ViewData["exportExcelPower"] = sv.hasGotPower(currentUser.userId, "export_audit_list_excel") ? "1" : "0";
             ViewData["updateToFinishPower"] = sv.hasGotPower(currentUser.userId, "update_status_to_finish") ? "1" : "0";
+            ViewData["billTypes"] = currentCompany.billTypes.Split(',');
 
             return View();
         }
@@ -697,14 +702,16 @@ namespace VendorNew.Controllers
             var dr = new DRSv().GetDRBill(billId);
             if (dr == null) return;
 
-            string subject, content,emailAddr;
+            string subject, content,emailAddr,accountName;
+            //var currentCompany = MyUtils.GetCurrentCompany(dr.account);
+            accountName = currentCompany == null ? "" : currentCompany.accountName;
             switch (opType) {
                 case "提交":
                     emailAddr = GetMatOrderEmail(dr);
                     subject="你有一张待审核的供应商送货申请单";
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += string.Format("你有一张待处理的单号为【{0}】的送货申请单，来自【{3}】，供应商【{1}({2})】。请尽快登录平台处理。", dr.bill_no, dr.supplier_name, dr.supplier_number, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += string.Format("你有一张待处理的单号为【{0}】的送货申请单，来自【{3}】，供应商【{1}({2})】。请尽快登录平台处理。", dr.bill_no, dr.supplier_name, dr.supplier_number, accountName);
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台处理这张申请单：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/ConfirmApply?billId=", billId);
@@ -718,7 +725,7 @@ namespace VendorNew.Controllers
                     subject = "你有一张送货申请单已被订料员" + opType;
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += string.Format("你有一张单号为【{0}】的送货申请单已被{1}{2},来自【{3}】", dr.bill_no, dr.mat_order_name, opType, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += string.Format("你有一张单号为【{0}】的送货申请单已被{1}{2},来自【{3}】", dr.bill_no, dr.mat_order_name, opType, accountName);
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>请点击此链接查看详情</a></div>", outerWebSite, "Delivery/CheckDRApply?id=", billId);
@@ -729,7 +736,7 @@ namespace VendorNew.Controllers
                     subject = "供应商撤销了一张送货申请单";
                     content = "<div style='font-family:Microsoft YaHei'><div>你好：</div>";
                     content += "<div style='margin-left:30px;'>";
-                    content += string.Format("单号为【{0}】的送货申请单已被供应商撤销，来自【{3}】，供应商【{1}({2})】。", dr.bill_no, dr.supplier_name, dr.supplier_number, dr.account == "S" ? "信利半导体有限公司" : "信利光电股份有限公司");
+                    content += string.Format("单号为【{0}】的送货申请单已被供应商撤销，来自【{3}】，供应商【{1}({2})】。", dr.bill_no, dr.supplier_name, dr.supplier_number, accountName);
                     content += "</div>";
                     content += "<div style='clear:both'><br />单击以下链接可进入平台查看申请单详情：</div>";
                     content += string.Format("<div><a href='{0}{1}{2}' style='color:#337ab7;text-decoration:none;'>内网用户请点击此链接</a></div>", innerWebSite, "Delivery/CheckDRApply?id=", billId);

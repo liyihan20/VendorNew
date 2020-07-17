@@ -12,11 +12,17 @@ namespace VendorTruly.Controllers
         private const string TAG = "登录模块";
         public ActionResult Login()
         {
-            var cookie = Request.Cookies[MyUtils.GetCookieName() + "_login"];
+            var cookie = Request.Cookies[MyUtils.GetCookieName()];
+            if (cookie != null) {
+                return RedirectToAction("Index", "Home");
+            }
+
+            cookie = Request.Cookies[MyUtils.GetCookieName() + "_login"];
             if (cookie != null) {
                 ViewBag.user_name = MyUtils.DecodeToUTF8(cookie.Values.Get("user_name"));
                 ViewBag.account = cookie.Values.Get("account");
             }
+            ViewBag.accountList = MyUtils.GetAllCompany();
             return View();
         }
 

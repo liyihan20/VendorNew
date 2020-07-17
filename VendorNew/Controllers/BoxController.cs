@@ -17,6 +17,7 @@ namespace VendorNew.Controllers
         public ActionResult Boxes()
         {            
             ViewData["account"] = currentAccount;
+            ViewData["billTypes"] = currentCompany.billTypes.Split(',');
             return View();
         }
         
@@ -64,17 +65,18 @@ namespace VendorNew.Controllers
         }
 
         [SessionTimeOutJsonFilter]
-        public JsonResult GetPO4Box(string billType,string searchValue, int page,int rows)
+        public JsonResult GetPO4Box(string billType,string searchType, string searchValue, int page,int rows)
         {
             var boxSv = new BoxSv();
             var drSv = new DRSv();
 
             List<K3POs4BoxModel> pos;
             string GetPO4Box_param = (string)Session["GetPO4Box_param"];
-            if (GetPO4Box_param == null || !GetPO4Box_param.Equals(billType + ":" + searchValue)) {
-                pos = boxSv.GetPos4Box(billType, searchValue, currentUser.userId, currentUser.userName, currentAccount);
+            string searchInfo = string.Format("{0};{1}:{2}", billType, searchType, searchValue);
+            if (GetPO4Box_param == null || !GetPO4Box_param.Equals(searchInfo)) {
+                pos = boxSv.GetPos4Box(billType, searchType, searchValue, currentUser.userId, currentUser.userName, currentAccount);
                 pos = pos.OrderByDescending(p => p.po_date).Take(1000).ToList(); //最多显示1000条记录
-                Session["GetPO4Box_param"] = billType + ":" + searchValue;
+                Session["GetPO4Box_param"] = searchInfo;
                 Session["GetPO4Box_list"] = pos; //为加快翻页速度，将数据放在session中
             }
             else {

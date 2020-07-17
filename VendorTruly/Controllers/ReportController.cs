@@ -49,6 +49,8 @@ namespace VendorTruly.Controllers
             ViewData["pageNumList"] = pageNumList;
             ViewData["pageNumArr"] = pageNumArr;
 
+            ViewData["currentCompany"] = MyUtils.GetCurrentCompany(currentAccount);
+
             WLog("打印送货申请单", "进入打印界面", m.h.bill_no);
 
             return View();

@@ -1,11 +1,10 @@
 ﻿@using VendorTruly.Models
 @{
-
+    var company = ViewData["currentCompany"] as CompanyModel;
     var m = ViewData["reportData"] as PrintApplyModels;
     var pageList = ViewData["pageNumArr"] as List<int>;
     int hasPrinted = 0;
-    var h = m.h;
-    var companyName = h.account == "TDD" ? "信利光电股份有限公司TDD事业部" : "";
+    var h = m.h;    
     ViewBag.Title = h.bill_no;
 }
 @section CSS{   
@@ -125,14 +124,14 @@
         <table style="width:100%;margin-top:6px;border:1px solid;" cellspacing="0" cellpadding="2">
             <tr>
                 <td width="50%;" style="border-right:1px solid;">
-                    <div>购货单位：@companyName</div>
-                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>
+                    <div>购货单位：@company.accountName</div>
+                    <div>@company.addr</div>
                     <div>电话：0660-336788-1234 @(string.IsNullOrEmpty(h.supplier_dr_number) ? "" : ",供应商送货单号：" + h.supplier_dr_number) 
                     @h.mat_order_name @(string.IsNullOrEmpty(h.supplier_invoice_number) ? "" : ",供应商发票：" + h.supplier_invoice_number)</div>
                 </td>
                 <td width="50%;">
-                    <div>收货单位：@companyName</div>
-                    <div>广东省汕尾市区工业大道信利电子工业城物流总仓</div>                    
+                    <div>收货单位：@company.accountName</div>
+                    <div>@company.addr</div>                    
                     <div>收货部门：@h.department_name @(string.IsNullOrEmpty(h.comment)?"":"("+h.comment+")")</div>
                 </td>
             </tr>
@@ -321,7 +320,7 @@
                     @h.supplier_name (盖章)
                 </td>
                 <td style="padding-top:4px;">
-                    @companyName (盖章)
+                    @company.accountName (盖章)
                 </td>
             </tr>
         </table>

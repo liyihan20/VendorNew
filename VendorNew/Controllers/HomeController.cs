@@ -17,13 +17,18 @@ namespace VendorNew.Controllers
         public ActionResult Index(string url)
         {
             try {
+                var isTesting = bool.Parse(MyUtils.GetAppSetting("isTesting"));
+
                 ViewBag.userName = currentUser.userName;
                 ViewBag.realName = currentUser.realName;
                 ViewBag.account = currentAccount;
-                ViewBag.accountName = MyUtils.GetCurrentCompany(currentAccount).accountName;
+                ViewBag.accountName = currentCompany.accountName;
                 ViewBag.url = url;
-                ViewBag.accountList = MyUtils.GetAllCompany();
-
+                var acs = new ItemSv().GetAllCompanies();
+                if (!isTesting) {
+                    acs = acs.Where(a => a.is_testing == false).ToList();
+                }
+                ViewBag.accountList = acs;
                 if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
                     ViewBag.needToChangePassword = 1;
                 }
@@ -204,6 +209,10 @@ namespace VendorNew.Controllers
             return Json(new SRM());
         }
 
-        
+        public string PassNotChange()
+        {
+            return new UserSv().GetPassNotChangedUser();
+        }
+
     }
 }

@@ -1,4 +1,6 @@
-﻿
+﻿@{
+    string[] billTypes = ViewData["billTypes"] as string[];
+}
 <script>
     $(function () {
         var _pageSize;
@@ -273,10 +275,13 @@
             <div style="float:left;width:160px;margin-right:12px;">
                 订单类型：
                 <select class="easyui-combobox" name="billType" id="billType" data-options="panelHeight:'auto',editable:false" style="width:90px;">
-                    <option value="普通采购">普通采购</option>
+                    @foreach (var b in billTypes) {
+                        <option value="@b">@b</option>
+                    }
+                    @*<option value="普通采购">普通采购</option>
                     <option value="委外PO">委外PO</option>
                     <option value="VMI采购">VMI订单</option>
-                    <option value="VMI合同">VMI合同</option>
+                    <option value="VMI合同">VMI合同</option>*@
                 </select>
             </div>
             <div style="float:left;width:520px;margin-right:12px;">

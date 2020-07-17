@@ -282,8 +282,8 @@
     <Content Include="Content\Site.css" />
     <Content Include="Models\VendorNDB.dbml">
       <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>VendorNDB.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>VendorNDB1.designer.cs</LastGenOutput>
     </Content>
     <Content Include="Content\font-awesome-4.7.0\fonts\fontawesome-webfont.eot" />
     <Content Include="Content\font-awesome-4.7.0\fonts\fontawesome-webfont.ttf" />

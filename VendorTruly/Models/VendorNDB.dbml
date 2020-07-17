@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="Vendor_truly" Class="VendorNDBDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="WebSettings" ConnectionString="Data Source=192.168.100.205;Initial Catalog=Vendor_truly;Persist Security Info=True;User ID=lyh" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="Vendor_trulyConnectionString" Provider="System.Data.SqlClient" />
+  <Connection Mode="WebSettings" ConnectionString="Data Source=192.168.100.205;Initial Catalog=Vendor_truly;Persist Security Info=True;User ID=vendorNew" SettingsObjectName="System.Configuration.ConfigurationManager.ConnectionStrings" SettingsPropertyName="Vendor_trulyConnectionString" Provider="System.Data.SqlClient" />
   <Table Name="dbo.GroupAuthorities" Member="GroupAuthorities">
     <Type Name="GroupAuthorities">
       <Column Name="group_auth_id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
@@ -324,5 +324,12 @@
   <Function Name="dbo.UpdateStatusToFinish" Method="UpdateStatusToFinish">
     <Parameter Name="bill_no" Type="System.String" DbType="VarChar(50)" />
     <Return Type="System.Int32" />
+  </Function>
+  <Function Name="dbo.IsBoxHasBeenScaned" Method="IsBoxHasBeenScaned">
+    <Parameter Name="account" Type="System.String" DbType="VarChar(10)" />
+    <Parameter Name="box_number" Type="System.String" DbType="VarChar(MAX)" />
+    <ElementType Name="IsBoxHasBeenScanedResult">
+      <Column Name="result" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+    </ElementType>
   </Function>
 </Database>

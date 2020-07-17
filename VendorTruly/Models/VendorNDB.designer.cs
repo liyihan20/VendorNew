@@ -317,6 +317,13 @@ namespace VendorTruly.Models
 			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), bill_no);
 			return ((int)(result.ReturnValue));
 		}
+		
+		[global::System.Data.Linq.Mapping.FunctionAttribute(Name="dbo.IsBoxHasBeenScaned")]
+		public ISingleResult<IsBoxHasBeenScanedResult> IsBoxHasBeenScaned([global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(10)")] string account, [global::System.Data.Linq.Mapping.ParameterAttribute(DbType="VarChar(MAX)")] string box_number)
+		{
+			IExecuteResult result = this.ExecuteMethodCall(this, ((MethodInfo)(MethodInfo.GetCurrentMethod())), account, box_number);
+			return ((ISingleResult<IsBoxHasBeenScanedResult>)(result.ReturnValue));
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.GroupAuthorities")]
@@ -6411,6 +6418,32 @@ namespace VendorTruly.Models
 				if ((this._FName != value))
 				{
 					this._FName = value;
+				}
+			}
+		}
+	}
+	
+	public partial class IsBoxHasBeenScanedResult
+	{
+		
+		private System.Nullable<bool> _result;
+		
+		public IsBoxHasBeenScanedResult()
+		{
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_result", DbType="Bit")]
+		public System.Nullable<bool> result
+		{
+			get
+			{
+				return this._result;
+			}
+			set
+			{
+				if ((this._result != value))
+				{
+					this._result = value;
 				}
 			}
 		}

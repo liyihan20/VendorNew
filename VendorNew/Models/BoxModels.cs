@@ -125,4 +125,13 @@ namespace VendorNew.Models
 
     }
 
+    public class K3ItemModel
+    {
+        public string account { get; set; }
+        public string item_number { get; set; }
+        public string item_name { get; set; }
+        public string item_model { get; set; }
+        public string unit_number { get; set; }
+        public string unit_name { get; set; }
+    }
 }
