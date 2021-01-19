@@ -174,17 +174,30 @@ namespace VendorNew.Services
             return db.Groups.Where(g => g.group_type == groupType && g.name.Contains(searchValue));
         }
 
-        public IQueryable<GroupAndAllMembers> GetGroupAndAllMembers(string groupType, string searchValue)
+        public List<GroupAndAllMembers> GetGroupAndAllMembers(string groupType, string searchValue)
         {
-            return from g in db.Groups
-                   where g.group_type == groupType
-                   && g.name.Contains(searchValue)
-                   select new GroupAndAllMembers()
-                   {
-                       group_id = g.group_id,
-                       name = g.name,
-                       allMembers = db.Users.Where(u => g.GroupUsers.Select(gu => gu.user_id).Contains(u.user_id)).OrderBy(u=>u.user_name).Select(u => u.real_name)
-                   };
+            var result = (from g in db.Groups
+                          join gus in db.GroupUsers on g.group_id equals gus.group_id into gut
+                          from gu in gut.DefaultIfEmpty()
+                          join us in db.Users on gu.user_id equals us.user_id into ut
+                          from u in ut.DefaultIfEmpty()
+                          where g.group_type == groupType
+                          select new
+                          {
+                              group_id = g.group_id,
+                              name = g.name,
+                              user_name = (u == null ? "" : u.real_name)
+                          }).ToList();
+            var gms = new List<GroupAndAllMembers>();
+            foreach (var r in result.Where(re=>re.name.Contains(searchValue) || re.user_name.Contains(searchValue)).Select(re => new { re.group_id, re.name }).Distinct()) {
+                gms.Add(new GroupAndAllMembers()
+                {
+                    group_id = r.group_id,
+                    name = r.name,
+                    allMembers = result.Where(re => re.group_id == r.group_id).Select(re => re.user_name).ToList()
+                });
+            }
+            return gms;
         }
 
         public IQueryable<GroupUsersModel> GetGroupUsers(int groupId,string searchValue)

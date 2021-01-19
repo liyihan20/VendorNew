@@ -279,10 +279,10 @@ namespace VendorNew.Controllers
                 result = new DRSv().GetPOs(p).OrderBy(po => po.poDate).Take(1000).ToList();
                 //一次性关联1000条到数据库查询会导致内存溢出，所以大于500条的，分2次获取
                 var infos = result.Take(500).Select(r => new IDModel() { interId = r.poId, entryId = r.poEntryId }).ToList();
-                qtyList = new DRSv().GetPOTransitQty(infos);
+                qtyList = new DRSv().GetPOTransitQty(infos,currentAccount);
                 if (result.Count() > 500) {
                     infos = result.Skip(500).Select(r => new IDModel() { interId = r.poId, entryId = r.poEntryId }).ToList();
-                    qtyList.AddRange(new DRSv().GetPOTransitQty(infos));
+                    qtyList.AddRange(new DRSv().GetPOTransitQty(infos,currentAccount));
                 }
             }
             catch {

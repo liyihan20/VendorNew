@@ -15,6 +15,16 @@
     }
 
     $(function () {
+
+        //限定送货日期，只能申请1个月之内 2021-1-19
+        $("#send_date").datebox("calendar").calendar({
+            validator: function(date){
+                var now = new Date();  
+                var d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);  
+                return date<=d2;  
+            }
+        });
+
         $("#dg_detail").datagrid({
             fit: true,
             rownumbers: true,
@@ -515,6 +525,7 @@
                         delete data.boxInfo.unit_name;
                         delete data.boxInfo.unit_number;
                         delete data.boxInfo.item_model; //2020-5-28 规格型号有可能会变更，取订单的
+                        delete data.boxInfo.item_name; //2020-12-23 名称也可能会变更，取订单的
                         $("#fm_outer_box").form("load", data.boxInfo);
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");

@@ -103,8 +103,7 @@ namespace VendorNew.Controllers
         }
 
         public JsonResult GetPOTransitQty(string interIds, string entryIds)
-        {
-            
+        {            
             string[] interIdArr = interIds.Split(new char[]{','});
             string[] entryIdArr = entryIds.Split(new char[] { ',' });
 
@@ -116,7 +115,7 @@ namespace VendorNew.Controllers
                     entryId = Int32.Parse(entryIdArr[i])
                 });
             }
-            var result = new DRSv().GetPOTransitQty(poInfo);
+            var result = new DRSv().GetPOTransitQty(poInfo,currentAccount);
             var stringResult = new List<string>();
             foreach (var r in result) {
                 stringResult.Add(r.ToString("0.##"));
@@ -145,7 +144,7 @@ namespace VendorNew.Controllers
                         return Json(new SRM(false, "订单类型是VMI订单的，订单单号必须是MVAC或者VMAC开头，此单的订单类型下错。请联系我司对应采购员修改后再申请。"));
                     }
                 }
-                transitQty = new DRSv().GetPOTransitQty(l.poId, l.poEntryId);
+                transitQty = new DRSv().GetPOTransitQty(l.poId, l.poEntryId,currentAccount);
                 if (l.orderQty - l.realteQty - transitQty <= 0) {
                     return Json(new SRM(false, string.Format("订单号【{0}】,分录号【{1}】的可申请数量不大于0，不能申请送货", l.poNo, l.poEntryId)));
                 }
@@ -423,7 +422,7 @@ namespace VendorNew.Controllers
             //page为1跳转到修改编辑界面，page为2跳转到只读页面
             if (aFlag) {
                 try {
-                    sv.BeforeApply(bill, details, boxIds);
+                    sv.BeforeApply(bill, details, boxIds,currentAccount);
                     sv.beginApply(billId,currentUser.realName);
 
                     //发送待处理邮件给订料员
@@ -469,7 +468,7 @@ namespace VendorNew.Controllers
             decimal stockQty, transitQty;
             foreach (var e in details) {
                 stockQty = sv.GetInstockQty(h.account, h.bill_type, (int)e.po_id, (int)e.po_entry_id); // K3已入库数量
-                transitQty = sv.GetPOTransitQty((int)e.po_id, (int)e.po_entry_id); //在途数量
+                transitQty = sv.GetPOTransitQty((int)e.po_id, (int)e.po_entry_id,currentAccount); //在途数量
                 e.can_send_qty = e.po_qty - stockQty - transitQty + e.send_qty ?? 0m; //可申请数量=订单数量-入库数量-在途数量+本次申请数量
             }
 

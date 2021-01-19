@@ -1,6 +1,5 @@
 ﻿
 <script>
-
     $(function () {
         $("#dg").datagrid({
             fit: true,
@@ -45,8 +44,7 @@
             ]],
             toolbar: "#tb",
             onDblClickRow: editUser
-        });
-
+        });        
         
         $("#user_name").textbox('textbox').on("blur", function () {
             var role = $("#user_role").combobox("getValue");
@@ -154,7 +152,7 @@
     <form id="fm" method="post">
         <div class="fitem">
             <label>角色:</label>
-            <input class="easyui-combobox" name="user_role" id="user_role" data-options="valueField:'v',textField:'v',data:[{v:'供应商'},{v:'订料员'},{v:'采购员'},{v:'管理员'}],panelHeight:'auto'" />
+            <input class="easyui-combobox" name="user_role" id="user_role" data-options="valueField:'v',textField:'v',data:[{v:'供应商'},{v:'订料员'},{v:'采购员'},{v:'管理员'},{v:'其他'}],panelHeight:'auto'" />
         </div>
         <div class="fitem">
             <label>登录名:</label>

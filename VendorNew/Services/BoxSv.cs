@@ -22,7 +22,7 @@ namespace VendorNew.Services
                 //所有未关联的数量加上此张申请已关联的数量+本次新增的数量不能大于可申请数量
                 var notRelatedQty = (from op in db.OuterBoxPOs
                                      join o in db.OuterBoxes on op.out_box_id equals o.outer_box_id
-                                     where op.po_id == po.po_id && op.po_entry_id == po.po_entry_id
+                                     where op.po_number == po.po_number && op.po_entry_id == po.po_entry_id
                                      && (o.bill_id == null || o.bill_id == box.bill_id)
                                      select op.send_num * o.pack_num).Sum();
                 var sendNum = po.send_num * box.pack_num; //本次制作数量
@@ -488,11 +488,22 @@ namespace VendorNew.Services
             }
 
             if (!string.IsNullOrWhiteSpace(p.boxNumber)) {
-                result = from b in result
-                         join i in db.InneBoxes on b.outer_box_id equals i.outer_box_id into ti
-                         from ib in ti.DefaultIfEmpty()
-                         where (b.box_number_long.Contains(p.boxNumber) || ib.box_number_long.Contains(p.boxNumber))
-                         select b;
+                if (p.boxNumber.StartsWith("O")) {
+                    result = result.Where(r => r.box_number_long.Contains(p.boxNumber));
+                }
+                else if (p.boxNumber.StartsWith("I")) {
+                    result = from b in result
+                             join i in db.InneBoxes on b.outer_box_id equals i.outer_box_id
+                             where i.box_number_long.Contains(p.boxNumber)
+                             select b;
+                }
+                else {
+                    result = from b in result
+                             join i in db.InneBoxes on b.outer_box_id equals i.outer_box_id into ti
+                             from ib in ti.DefaultIfEmpty()
+                             where (b.box_number_long.Contains(p.boxNumber) || ib.box_number_long.Contains(p.boxNumber))
+                             select b;
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(p.poNo)) {
@@ -545,7 +556,7 @@ namespace VendorNew.Services
                 account, billType, searchValue, userId, userName,searchType).ToList();
         }
         
-        public List<NotFinishBoxQty> GetNotFinishedBoxQty(List<IDModel> ids)
+        public List<NotFinishBoxQty> GetNotFinishedBoxQty(List<IDModel> ids,string currentAccount)
         {
             return (from op in db.OuterBoxPOs
                     join o in db.OuterBoxes on op.out_box_id equals o.outer_box_id
@@ -553,6 +564,7 @@ namespace VendorNew.Services
                     from bill in tb.DefaultIfEmpty()
                     where (bill == null || bill.p_status != "已入库")
                     && ids.Contains(new IDModel() { interId = op.po_id, entryId = op.po_entry_id })
+                    && o.account == currentAccount
                     select new NotFinishBoxQty()
                     {
                         poId = (int)op.po_id,
@@ -733,9 +745,9 @@ namespace VendorNew.Services
                     }).ToList();
         }
 
-        public void CancelIOBoxRelation(string outerBoxNumber)
+        public void CancelIOBoxRelation(string outerBoxNumber,string currentAccount)
         {
-            var ob = db.OuterBoxes.Where(o => o.box_number == outerBoxNumber).FirstOrDefault();
+            var ob = db.OuterBoxes.Where(o => o.box_number == outerBoxNumber && o.account == currentAccount).OrderByDescending(o => o.outer_box_id).FirstOrDefault();
             if (ob == null) {
                 throw new Exception("外箱不存在");
             }
@@ -744,7 +756,7 @@ namespace VendorNew.Services
                 ib.outer_box_id = null;
             }
             //删除内箱明细信息
-            db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.outer_box_id==ob.outer_box_id));
+            db.InnerBoxesDetail.DeleteAllOnSubmit(db.InnerBoxesDetail.Where(i => i.outer_box_id == ob.outer_box_id));
 
             db.SubmitChanges();
         }

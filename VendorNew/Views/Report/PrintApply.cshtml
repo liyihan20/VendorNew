@@ -161,7 +161,7 @@
                         净重(KG)
                     </th>*@
                     <th style="width:8%;">
-                        原产地
+                        原产地/品牌
                     </th>
                     <th style="width:16%;">
                         信利P/O
@@ -226,14 +226,15 @@
                                 </td>*@
                                 <td rowspan="@currentRowSpan">
                                     @*@bp.box.size <br />*@
-                                    @bp.box.made_in
+                                    @bp.box.made_in <br />
+                                    @bp.box.brand
                                 </td>
                             }
                             <td>
                                 @string.Concat(bp.po.po_number, "-", bp.po.po_entry_id) <br />
                                 @if (!string.IsNullOrEmpty(drEntry.pr_number)) {
                                     <text>@string.Concat(drEntry.pr_number,"-",drEntry.pr_entry_id==null?"":drEntry.pr_entry_id.ToString())</text>
-                                }                                
+                                }
                             </td>
                             <td>
                                 @drEntry.comment

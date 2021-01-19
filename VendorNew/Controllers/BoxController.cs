@@ -15,9 +15,13 @@ namespace VendorNew.Controllers
         
         [AuthorityFilter]
         public ActionResult Boxes()
-        {            
+        {
+            var sv = new UASv();
             ViewData["account"] = currentAccount;
             ViewData["billTypes"] = currentCompany.billTypes.Split(',');
+            ViewData["addOiBoxes"] = sv.hasGotPower(currentUser.userId, "add_oi_boxes") ? "1" : "0";
+            ViewData["deleteOiBoxes"] = sv.hasGotPower(currentUser.userId, "delete_oi_boxes") ? "1" : "0";
+            ViewData["checkRelateBill"] = sv.hasGotPower(currentUser.userId, "check_relate_bill") ? "1" : "0";
             return View();
         }
         
@@ -82,9 +86,9 @@ namespace VendorNew.Controllers
             else {
                 pos = (List<K3POs4BoxModel>)Session["GetPO4Box_list"];
             }
-            var result = pos.OrderByDescending(p => p.po_date).Skip((page - 1) * rows).Take(rows).ToList();
+            var result = pos.OrderByDescending(p => p.po_number).ThenBy(p=>p.po_entry_id).Skip((page - 1) * rows).Take(rows).ToList();
 
-            var noFinishBox = boxSv.GetNotFinishedBoxQty(result.Select(r => new IDModel() { interId = r.po_id, entryId = r.po_entry_id }).ToList());
+            var noFinishBox = boxSv.GetNotFinishedBoxQty(result.Select(r => new IDModel() { interId = r.po_id, entryId = r.po_entry_id }).ToList(),currentAccount);
             foreach (var p in result) {
                 p.id_field = p.po_id + "-" + p.po_entry_id;
                 p.can_make_box_qty = p.po_qty - p.realte_qty - (noFinishBox.Where(f => f.poId == p.po_id && f.poEntryId == p.po_entry_id).Sum(r => r.qty) ?? 0m);
@@ -195,7 +199,7 @@ namespace VendorNew.Controllers
         [SessionTimeOutJsonFilter]
         public JsonResult CancelIOBoxRelation(string outerBoxNumber)
         {
-            new BoxSv().CancelIOBoxRelation(outerBoxNumber);
+            new BoxSv().CancelIOBoxRelation(outerBoxNumber,currentAccount);
             WLog("取消关联内外箱", outerBoxNumber);
             return Json(new SRM());
         }

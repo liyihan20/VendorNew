@@ -23,7 +23,7 @@ namespace VendorNew.Models
     {
         public int group_id { get; set; }
         public string name { get; set; }
-        public IQueryable<string> allMembers { get; set; }
+        public List<string> allMembers { get; set; }
     }
 
 }

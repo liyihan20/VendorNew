@@ -49,11 +49,11 @@ namespace VendorNew.Services
         /// <param name="poId"></param>
         /// <param name="entryId"></param>
         /// <returns></returns>
-        public decimal GetPOTransitQty(int poId, int entryId)
+        public decimal GetPOTransitQty(int poId, int entryId, string currentAccount)
         {
             var result = (from de in db.DRBillDetails
                           join d in db.DRBills on de.bill_id equals d.bill_id
-                          where d.p_status != "已入库"
+                          where d.p_status != "已入库" && d.account == currentAccount
                           && de.po_id == poId && de.po_entry_id == entryId
                           select de.send_qty).Sum();
             return result ?? 0;
@@ -64,11 +64,11 @@ namespace VendorNew.Services
         /// </summary>
         /// <param name="poInfo"></param>
         /// <returns></returns>
-        public List<decimal> GetPOTransitQty(List<IDModel> poInfo)
+        public List<decimal> GetPOTransitQty(List<IDModel> poInfo,string currentAccount)
         {
             var qtys = (from de in db.DRBillDetails
                         join d in db.DRBills on de.bill_id equals d.bill_id
-                        where d.p_status != "已入库"
+                        where d.p_status != "已入库" && d.account == currentAccount
                         && poInfo.Contains(new IDModel() { interId = de.po_id, entryId = de.po_entry_id })
                         group de by new{de.po_id,de.po_entry_id} into g
                         select new
@@ -99,7 +99,7 @@ namespace VendorNew.Services
         /// <param name="h"></param>
         /// <param name="es"></param>
         /// <param name="boxes"></param>
-        public void BeforeApply(DRBills h, List<DRBillDetails> es, List<IDModel> boxIds)
+        public void BeforeApply(DRBills h, List<DRBillDetails> es, List<IDModel> boxIds,string currentAccount)
         {
             if (new UserSv().GetUserByUserName(h.mat_order_number) == null) {
                 throw new Exception(string.Format("订料员【{0}】未注册，请先联系订料员注册平台后再提交。",h.mat_order_name));
@@ -109,7 +109,7 @@ namespace VendorNew.Services
             decimal stockQty, transitQty, canApplyQty;
             foreach (var e in es) {
                 stockQty = GetInstockQty(h.account, h.bill_type, (int)e.po_id, (int)e.po_entry_id); // K3已入库数量
-                transitQty = GetPOTransitQty((int)e.po_id, (int)e.po_entry_id); //在途数量
+                transitQty = GetPOTransitQty((int)e.po_id, (int)e.po_entry_id,currentAccount); //在途数量
                 canApplyQty = e.po_qty - stockQty - transitQty + e.send_qty ?? 0m; //可申请数量=订单数量-入库数量-在途数量+本次申请数量
 
                 if (canApplyQty < e.send_qty) {
@@ -260,7 +260,7 @@ namespace VendorNew.Services
         }
 
         public List<BoxAndPoModels> GetBoxAndPo(int billId)
-        {            
+        {
             var result = (from b in db.OuterBoxes
                           join p in db.OuterBoxPOs on b.outer_box_id equals p.out_box_id into ptemp
                           from po in ptemp.DefaultIfEmpty()
@@ -319,12 +319,7 @@ namespace VendorNew.Services
                          join e in db.DRBillDetails on d.bill_id equals e.bill_id
                          where d.send_date >= p.beginDate
                          && d.send_date <= p.endDate
-                         //&& (d.bill_no.Contains(p.billNo) || d.supplier_name.Contains(p.billNo))
-                         //&& (p.pStatus == "所有" || d.p_status == p.pStatus)
                          && d.account == p.account
-                         //&& (p.billType == "所有" || d.bill_type == p.billType)
-                         //&& e.po_number.Contains(p.poNo)
-                         //&& (e.item_model.Contains(p.itemInfo) || e.item_name.Contains(p.itemInfo))
                          select new CheckApplyListModel()
                          {
                              billId = d.bill_id,
@@ -385,7 +380,7 @@ namespace VendorNew.Services
                 throw new Exception("当前申请单状态是：" + dr.p_status + ",不能删除");
             }
 
-            string deleteInfo = dr.bill_no+":";
+            string deleteInfo = dr.bill_no + ":";
 
             //先备份
             var backup = new BackupData();

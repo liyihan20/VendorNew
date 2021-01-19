@@ -8,7 +8,7 @@
         $("#dg_box").treegrid({
             fit: true,
             singleSelect: false,
-            ctrlSelect:true,
+            ctrlSelect: true,
             rownumbers: true,
             pagination: true,
             idField: "box_number",
@@ -21,7 +21,7 @@
                 { field: 'unit_name', title: '单位', width: 70, align: 'center' },
                 { field: 'pack_num', title: '件数', width: 70, align: 'center' },
                 { field: 'po_info', title: '关联订单', width: 280, align: 'center' },
-                { field: 'bill_no',title:'关联申请单',width:120,align:'center' },
+                { field: 'bill_no', title: '关联申请单', width: 120, align: 'center' },
                 { field: 'backup_number', title: '备件数量', width: 100, align: 'center' },
                 { field: 'item_name', title: '物料名称', width: 140, align: 'center' },
                 { field: 'item_model', title: '规格型号', width: 200, align: 'center' },
@@ -59,7 +59,7 @@
                 {
                     field: 'create_date', title: '创建日期', width: 120, align: 'center',
                     formatter: function (value, row, index) {
-                        return toDateStr(value,true);
+                        return toDateStr(value, true);
                     }
                 },
                 { field: 'user_name', title: '供应商代码', width: 100, align: 'center' }
@@ -88,7 +88,7 @@
                         var poInfo = "";
                         for (var j = 0; j < ps.length; j++) {
                             var p = ps[j];
-                            poInfo += p.po_number + "[" + p.po_entry_id + "]:" + p.send_num+";";
+                            poInfo += p.po_number + "[" + p.po_entry_id + "]:" + p.send_num + ";";
                         }
                         b.po_info = poInfo;
 
@@ -111,10 +111,11 @@
                 }
             },
             toolbar: [{
+                id:'add_o_box_btn',
                 text: '<i class="fa fa-fw fa-plus-square"></i> 新增外箱',
                 handler: function () {
                     $("#dlg_outer_box").dialog("open");
-                    $('#select_box_po').combogrid('grid').datagrid("loadData", []);                    
+                    $('#select_box_po').combogrid('grid').datagrid("loadData", []);
                     $("#fm_outer_box").form("reset");
                     $("#dg_select_box_po").datagrid("loadData", []);
                     $("#dg_select_inner_box").datagrid("clearChecked"); //小标签
@@ -122,8 +123,9 @@
                     $("#panel_select_inner_box_wrap").hide(); //小标签
                     firstSelectedPO = undefined;
                 }
-            }, "-",
+            },
             {
+                id:'add_i_box_btn',
                 text: '<i class="fa fa-fw fa-plus-circle"></i> 新增内箱',
                 handler: function () {
                     var selected = $("#dg_box").treegrid("getSelected");
@@ -142,8 +144,9 @@
                     $("#fm_inner_box #outer_box_info").html("当前外箱件数是：" + selected.pack_num + "；每件数量是：" + selected.every_qty + "；总数量是：" + selected.every_qty * selected.pack_num);
                     currentSelectedBox = selected;
                 }
-            }, "-",
+            }, 
             {
+                id:'delete_box_btn',
                 text: '<i class="fa fa-fw fa-window-close"></i> 删除外/内箱',
                 handler: function () {
                     var selected = $("#dg_box").treegrid("getSelected");
@@ -192,7 +195,8 @@
                         });
                     }
                 }
-            }, '-', {
+            }, {
+                id:'check_relate_bill_btn',
                 text: '<i class="fa fa-fw fa-search"></i> 查看关联申请单',
                 handler: function () {
                     var selected = $("#dg_box").treegrid("getSelected");
@@ -206,7 +210,7 @@
                     }
                     parent.addTab("<i class='fa fa-fw fa-search'></i>" + selected.bill_no, "@Url.Content("~/Delivery/CheckDRApply?id=")" + selected.bill_id);
                 }
-            }, '-', {
+            }, {
                 text: '<i class="fa fa-fw fa-qrcode"></i> 打印外箱标签 <a href="#" class="easyui-tooltip" title="结合Ctrl和Shift按键可多选外箱，然后再批量打印"><i class="fa fa-info-circle text-danger"></i></a>',
                 handler: function () {
                     var boxes = $("#dg_box").treegrid("getSelections");
@@ -227,7 +231,7 @@
                     var boxIds = boxIdArr.join(",");
                     window.open("@Url.Content("~/Report/PrintSelectedOuterBox?boxIds=")" + boxIds);
                 }
-            }, '-', {
+            }, {
                 text: '<i class="fa fa-fw fa-qrcode"></i> 打印内箱标签 <a href="#" class="easyui-tooltip" title="不必选择内箱，结合Ctrl和Shift按键可多选外箱，然后再批量打印所选外箱里面的所有内箱"><i class="fa fa-info-circle text-danger"></i></a>',
                 handler: function () {
                     var boxes = $("#dg_box").treegrid("getSelections");
@@ -240,15 +244,28 @@
                         if (!boxes[i].inner_box_id) {
                             boxIdArr.push(boxes[i].outer_box_id);
                         }
-                    }                    
+                    }
                     if (boxIdArr.length == 0) {
                         tip("请至少选择一行外箱再打印");
                         return;
-                    }                    
+                    }
                     var boxIds = boxIdArr.join(",");
                     window.open("@Url.Content("~/Report/PrintSelectedInnerBox?boxIds=")" + boxIds);
                 }
-            }]
+            }],
+            onBeforeLoad: function (data) {
+                //权限按钮
+                if ('@ViewData["addOiBoxes"]' == '0') {
+                    $("#add_o_box_btn").hide();
+                    $("#add_i_box_btn").hide();
+                }
+                if ('@ViewData["deleteOiBoxes"]' == '0') {
+                    $("#delete_box_btn").hide();
+                }
+                if ('@ViewData["checkRelateBill"]' == '0') {
+                    $("#check_relate_bill_btn").hide();
+                }
+            }
         });
 
 
@@ -481,6 +498,7 @@
                         delete data.boxInfo.unit_name;
                         delete data.boxInfo.unit_number;
                         delete data.boxInfo.item_model; //2020-5-28 规格型号有可能会变更，取订单的
+                        delete data.boxInfo.item_name; //2020-12-23 名称也可能会变更，取订单的
                         $("#fm_outer_box").form("load", data.boxInfo);
                         $("#fm_outer_box #every_net_weight").numberbox("setValue", "");
                         $("#fm_outer_box #every_gross_weight").numberbox("setValue", "");

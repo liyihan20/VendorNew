@@ -73,7 +73,7 @@ namespace VendorNew.Models
 
     public class NotFinishBoxQty
     {
-        public int poId { get; set; }
+        public int poId { get; set; } 
         public int poEntryId { get; set; }
         public decimal? qty { get; set; }
     }
