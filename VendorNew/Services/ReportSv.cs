@@ -141,6 +141,7 @@ namespace VendorNew.Services
 
             var selectedboxes = (from o in db.OuterBoxes
                                  join po in db.OuterBoxPOs on o.outer_box_id equals po.out_box_id
+                                 //join b in db.DRBillDetails on new { o.bill_id, po.po_number, po.po_entry_id } equals new { b.bill_id,b.po_number,b.po_entry_id}
                                  where boxIds.Contains(o.outer_box_id)
                                  select new BoxAndPoModels()
                                  {

@@ -203,11 +203,11 @@
                                     @bp.box.item_name <br />
                                     <span>@bp.box.item_model</span>
                                 </td>
-                            }
-                            <td>
-                                @bp.box.unit_name
-                            </td>
-                            @if (!isInSameBox) {
+                            
+                                <td rowspan="@currentRowSpan">
+                                    @bp.box.unit_name
+                                </td>
+                            
                                 <td rowspan="@currentRowSpan">
                                     @bp.box.pack_num <br />
                                     <span>@bp.box.box_number</span>

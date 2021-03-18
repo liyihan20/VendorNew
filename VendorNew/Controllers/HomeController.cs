@@ -29,8 +29,14 @@ namespace VendorNew.Controllers
                     acs = acs.Where(a => a.is_testing == false).ToList();
                 }
                 ViewBag.accountList = acs;
-                if (new UserSv().IsPasswordSameWithLoginName(currentUser.userId)) {
+
+                //验证密码是否已修改，邮箱是否有登记
+                var user = new UserSv().GetUserByUserId(currentUser.userId);
+                if (user.password == MyUtils.getMD5(user.user_name)) {
                     ViewBag.needToChangePassword = 1;
+                }
+                else if(string.IsNullOrEmpty(user.email)){
+                    ViewBag.needToRegisterEmail = 1;
                 }
             }
             catch {

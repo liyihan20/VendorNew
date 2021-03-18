@@ -181,7 +181,7 @@ namespace VendorNew.Controllers
             }
 
             var poList = JsonConvert.DeserializeObject<List<K3POs>>(poJsonStr);
-            var poHead=poList.First();
+            var poHead = poList.First();
 
             if (!poHead.account.Equals(currentAccount)) {
                 ViewBag.tip = "当前系统登录公司与此订单所在公司不一致，请重新登录系统";

@@ -27,7 +27,7 @@ namespace VendorNew.Services
                                      select op.send_num * o.pack_num).Sum();
                 var sendNum = po.send_num * box.pack_num; //本次制作数量
                 if (notRelatedQty + sendNum > po.can_send_qty) {
-                    throw new Exception(string.Format("订单号[{0}]分录号[{1}]的可制作标签数量不足：已制作标签数量[{2}],本次制作数量[{3}],可申请数量[{4}]",
+                    throw new Exception(string.Format("订单号[{0}]分录号[{1}]的可制作标签数量不足：可申请数量[{4}]，已制作标签数量[{2}]，本次制作数量[{3}]",
                         po.po_number, po.po_entry_id, notRelatedQty, sendNum, po.can_send_qty));
                 }
                 everyBoxQty += (decimal)po.send_num;
@@ -323,7 +323,7 @@ namespace VendorNew.Services
                 throw new Exception("此外箱不存在");
             }
             if (b1.pack_num <= splitNum) {
-                throw new Exception("外箱件数必须大于拆分件数");
+                throw new Exception("拆分件数必须少于外箱件数");
             }
 
             string boxNumberBefore = b1.box_number;
@@ -434,9 +434,7 @@ namespace VendorNew.Services
                 db.SubmitChanges();
                 throw new Exception("保存拆分外箱关联的PO信息或内箱信息失败，原因："+ex.Message);
             }
-
             
-
         }
 
         /// <summary>

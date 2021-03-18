@@ -176,13 +176,7 @@ namespace VendorNew.Services
             user.password = newP;
             db.SubmitChanges();
         }
-
-        public bool IsPasswordSameWithLoginName(int userId)
-        {
-            var user = GetUserByUserId(userId);
-            return user.password == MyUtils.getMD5(user.user_name);
-        }
-
+        
         public bool HasEmailRegister(string userName, string emailAddr)
         {
             var user = GetUserByUserName(userName);
@@ -212,6 +206,6 @@ namespace VendorNew.Services
             }
             return result;
         }
-
+        
     }
 }

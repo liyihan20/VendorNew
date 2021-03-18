@@ -92,6 +92,9 @@
         if ('1' == '@ViewBag.needToChangePassword') {
             addTab('密码设置', '/VendorNew/Home/PasswordSetting');
             $.messager.alert('系统提示', '检测到您的密码是初始密码，为了安全性，请立即修改密码！', 'warning');
+        } else if ('1' == '@ViewBag.needToRegisterEmail') { //邮箱如果没有登记，也要提示 2021-03-18
+            addTab('邮箱设置', '/VendorNew/Home/EmailSetting');
+            $.messager.alert('系统提示', '检测到您没有登记邮箱，请先登记后再操作系统！', 'warning');
         }
 
         $("#switchAccountBt").combobox({

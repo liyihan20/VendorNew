@@ -9,7 +9,7 @@
 
 
 <script>
-    var detailData = @Html.Raw(dsJson);    
+    var detailData = @Html.Raw(dsJson);
     for (var i = 0; i < detailData.length; i++) {
         detailData[i].id_field = detailData[i].po_id + "_" + detailData[i].po_entry_id; //用于标识唯一
     }
@@ -19,9 +19,9 @@
         //限定送货日期，只能申请1个月之内 2021-1-19
         $("#send_date").datebox("calendar").calendar({
             validator: function(date){
-                var now = new Date();  
-                var d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);  
-                return date<=d2;  
+                var now = new Date();
+                var d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate()+30);
+                return date<=d2;
             }
         });
 

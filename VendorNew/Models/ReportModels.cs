@@ -35,6 +35,7 @@ namespace VendorNew.Models
         public string rohs { get; set; }
         public string qrcodeContent { get; set; }
         public string poNumber { get; set; }
+        public string prNumber { get; set; }
         public string itemNumber { get; set; }
         public string qtyAndUnit { get; set; }
         public string batchNo { get; set; }
