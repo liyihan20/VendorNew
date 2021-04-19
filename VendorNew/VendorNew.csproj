@@ -173,6 +173,7 @@
     <Compile Include="Utils\MyUtils.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\TrulyEmail.dll" />
     <Content Include="Content\color.css" />
     <Content Include="Content\doc\MakingBoxHelper.txt" />
     <Content Include="Content\doc\print_setting.gif" />

@@ -75,6 +75,7 @@ namespace VendorNew.Models
         public decimal taxPrice { get; set; }
         public string leftQty { get; set; }
         public string transitQty { get; set; } //不会一开始从k3服务器读取
+        public bool isFinished { get; set; } //是否关闭
         
     }
 

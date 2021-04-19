@@ -73,26 +73,33 @@
                     var matOrderName = checked[0].matOrderName;
                     var departmentName = checked[0].departmentName;
                     var supplierName = checked[0].supplierName;
+
                     if (matOrderName == "") {
                         tip("没有关联订料员，请联系管理员");
                         return;
                     }
-                    for (var i = 1; i < checked.length; i++) {
-                        if (tradeTypeName != checked[i].tradeTypeName) {
-                            tip("同一张申请单，贸易类型必须一致");
+                    for (var i = 0; i < checked.length; i++) {                        
+                        if (checked[i].isFinished) {
+                            tip("此行已关闭，不能申请送货");
                             return;
                         }
-                        if (matOrderName != checked[i].matOrderName) {
-                            tip("同一张申请单，订料员必须是同一人");
-                            return;
-                        }
-                        if (departmentName != checked[i].departmentName) {
-                            tip("同一张申请单，申购部门必须一致");
-                            return;
-                        }
-                        if (supplierName != checked[i].supplierName) {
-                            tip("同一张申请单，供应商必须一致");
-                            return;
+                        if (i > 0) {
+                            if (tradeTypeName != checked[i].tradeTypeName) {
+                                tip("同一张申请单，贸易类型必须一致");
+                                return;
+                            }
+                            if (matOrderName != checked[i].matOrderName) {
+                                tip("同一张申请单，订料员必须是同一人");
+                                return;
+                            }
+                            if (departmentName != checked[i].departmentName) {
+                                tip("同一张申请单，申购部门必须一致");
+                                return;
+                            }
+                            if (supplierName != checked[i].supplierName) {
+                                tip("同一张申请单，供应商必须一致");
+                                return;
+                            }
                         }
                     }
 
@@ -103,8 +110,6 @@
                             tip(data.msg);
                         }
                     });
-
-
                 }
             }, '-',
             {
@@ -185,7 +190,7 @@
                     var transitQtyArr = result.split(",");
                     for (var i = 0; i < currentPageRows.length; i++) {
                         currentPageRows[i].transitQty = transitQtyArr[i];
-                        currentPageRows[i].leftQty = (parseFloat(currentPageRows[i].orderQty) - parseFloat(currentPageRows[i].realteQty) - parseFloat(transitQtyArr[i])).toFixed(4);
+                        currentPageRows[i].leftQty = currentPageRows[i].isFinished ? 0 : ((parseFloat(currentPageRows[i].orderQty) - parseFloat(currentPageRows[i].realteQty) - parseFloat(transitQtyArr[i])).toFixed(4));
 
                         $("#dg_po").datagrid("updateRow", {
                             index: rowIndexArr[i],

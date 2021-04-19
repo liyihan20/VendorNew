@@ -61,7 +61,7 @@
     }
 </script>
 
-<input type="hidden" value="@ViewData["email"]" id="hiddenEmail"/>
+<input type="hidden" value="@ViewData["email"]" id="hiddenEmail" />
 @for (var i = 0; i < 3; i++) {
     <div style="float:left;width:300px;margin-right:4px;">
         <div class="easyui-panel" data-options="fit:true" style="padding:12px;text-align:center;" title="&lt;i class='fa fa-envelope-o'&gt;&lt/i&gt; 邮箱【@(i+1)】：">
@@ -77,4 +77,5 @@
 <div class="easyui-panel" style="width:908px;padding:16px;" title="&lt;i class='fa fa-info-circle'&gt;&lt/i&gt; 操作说明">
     <div>1. 可以设置1~3个邮箱，用于接收本平台发出的通知邮件。</div>
     <div>2. 输入邮箱地址后，点击【发送邮箱验证码】按钮，然后到邮箱中收取此验证码，复制到验证码文本框中，最后点击【开始验证并保存】按钮保存邮箱。</div>
+    <div>3. 忘记登录密码或用户被禁用，可以在登录界面通过已登记邮箱重置密码和解禁用户。</div>
 </div>
