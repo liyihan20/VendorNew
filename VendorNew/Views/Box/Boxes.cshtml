@@ -11,7 +11,7 @@
             ctrlSelect: true,
             rownumbers: true,
             pagination: true,
-            idField: "box_number",
+            idField: "outer_box_id",
             treeField: "box_number",
             pageSize: 20,
             columns: [[
@@ -104,6 +104,7 @@
                         b.iconCls = "icon-ibox";
                         b.parentId = parentId;
                         b.unit_name = $("#dg_box").treegrid("find", parentId).unit_name;
+                        b.outer_box_id = b.inner_box_id; //因为outer_box_id 取代 box_number 作为idField，所以内箱的这个字段要设置为内箱id，否则因为和外箱的id重复导致不能被选择到
 
                         result.push(b);
                     }
@@ -154,10 +155,10 @@
                         tip("请先选择一行箱子再删除");
                         return;
                     }
-
+                    console.log(selected);
                     if (selected.inner_box_id) {
                         //删除内箱
-                        var pNode = $("#dg_box").treegrid("getParent", selected.box_number);
+                        var pNode = $("#dg_box").treegrid("getParent", selected.outer_box_id);
                         if (pNode.has_used == "已使用") {
                             tip("已使用的内箱不能删除");
                             return;
@@ -168,7 +169,7 @@
                                 $.post("@Url.Content("~/Delivery/RemoveInnerBox")", { innerBoxId: selected.inner_box_id }, function (data) {
                                     if (data.suc) {
                                         tip("此内箱已删除");
-                                        $("#dg_box").treegrid("remove", selected.box_number);
+                                        $("#dg_box").treegrid("remove", selected.outer_box_id);
                                     } else {
                                         tip(data.msg);
                                     }
@@ -186,7 +187,7 @@
                                 $.post("@Url.Content("~/Delivery/RemoveOuterBox")", { outerBoxId: selected.outer_box_id }, function (data) {
                                     if (data.suc) {
                                         tip("此外箱已删除");
-                                        $("#dg_box").treegrid("remove", selected.box_number);
+                                        $("#dg_box").treegrid("remove", selected.outer_box_id);
                                     } else {
                                         tip(data.msg);
                                     }

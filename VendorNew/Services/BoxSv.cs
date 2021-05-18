@@ -526,11 +526,11 @@ namespace VendorNew.Services
             return db.OuterBoxPOs.Where(o => boxIds.Contains((int)o.out_box_id)).ToList();
         }
 
-        public List<InneBoxes> GetInnerBoxes(string outerBoxNumber)
+        public List<InneBoxes> GetInnerBoxes(string outerBoxID)
         {
+            int id = Int32.Parse(outerBoxID);
             return (from i in db.InneBoxes
-                    join o in db.OuterBoxes on i.outer_box_id equals o.outer_box_id
-                    where o.box_number == outerBoxNumber
+                    where i.outer_box_id == id
                     orderby i.box_number
                     select i).ToList();
         }

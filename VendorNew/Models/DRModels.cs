@@ -69,14 +69,14 @@ namespace VendorNew.Models
         public string itemName { get; set; }
         public string itemModel { get; set; }
         public string unitNumber { get; set; }
-        public string unitName{get;set;}
+        public string unitName { get; set; }
         public decimal orderQty { get; set; }
         public decimal realteQty { get; set; }
         public decimal taxPrice { get; set; }
         public string leftQty { get; set; }
         public string transitQty { get; set; } //不会一开始从k3服务器读取
         public bool isFinished { get; set; } //是否关闭
-        
+
     }
 
     /// <summary>
