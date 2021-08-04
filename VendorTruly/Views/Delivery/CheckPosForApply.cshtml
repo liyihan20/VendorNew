@@ -76,6 +76,10 @@
                         return;
                     }
                     for (var i = 1; i < checked.length; i++) {
+                        if (checked[i].isFinished) {
+                            tip("此行已关闭，不能申请送货");
+                            return;
+                        }
                         if (tradeTypeName != checked[i].tradeTypeName) {
                             tip("同一张申请单，贸易类型必须一致");
                             return;

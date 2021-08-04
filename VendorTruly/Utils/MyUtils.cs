@@ -281,6 +281,13 @@ namespace VendorTruly.Utils
                     addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
                     phone = "0660-336788-1234",
                     shortName = "半导体AUTO"
+                },
+                new CompanyModel(){
+                    account="CCM",
+                    accountName = "信利光电股份有限公司CCM事业部",
+                    addr = "广东省汕尾市区工业大道信利电子工业城物流总仓",
+                    phone = "0660-336788-1234",
+                    shortName = "光电CCM"
                 }
             };
         }

@@ -112,8 +112,12 @@ namespace VendorNew.Services
         public string[] GetBoxNumber(string boxType, int packNum)
         {
             int digitPerDay = 4;
-            //2020-7-28 加上一位年份 DateTime.Now.ToString("yy").Substring(1,1)
-            string dateStr = MyUtils.GetBoxDayStr(); //获取周和日编码
+            //2021-8-05 加上一位年份             
+            string dateStr = "";
+            if (DateTime.Now >= DateTime.Parse("2021-08-05")) {
+                dateStr += DateTime.Now.ToString("yy").Substring(1, 1);
+            }
+            dateStr += MyUtils.GetBoxDayStr(); //获取周和日编码
             string maxBoxNumber = GetSystemNo(boxType, dateStr, digitPerDay, packNum); 
 
             if (packNum == 1) return new string[] { maxBoxNumber, maxBoxNumber };

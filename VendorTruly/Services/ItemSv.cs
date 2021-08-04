@@ -113,7 +113,12 @@ namespace VendorTruly.Services
         {
             boxType = boxType + "T"; //事业部之间送货的，在O或I之后加T，表示Truly
             int digitPerDay = 4;
-            string dateStr = MyUtils.GetBoxDayStr(); //获取周和日编码
+            //2021-8-05 加上一位年份             
+            string dateStr = "";
+            if (DateTime.Now >= DateTime.Parse("2021-08-05")) {
+                dateStr += DateTime.Now.ToString("yy").Substring(1, 1);
+            }
+            dateStr += MyUtils.GetBoxDayStr(); //获取周和日编码
             string maxBoxNumber = GetSystemNo(boxType, dateStr, digitPerDay, packNum); 
 
             if (packNum == 1) return new string[] { maxBoxNumber, maxBoxNumber };
