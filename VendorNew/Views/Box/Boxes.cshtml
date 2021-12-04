@@ -4,6 +4,7 @@
 <script>
     var firstSelectedPO; //第一个选择的po，在po combogrid
     var currentSelectedBox; //当前选择外箱
+    var notRelatedInnerBoxInfo;
     $(function () {
         $("#dg_box").treegrid({
             fit: true,
@@ -119,9 +120,14 @@
                     $('#select_box_po').combogrid('grid').datagrid("loadData", []);
                     $("#fm_outer_box").form("reset");
                     $("#dg_select_box_po").datagrid("loadData", []);
-                    $("#dg_select_inner_box").datagrid("clearChecked"); //小标签
-                    $("#dg_select_inner_box").datagrid("loadData", []); //小标签
-                    $("#panel_select_inner_box_wrap").hide(); //小标签
+                    $("#dg_select_inner_box").datagrid("clearChecked"); //选择小标签
+                    $("#dg_select_inner_box").datagrid("loadData", []); //选择小标签
+                    $("#panel_select_inner_box_wrap").hide(); //选择小标签
+                    $("#tab_inner_box .tagbox").css("min-height", 190); //扫描小标签
+                    innerboxScanedList = [];//扫描小标签
+                    updateScanInfo(); //重置扫描提示信息
+                    $("#tagbox_scan_area").tagbox("setValues", []);//扫描小标签
+
                     firstSelectedPO = undefined;
                 }
             },
@@ -288,6 +294,112 @@
     });
 </script>
 
+@*扫描内箱二维码 2021-11-17 *@
+<script>
+    var innerboxScanedList = []; //存储已扫描内箱
+    $(function () {
+
+        $("#scan_inner_box_text").textbox('textbox').bind('keydown', function (e) {
+            if (e.keyCode == 13) {
+                var tempV = $(this).val();
+                var tempArr = tempV.split(";");
+                var itemNumber = $("#fm_outer_box input[name='item_number']").val();
+                if (tempArr.length != 5) {
+                    tip("请扫描正确的内箱标签");
+                    return;
+                }
+                if (tempArr[1].indexOf("I") != 0) {
+                    tip("请扫描正确的内箱标签");
+                    return;
+                }
+                if (itemNumber != tempArr[3]) {
+                    tip("内箱的物料编码[" + tempArr[3] + "]与当前外箱的物料编码[" + itemNumber + "]不一致");
+                    return;
+                }
+                if (innerboxScanedList.filter(function (ib) { return ib.box_number == tempArr[1] }).length > 0) {
+                    tip("此内箱标签已扫描，不能重复");
+                    return;
+                }                
+
+                var boxInfo = notRelatedInnerBoxInfo.filter(function (n) { return (n.box_number_long + ",").indexOf(tempArr[1]) >= 0; });
+                if (boxInfo.length < 1) {
+                    tip("此内箱不存在或已被其他外箱关联");
+                    return;
+                }
+                var row = boxInfo[0];
+
+                //将此内箱信息写入外箱信息
+                $("#fm_outer_box").form("load", row);
+                $("#fm_outer_box #package_date").datebox("setValue", toDateStr(row.package_date));
+                $("#fm_outer_box #produce_date").datebox("setValue", toDateStr(row.produce_date));
+                $("#fm_outer_box #expire_date").datebox("setValue", toDateStr(row.expire_date));
+                $("#fm_outer_box #pack_num").numberbox("setValue", "1");
+
+                innerboxScanedList.push({ box_number: tempArr[1], qty: tempArr[4] });
+
+                var areaValue = $("#tagbox_scan_area").tagbox("getValues");
+                areaValue.push(tempArr[1] + " : " + tempArr[4]);
+                $("#tagbox_scan_area").tagbox("setValues", areaValue);
+                updateScanInfo();
+
+                tip("扫描成功");
+                $("#scan_inner_box_text").textbox("setValue", "");
+            }
+        });
+
+        //onRemoveTag
+        $("#tagbox_scan_area").tagbox({
+            onRemoveTag: function (value) {
+                for (var i = 0; i < innerboxScanedList.length; i++) {
+                    if (innerboxScanedList[i].box_number == value.split(" : ")[0]) {
+                        innerboxScanedList.splice(i, 1);
+                        break;
+                    }
+                }
+                updateScanInfo();
+            }
+        });
+
+        //$("#dg_scan_inner_box").datagrid({
+        //    fit: true,
+        //    rownumbers: true,
+        //    singleSelect: true,
+        //    showFooter: true,
+        //    idField: "s_inner_box_number",
+        //    data: [{s_inner_box_number:"A",s_every_qty:29}],
+        //    columns: [[
+        //        { field: 's_inner_box_number', title: '内箱号', width: 120, align: 'center' },
+        //        {
+        //            field: 's_every_qty', title: '每件数量', width: 100, align: 'center'
+        //            ,formatter: function (value, row, index) {
+        //                if (!value) return 0;
+        //                return toThousandValue(parseFloat(value));
+        //            }
+        //        }
+        //    ]],
+        //    toolbar: [{
+        //        text: '<i class="fa fa-fw fa-remove"></i> 删除内箱',
+        //        handler: function () {
+        //            var removedRow = $('#dg_scan_inner_box').datagrid('getCurrentRow');
+        //            if (!removedRow) {
+        //                tip("请先选择需要删除的行");
+        //                return;
+        //            }
+        //            var rowIndex = $('#dg_scan_inner_box').datagrid('getRowIndex', removedRow);
+        //            $('#dg_scan_inner_box').datagrid('deleteRow', rowIndex);
+
+        //        }
+        //    }]
+        //});
+
+    });
+    function updateScanInfo() {        
+        var totalQty = _.sumBy(innerboxScanedList, function (v) { return parseFloat(v.qty) });
+        var totalPack = innerboxScanedList.length;
+        $("#scaned_box_info").html("已扫描内箱件数： " + totalPack + " ;已扫描物料数量： " + totalQty);
+    }
+</script>
+
 @*关联小标签的script 2018-12-12*@
 <script>
     $(function () {
@@ -438,10 +550,10 @@
                 //查看是否有未关联小标签 2018-12-12
                 $.post("GetNoRelatedInnerBoxes", { itemNumber: selectedPo.item_number, tradeTypeName: selectedPo.trade_type_name }, function (data) {
                     if (data.suc) {
-                        var boxInfo = data.boxInfo;
-                        if (boxInfo.length > 0) {
+                        notRelatedInnerBoxInfo = data.boxInfo;
+                        if (notRelatedInnerBoxInfo.length > 0) {
                             $("#panel_select_inner_box_wrap").show();
-                            $("#dg_select_inner_box").datagrid("loadData", boxInfo);
+                            $("#dg_select_inner_box").datagrid("loadData", notRelatedInnerBoxInfo);
                             //延迟到勾选时候再加载信息到表单
                             //$("#fm_outer_box").form("load", boxInfo[0]);
                             //$("#fm_outer_box #package_date").datebox("setValue", toDateStr(boxInfo[0].package_date));
@@ -601,28 +713,34 @@
             var checkedInnerBoxRow = $("#dg_select_inner_box").datagrid("getChecked");
             var totalInnerBoxesQty = 0;
 
-            for (var i = 0; i < checkedInnerBoxRow.length; i++) {
-                selectedInnerboxes.push(checkedInnerBoxRow[i].inner_box_id);
-                totalInnerBoxesQty += parseFloat(checkedInnerBoxRow[i].every_qty * checkedInnerBoxRow[i].pack_num);
+            if (innerboxScanedList.length > 0) { //扫码关联
+                totalInnerBoxesQty = _.sumBy(innerboxScanedList, function (ib) { return parseFloat(ib.qty);})
+            } else if (checkedInnerBoxRow.length > 0) { //选择关联
+                for (var i = 0; i < checkedInnerBoxRow.length; i++) {
+                    selectedInnerboxes.push(checkedInnerBoxRow[i].inner_box_id);
+                    totalInnerBoxesQty += parseFloat(checkedInnerBoxRow[i].every_qty * checkedInnerBoxRow[i].pack_num);
+                }
             }
             if (totalInnerBoxesQty > 0) {
                 if ($("#pack_num").numberbox("getValue") > 1) {
-                    tip("如果选择了未关联的小标签，外箱制作件数只能是1件，不能批量新增外箱");
+                    tip("如果扫描/选择了未关联的小标签，外箱制作件数只能是1件，不能批量新增外箱");
                     return;
                 }                
                 if (Math.abs(totalInnerBoxesQty - totalPoNums) > 0.0001) {
-                    tip("所选择的小标签总数量[" + totalInnerBoxesQty + "]必须等于关联订单的每件数量之和[" + totalPoNums + "]");
+                    tip("所扫描/选择的小标签总数量[" + totalInnerBoxesQty + "]必须等于关联订单的每件数量之和[" + totalPoNums + "]");
                     return;
                 }
             }
 
+            $.messager.progress();
             $.ajax({
                 type: 'post',
                 url: '@Url.Content("~/Delivery/SaveOuterBoxes")',
-                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows).replace(/\&/g, "%26") + "&innerBoxIds=" + selectedInnerboxes.join(","),
+                data: $("#fm_outer_box").serialize() + "&poRows=" + JSON.stringify(boxPoRows).replace(/\&/g, "%26") + "&innerBoxIds=" + selectedInnerboxes.join(",") + "&scannedBox="+JSON.stringify(innerboxScanedList),
                 cache: false,
                 dataType: 'json',
                 success: function (data) {
+                    $.messager.progress('close');
                     if (data.suc) {
                         tip("外箱保存成功");
                         $('#dlg_outer_box').dialog('close');
@@ -900,9 +1018,26 @@
         <table id="dg_select_box_po"></table>
     </div>
 
-    <div id="panel_select_inner_box_wrap" style="display:none;">
-        <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联小标签(自动加载同型号的未关联小标签信息)" style="width:769px;height:280px;" data-options="collapsible:true">
-            <table id="dg_select_inner_box"></table>
+    <div id="panel_select_inner_box_wrap">
+        <div id="tab_inner_box" class="easyui-tabs" style="width:769px;height:300px;">
+            <div title="&lt;i class=&quot;fa fa-qrcode&quot;&gt;&lt;i&gt; 扫描内箱标签关联">
+                <div style="text-align:center;padding:8px;">
+                    扫码区域：
+                    <input type="text" class="easyui-textbox" id="scan_inner_box_text" style="width:360px;" data-options="prompt:'扫码时鼠标先点击此输入框'" />
+                </div>
+                @*<div class="easyui-panel" title="已扫描内箱标签信息" style="width:745px;height:210px;" data-options="collapsible:true">
+                    <table id="dg_scan_inner_box"></table>
+                </div>*@
+                <div style="padding-left:8px;">
+                    <input id="tagbox_scan_area" class="easyui-tagbox" style="width:732px;padding:8px;" data-options="prompt:'此区域显示已扫描内箱标签信息（箱号 : 每件数量），如果扫错，可点击对应箱子删除图标进行删除', editable:false,panelHeight:0">
+                    <div class="small text-danger"><i class="fa fa-info-circle"></i> <span id="scaned_box_info">已扫描内箱件数： 0 ;已扫描物料数量： 0</span></div>
+                </div>
+            </div>
+            <div title="&lt;i class=&quot;fa fa-check-square-o&quot;&gt;&lt;i&gt; 选择内箱关联">
+                <div class="easyui-panel" title="&lt;i class=&quot;fa fa-list&quot;&gt;&lt;i&gt; 关联小标签(自动加载同型号的未关联小标签信息)" data-options="collapsible:true,fit:true">
+                    <table id="dg_select_inner_box"></table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -982,7 +1117,7 @@
                         备件数量：
                     </td>
                     <td>
-                        <input type="text" class="easyui-numberbox points-4" name="backup_number" value="0" />
+                        <input type="text" class="easyui-numberbox points-4" name="backup_number" value="0" prompt="换货用备品数量" />
                     </td>
                     <td>
                         净重(KG)：
@@ -1014,7 +1149,7 @@
                         存储条件：
                     </td>
                     <td>
-                        <input type="text" class="easyui-textbox" name="keep_condition" data-options="validType:{length:[1,50]}" />
+                        <input type="text" class="easyui-textbox" name="keep_condition" data-options="required:true,validType:{length:[1,50]}" />
                     </td>
                 </tr>
             </table>  
